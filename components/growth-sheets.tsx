@@ -334,6 +334,7 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
     [error, setError] = useState(""),
     [confirmPersonal, setConfirmPersonal] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const importRequest = useRef(0);
   const [recovery, setRecovery] = useState(false);
   useEffect(() => {
     try {
@@ -353,6 +354,8 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
   };
   const importFile = async (file?: File) => {
     if (!file) return;
+    const request = ++importRequest.current;
+    setPending(null);
     setError("");
     if (file.size > 2 * 1024 * 1024) {
       setError("Use um backup JSON de até 2 MB.");
@@ -362,11 +365,13 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
     try {
       contents = await file.text();
     } catch {
+      if (request !== importRequest.current) return;
       setError(
         "Não foi possível ler este arquivo. Seus registros foram mantidos.",
       );
       return;
     }
+    if (request !== importRequest.current) return;
     const result = parseStoredState(contents);
     if (!result) {
       setError(
