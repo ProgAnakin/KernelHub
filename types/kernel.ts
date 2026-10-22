@@ -184,5 +184,5 @@ type KernelCommand =
 
 // Stable identity lets a failed storage transaction retry the same action.
 export type KernelAction = KernelCommand & {
-  event?: { id: string; createdAt: string };
+  event?: { id: string; createdAt: string; day?: string };
 };

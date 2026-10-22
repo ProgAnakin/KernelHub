@@ -2,13 +2,15 @@
 
 **Seu sistema pessoal. Um pouco melhor, todos os dias.**
 
-Versão 0.3 · registros corrigíveis, transações entre abas e PWA mais resiliente. [Veja a revisão técnica](docs/QUALITY-REVIEW.md).
+Versão 0.3.1 · registros corrigíveis, transações entre abas e PWA mais resiliente. [Veja a revisão técnica](docs/QUALITY-REVIEW.md).
 
 KernelHub reúne corpo, bem-estar, rotina, carreira e aprendizado em um espaço diário pensado primeiro para iPhone. A pergunta central é simples: **como estou, o que merece atenção e o que avancei hoje?**
 
 ![Dashboard do KernelHub com recuperação, movimento, nutrição e evolução pessoal](docs/images/overview.png)
 
 > As imagens mostram a demonstração, com dados fictícios identificados na interface. Garmin e GitHub ainda não estão conectados. O aplicativo não faz diagnóstico nem prescreve metas.
+
+**[Abrir o KernelHub](https://proganakin.github.io/KernelHub/)** · Demonstração com registros locais.
 
 ## Um produto para usar, não apenas observar
 

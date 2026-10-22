@@ -1,5 +1,13 @@
 import type { KernelAction, KernelState } from "../types/kernel.ts";
-import { kernelReducer, parseStoredState, STORAGE_KEY } from "./state.ts";
+import {
+  actionDate,
+  isDailyAction,
+  kernelReducer,
+  parseStoredState,
+  reconcileDay,
+  STORAGE_KEY,
+} from "./state.ts";
+import { localDay } from "./mock-engine.ts";
 
 export const DB_NAME = "kernelhub";
 export const DB_STORE = "records";
@@ -11,6 +19,13 @@ export interface StoredStateResult {
   state: KernelState;
   recoveryAvailable: boolean;
   changed: boolean;
+}
+
+export class PendingDayConflictError extends Error {
+  constructor() {
+    super("Pending records belong to a day already archived by another tab");
+    this.name = "PendingDayConflictError";
+  }
 }
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -123,18 +138,34 @@ export async function transactStoredState(
           typeof recovery !== "string"
         )
           throw new Error("Unsupported recovery record; preserving original");
-        const saved = parseStoredState(raw as string | null);
-        if (!saved && raw && !recovery) recovery = raw;
-        if (recovery && recovery !== recoveryRequest.result)
-          store.put(recovery, RECOVERY_KEY);
-        const current = saved ?? parseStoredState(JSON.stringify(fallback));
-        if (!current) throw new Error("Invalid fallback state");
         const pending = Array.isArray(actions)
           ? actions
           : actions
             ? [actions]
             : [];
-        const next = pending.reduce(kernelReducer, current);
+        // Replay before rolling the saved day forward. Otherwise yesterday's
+        // unsaved water/focus would silently become today's records.
+        const now = new Date();
+        const replayAt = pending.reduce((earliest, action) => {
+          const date = actionDate(action, now);
+          return date < earliest ? date : earliest;
+        }, now);
+        const saved = parseStoredState(raw as string | null, replayAt);
+        if (!saved && raw && !recovery) recovery = raw;
+        if (recovery && recovery !== recoveryRequest.result)
+          store.put(recovery, RECOVERY_KEY);
+        const current =
+          saved ?? parseStoredState(JSON.stringify(fallback), replayAt);
+        if (!current) throw new Error("Invalid fallback state");
+        if (
+          pending.some(
+            (action) =>
+              isDailyAction(action) &&
+              localDay(actionDate(action, now)) < current.day,
+          )
+        )
+          throw new PendingDayConflictError();
+        const next = reconcileDay(pending.reduce(kernelReducer, current), now);
         const serialized = JSON.stringify(next);
         if (!parseStoredState(serialized))
           throw new Error("Invalid state; database transaction cancelled");

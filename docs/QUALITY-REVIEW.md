@@ -92,3 +92,13 @@ Resultado local: **20 testes de domínio/adversariais e 58 testes de interface p
 5. Medir hidratação e latência de registro no iPhone real antes de dividir bundles ou adicionar novas métricas.
 
 A publicação do código e a disponibilidade do site são verificações separadas. O workflow de Pages depende da habilitação do serviço nas configurações do repositório.
+
+## Revisão de publicação · 23 de outubro de 2026 · 0.3.1
+
+O site foi publicado em [GitHub Pages](https://proganakin.github.io/KernelHub/). A verificação HTTPS confirmou HTML, manifesto, três ícones, oito assets JS/CSS e service worker. O Chromium remoto deste ambiente recusou a CA; a inspeção HTTP usou validação TLS normal, sem ignorar certificados. Interações e offline continuam validados no build de produção local/export estático, sem alegar teste de Safari físico.
+
+Uma regressão adicional foi reproduzida: +250 ml pendentes às 23:59, seguidos de +250 ml às 00:01, viravam 500 ml no dia novo. Agora as ações guardam data local e horário; o replay ocorre antes do rollover. O resultado é 250 ml hoje e os 250 ml anteriores no resumo de ontem.
+
+Quando outra aba já arquivou o dia, o resumo existente não contém detalhe suficiente para mesclar uma ação antiga com segurança. Nesse caso, a gravação é abortada, o banco permanece intacto e a sessão pode ser exportada. Uma restauração confirmada resolve o conflito com o snapshot escolhido; não há mesclagem silenciosa.
+
+Foram acrescentados cinco testes de domínio e quatro cenários de browser (iPhone/desktop), incluindo exportação da sessão e resolução explícita do conflito. A suíte passa a conter 25 testes de domínio/adversariais e 62 testes de interface.

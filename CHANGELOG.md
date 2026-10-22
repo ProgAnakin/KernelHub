@@ -1,5 +1,13 @@
 # Evolução do KernelHub
 
+## 0.3.1 · 23 de outubro de 2026
+
+- Publicação do site em GitHub Pages após habilitação do serviço.
+- Correção de ações pendentes que atravessavam a meia-noite: a data original é preservada antes de renovar os registros diários.
+- Conflitos com outra aba que já arquivou o dia preservam os dois estados e pedem escolha explícita de backup, sem misturar métricas.
+- Metadado de versão para identificar o artefato publicado e regressões de domínio/browser para retry entre dias.
+- Direção de produto consolidada para cursos multiplataforma, hábitos livres, Apple Saúde e agentes futuros.
+
 ## 0.3.0 · 22 de outubro de 2026
 
 - Persistência IndexedDB atômica entre abas, com migração do localStorage somente após commit confirmado.

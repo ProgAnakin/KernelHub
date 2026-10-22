@@ -766,7 +766,8 @@ function LiveSheetContents(props: ComponentProps<typeof SheetContents>) {
 }
 
 export function Dashboard() {
-  const { state, act, hydrated, storageError, recoveryAvailable } = useKernel();
+  const { state, act, hydrated, storageError, dayConflict, recoveryAvailable } =
+    useKernel();
   const [section, setSection] = useState<Section>("today");
   const [sheet, setSheet] = useState<Sheet>(null);
   const [now, setNow] = useState<Date | null>(null);
@@ -997,9 +998,11 @@ export function Dashboard() {
               </div>
             )}
             {storageError && (
-              <div className="inline-notice warning">
-                <ShieldCheck size={15} />O navegador bloqueou o armazenamento.
-                Os registros desta sessão podem se perder.
+              <div className="inline-notice warning" role="status">
+                <ShieldCheck size={15} />
+                {dayConflict
+                  ? "Há registros pendentes de outro dia e outra aba já avançou. Exporte esta sessão em Meu espaço antes de escolher qual backup restaurar. Os dados gravados foram mantidos."
+                  : "O navegador bloqueou o armazenamento. Os registros desta sessão podem se perder."}
               </div>
             )}
             {section === "today" && <TodayBrief state={state} />}

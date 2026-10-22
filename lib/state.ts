@@ -238,16 +238,44 @@ export function parseStoredState(
   }
 }
 
+export function actionDate(action: KernelAction, now = new Date()): Date {
+  if (!action.event) return now;
+  if (!action.event.day) return new Date(action.event.createdAt);
+  if (!z.iso.date().safeParse(action.event.day).success) return new Date(NaN);
+  const [year, month, day] = action.event.day.split("-").map(Number);
+  return new Date(year, month - 1, day, 12);
+}
+
+export function isDailyAction(action: KernelAction): boolean {
+  return [
+    "habit",
+    "water",
+    "exercise",
+    "exercise-total",
+    "run",
+    "run-total",
+    "meal",
+    "meal-remove",
+    "nutrition-correct",
+    "checkin",
+    "focus-add",
+    "focus-remove",
+  ].includes(action.type);
+}
+
 export function kernelReducer(
   state: KernelState,
   action: KernelAction,
 ): KernelState {
+  const date = actionDate(action);
+  if (!Number.isFinite(date.getTime())) return state;
   if (action.type === "restore")
-    return parseStoredState(JSON.stringify(action.state)) ?? state;
-  if (action.type === "rollover") return reconcileDay(state);
+    return parseStoredState(JSON.stringify(action.state), date) ?? state;
+  if (action.type === "rollover") return reconcileDay(state, date);
   if (action.type === "start-personal")
-    return createInitialState(new Date(), "personal");
-  state = reconcileDay(state);
+    return createInitialState(date, "personal");
+  if (isDailyAction(action) && localDay(date) < state.day) return state;
+  state = reconcileDay(state, date);
   const eventId = () => action.event?.id ?? crypto.randomUUID();
   const eventTime = () => action.event?.createdAt ?? new Date().toISOString();
   let next = state;

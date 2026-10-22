@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createInitialState } from "./mock-engine";
-import { kernelReducer, STORAGE_KEY } from "./state";
-import { transactStoredState } from "./storage";
+import { createInitialState, localDay } from "./mock-engine";
+import { kernelReducer, reconcileDay, STORAGE_KEY } from "./state";
+import { PendingDayConflictError, transactStoredState } from "./storage";
 import type { KernelAction, KernelState } from "@/types/kernel";
 
 export function useKernel() {
@@ -17,13 +17,17 @@ export function useKernel() {
   const [hydrated, setHydrated] = useState(false);
   const ready = useRef(false);
   const [storageError, setStorageError] = useState(false);
+  const [dayConflict, setDayConflict] = useState(false);
   const [recoveryAvailable, setRecoveryAvailable] = useState(false);
   const queue = useRef(Promise.resolve());
   const channel = useRef<BroadcastChannel | null>(null);
 
   const transact = useCallback((action?: KernelAction) => {
     const run = async () => {
-      if (action) pending.current.push(action);
+      // Explicit full replacements resolve a pending-session conflict too.
+      if (action?.type === "restore" || action?.type === "start-personal")
+        pending.current = [action];
+      else if (action) pending.current.push(action);
       let next: KernelState;
       try {
         // The read and every pending action share one IndexedDB transaction.
@@ -37,6 +41,7 @@ export function useKernel() {
         pending.current = [];
         setRecoveryAvailable(result.recoveryAvailable);
         setStorageError(false);
+        setDayConflict(false);
         if (result.changed) {
           try {
             channel.current?.postMessage("changed");
@@ -44,13 +49,14 @@ export function useKernel() {
             // A closed notification channel must not roll back a committed action.
           }
         }
-      } catch {
+      } catch (error) {
         next = action
           ? kernelReducer(stateRef.current, action)
           : ready.current
-            ? stateRef.current
+            ? reconcileDay(stateRef.current)
             : committed.current;
         setStorageError(true);
+        setDayConflict(error instanceof PendingDayConflictError);
       }
       if (JSON.stringify(stateRef.current) !== JSON.stringify(next)) {
         stateRef.current = next;
@@ -77,12 +83,10 @@ export function useKernel() {
       setHydrated(true);
     });
     const rollover = window.setInterval(() => {
-      if (document.visibilityState === "visible")
-        void transact({ type: "rollover" });
+      if (document.visibilityState === "visible") void transact();
     }, 30000);
     const foreground = () => {
-      if (document.visibilityState === "visible")
-        void transact({ type: "rollover" });
+      if (document.visibilityState === "visible") void transact();
     };
     document.addEventListener("visibilitychange", foreground);
     return () => {
@@ -100,7 +104,11 @@ export function useKernel() {
       if (!ready.current) return;
       void transact({
         ...action,
-        event: { id: crypto.randomUUID(), createdAt: new Date().toISOString() },
+        event: {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          day: localDay(),
+        },
       });
       try {
         if (typeof navigator.vibrate === "function") navigator.vibrate(8);
@@ -111,5 +119,5 @@ export function useKernel() {
     [transact],
   );
 
-  return { state, act, hydrated, storageError, recoveryAvailable };
+  return { state, act, hydrated, storageError, dayConflict, recoveryAvailable };
 }

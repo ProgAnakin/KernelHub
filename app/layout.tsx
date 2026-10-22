@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { assetPath } from "@/lib/paths";
+import packageInfo from "../package.json";
 
 export const metadata: Metadata = {
   applicationName: "KernelHub",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
     title: "KernelHub",
   },
   formatDetection: { telephone: false },
+  other: { "application-version": packageInfo.version },
   icons: {
     icon: assetPath("/icon.svg"),
     apple: assetPath("/icons/apple-touch-icon.png"),
