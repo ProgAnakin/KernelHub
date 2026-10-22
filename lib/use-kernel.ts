@@ -1,75 +1,115 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createInitialState } from "./mock-engine";
-import { kernelReducer, parseStoredState, STORAGE_KEY } from "./state";
-import type { KernelAction } from "@/types/kernel";
+import { kernelReducer, STORAGE_KEY } from "./state";
+import { transactStoredState } from "./storage";
+import type { KernelAction, KernelState } from "@/types/kernel";
 
 export function useKernel() {
-  const [state, dispatch] = useReducer(kernelReducer, undefined, () =>
-    createInitialState(),
+  // Exported HTML and the first browser render must agree across dates/zones.
+  const [state, setState] = useState<KernelState>(() =>
+    createInitialState(new Date(2026, 9, 22, 12)),
   );
+  const stateRef = useRef(state);
+  const committed = useRef(state);
+  const pending = useRef<KernelAction[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const ready = useRef(false);
   const [storageError, setStorageError] = useState(false);
   const [recoveryAvailable, setRecoveryAvailable] = useState(false);
-  const canPersist = useRef(true);
+  const queue = useRef(Promise.resolve());
+  const channel = useRef<BroadcastChannel | null>(null);
+
+  const transact = useCallback((action?: KernelAction) => {
+    const run = async () => {
+      if (action) pending.current.push(action);
+      let next: KernelState;
+      try {
+        // The read and every pending action share one IndexedDB transaction.
+        // Retried actions retain their identity, including removals by ID.
+        const result = await transactStoredState(
+          committed.current,
+          pending.current,
+        );
+        next = result.state;
+        committed.current = next;
+        pending.current = [];
+        setRecoveryAvailable(result.recoveryAvailable);
+        setStorageError(false);
+        if (result.changed) {
+          try {
+            channel.current?.postMessage("changed");
+          } catch {
+            // A closed notification channel must not roll back a committed action.
+          }
+        }
+      } catch {
+        next = action
+          ? kernelReducer(stateRef.current, action)
+          : ready.current
+            ? stateRef.current
+            : committed.current;
+        setStorageError(true);
+      }
+      if (JSON.stringify(stateRef.current) !== JSON.stringify(next)) {
+        stateRef.current = next;
+        setState(next);
+      }
+    };
+    queue.current = queue.current.then(run).catch(() => setStorageError(true));
+    return queue.current;
+  }, []);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const saved = parseStoredState(raw);
-      if (saved) dispatch({ type: "restore", state: saved });
-      else if (raw) {
-        canPersist.current = false;
-        localStorage.setItem(`${STORAGE_KEY}:recovery`, raw);
-        canPersist.current = true;
-        setRecoveryAvailable(true);
-      }
-    } catch {
-      setStorageError(true);
+    let mounted = true;
+    committed.current = createInitialState();
+    if (typeof BroadcastChannel === "function") {
+      const updates = new BroadcastChannel(STORAGE_KEY);
+      channel.current = updates;
+      updates.onmessage = () => {
+        void transact();
+      };
     }
-    setHydrated(true);
-    const rollover = window.setInterval(
-      () => dispatch({ type: "rollover" }),
-      30000,
-    );
-    const sync = (event: StorageEvent) => {
-      if (event.key !== STORAGE_KEY) return;
-      const saved = parseStoredState(event.newValue);
-      if (saved) dispatch({ type: "restore", state: saved });
-    };
-    window.addEventListener("storage", sync);
+    void transact().then(() => {
+      if (!mounted) return;
+      ready.current = true;
+      setHydrated(true);
+    });
+    const rollover = window.setInterval(() => {
+      if (document.visibilityState === "visible")
+        void transact({ type: "rollover" });
+    }, 30000);
     const foreground = () => {
       if (document.visibilityState === "visible")
-        dispatch({ type: "rollover" });
+        void transact({ type: "rollover" });
     };
     document.addEventListener("visibilitychange", foreground);
     return () => {
+      mounted = false;
+      ready.current = false;
+      channel.current?.close();
+      channel.current = null;
       clearInterval(rollover);
-      window.removeEventListener("storage", sync);
       document.removeEventListener("visibilitychange", foreground);
     };
-  }, []);
+  }, [transact]);
 
-  useEffect(() => {
-    if (!hydrated || !canPersist.current) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      setStorageError(false);
-    } catch {
-      setStorageError(true);
-    }
-  }, [state, hydrated]);
-
-  const act = useCallback((action: KernelAction) => {
-    dispatch(action);
-    // Safari on iOS does not implement vibration. Visual feedback always accompanies it.
-    try {
-      if (typeof navigator.vibrate === "function") navigator.vibrate(8);
-    } catch {
-      /* Feedback is always visual; haptics is optional. */
-    }
-  }, []);
+  const act = useCallback(
+    (action: KernelAction) => {
+      if (!ready.current) return;
+      void transact({
+        ...action,
+        event: { id: crypto.randomUUID(), createdAt: new Date().toISOString() },
+      });
+      try {
+        if (typeof navigator.vibrate === "function") navigator.vibrate(8);
+      } catch {
+        /* Haptics is optional; every action also has visual feedback. */
+      }
+    },
+    [transact],
+  );
 
   return { state, act, hydrated, storageError, recoveryAvailable };
 }

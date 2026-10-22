@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
 
 :root {
   color-scheme: dark;
@@ -4295,4 +4294,57 @@ h1 > span {
   .dashboard-footer {
     padding-bottom: 100px;
   }
+}
+
+/* Corrections stay close to the record, using the existing sheet language. */
+.meal-entry-list,
+.nutrition-correction {
+  margin-top: 24px;
+}
+.meal-entry {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+.meal-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.meal-entry-row > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.meal-entry-row strong,
+.meal-entry-row small {
+  display: block;
+}
+.meal-entry-row strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.meal-entry-row small {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.nutrition-correction-toggle,
+.insight-remove {
+  margin-top: 12px;
+}
+.saved-insights blockquote p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.running-distance-form {
+  width: 100%;
+  margin-top: 24px;
+  text-align: left;
+}
+.running-distance-form > .primary-button {
+  margin-top: 14px;
+}
+.nutrition-sheet-summary + .water-adjust {
+  margin: 0 0 24px;
 }

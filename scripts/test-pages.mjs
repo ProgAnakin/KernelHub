@@ -2,7 +2,38 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
+
+async function stored(page) {
+  const raw = await page.evaluate(
+    () =>
+      new Promise((resolve, reject) => {
+        const open = indexedDB.open("kernelhub", 1);
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const transaction = db.transaction("records", "readonly");
+          const request = transaction
+            .objectStore("records")
+            .get("kernelhub:state:v1");
+          let value = null;
+          request.onsuccess = () => {
+            value = request.result;
+          };
+          transaction.oncomplete = () => {
+            db.close();
+            resolve(value);
+          };
+          transaction.onabort = () => {
+            db.close();
+            reject(transaction.error);
+          };
+        };
+      }),
+  );
+  assert.equal(typeof raw, "string", "KernelHub record exists after hydration");
+  return JSON.parse(raw);
+}
 
 const base =
   (process.env.NEXT_PUBLIC_BASE_PATH ?? "/KernelHub").replace(/\/$/, "") + "/";
@@ -17,6 +48,7 @@ const types = {
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
 };
+let slowNavigation = false;
 const server = createServer((request, response) => {
   try {
     const pathname = decodeURIComponent(
@@ -36,7 +68,13 @@ const server = createServer((request, response) => {
       "Content-Type": types[extname(file)] ?? "application/octet-stream",
       "Cache-Control": "no-cache",
     });
-    response.end(readFileSync(file));
+    const content = readFileSync(file);
+    if (
+      slowNavigation &&
+      (pathname === base || pathname === `${base}index.html`)
+    )
+      setTimeout(() => response.end(content), 8000);
+    else response.end(content);
   } catch {
     response.writeHead(404).end();
   }
@@ -59,7 +97,7 @@ try {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(origin + base);
-  await page.waitForFunction(() => localStorage.getItem("kernelhub:state:v1"));
+  await page.locator('.app-background[aria-busy="false"]').waitFor();
   const manifest = await (
     await page.request.get(origin + base + "manifest.webmanifest")
   ).json();
@@ -70,26 +108,30 @@ try {
   await page
     .getByRole("button", { name: "Adicionar 250 ml de água", exact: true })
     .click();
-  await page.waitForFunction(
-    () =>
-      JSON.parse(localStorage.getItem("kernelhub:state:v1")).waterMl === 1750,
-  );
+  await expect.poll(async () => (await stored(page)).waterMl).toBe(1750);
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
   await page.waitForFunction(() => navigator.serviceWorker.controller);
+  slowNavigation = true;
+  const reloadStarted = performance.now();
+  await page.reload({ waitUntil: "domcontentloaded" });
+  assert.ok(
+    performance.now() - reloadStarted < 6500,
+    "Cached shell opens before the stalled 8s navigation completes",
+  );
+  await page.locator('.app-background[aria-busy="false"]').waitFor();
+  slowNavigation = false;
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
+  await page.locator('.app-background[aria-busy="false"]').waitFor();
   await page
     .getByRole("button", { name: "Adicionar 250 ml de água", exact: true })
     .click();
-  await page.waitForFunction(
-    () =>
-      JSON.parse(localStorage.getItem("kernelhub:state:v1")).waterMl === 2000,
-  );
+  await expect.poll(async () => (await stored(page)).waterMl).toBe(2000);
   assert.deepEqual(errors, []);
   console.log(
-    "Static Pages build: prefixed assets, icons, manifest, hydration and offline records passed.",
+    "Static Pages build: prefixed assets, manifest, slow-network fallback and offline IndexedDB records passed.",
   );
 } finally {
   await browser?.close();

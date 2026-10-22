@@ -1,5 +1,7 @@
 # Revisão de produto e UX · 22 de outubro de 2026
 
+> Revisão histórica da versão 0.2. Veja também a [revisão consolidada da versão 0.3](QUALITY-REVIEW.md).
+
 ## Princípio constante
 
 KernelHub continua sendo um sistema diário para corpo, mente, construção e estilo de vida. A revisão busca tornar os registros úteis e confiáveis, mantendo a linguagem OLED, o ritmo visual e o uso com uma mão.

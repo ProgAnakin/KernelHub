@@ -20,10 +20,11 @@ import type {
 import {
   checkinSchema,
   parseStoredState,
-  STORAGE_KEY,
   targetsSchema,
+  MAX_BACKUP_BYTES,
 } from "@/lib/state";
 import { summarizeDay } from "@/lib/metrics";
+import { readRecovery } from "@/lib/storage";
 
 interface Props {
   state: KernelState;
@@ -337,9 +338,15 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
   const importRequest = useRef(0);
   const [recovery, setRecovery] = useState(false);
   useEffect(() => {
-    try {
-      setRecovery(Boolean(localStorage.getItem(`${STORAGE_KEY}:recovery`)));
-    } catch {}
+    let active = true;
+    void readRecovery()
+      .then((raw) => {
+        if (active) setRecovery(Boolean(raw));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
   const submitTargets = (event: FormEvent) => {
     event.preventDefault();
@@ -357,7 +364,7 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
     const request = ++importRequest.current;
     setPending(null);
     setError("");
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > MAX_BACKUP_BYTES) {
       setError("Use um backup JSON de até 2 MB.");
       return;
     }
@@ -541,9 +548,9 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
           {recovery && (
             <button
               className="secondary-button full-width"
-              onClick={() => {
+              onClick={async () => {
                 try {
-                  const raw = localStorage.getItem(`${STORAGE_KEY}:recovery`);
+                  const raw = await readRecovery();
                   if (raw) downloadJson(raw, "kernelhub-recuperacao.json");
                 } catch {
                   onToast("O navegador bloqueou o arquivo de recuperação.");

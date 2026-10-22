@@ -48,6 +48,13 @@ export interface Nutrition {
   fat: number;
 }
 
+export interface MealEntry {
+  id: string;
+  name: string;
+  macros: Nutrition;
+  createdAt: string;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -133,6 +140,7 @@ export interface KernelState {
   exercises: Record<string, number>;
   runKm: number;
   nutrition: Nutrition;
+  meals: MealEntry[];
   courseProgress: Record<string, number>;
   acquired: string[];
   wishlist: WishlistItem[];
@@ -145,14 +153,19 @@ export interface KernelState {
   history: DaySummary[];
 }
 
-export type KernelAction =
+type KernelCommand =
   | { type: "habit"; id: HabitId }
   | { type: "water"; amount: number }
   | { type: "exercise"; id: string; delta: number }
+  | { type: "exercise-total"; id: string; sets: number }
   | { type: "run"; delta: number }
+  | { type: "run-total"; km: number }
   | { type: "meal"; name: string; macros: Nutrition }
+  | { type: "meal-remove"; id: string }
+  | { type: "nutrition-correct"; macros: Nutrition }
   | { type: "lesson"; id: string; delta: number }
   | { type: "insight"; courseId: string; text: string }
+  | { type: "insight-delete"; id: string }
   | { type: "acquire"; id: string }
   | { type: "wishlist-add"; item: Omit<WishlistItem, "id"> }
   | { type: "wishlist-delete"; id: string }
@@ -168,3 +181,8 @@ export type KernelAction =
   | { type: "start-personal" }
   | { type: "rollover" }
   | { type: "restore"; state: KernelState };
+
+// Stable identity lets a failed storage transaction retry the same action.
+export type KernelAction = KernelCommand & {
+  event?: { id: string; createdAt: string };
+};

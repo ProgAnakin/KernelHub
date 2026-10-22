@@ -304,8 +304,9 @@ function TelemetrySheet({ now }: { now: Date | null }) {
   );
 }
 
-function WorkoutSheet({ state, act }: Props) {
+function WorkoutSheet({ state, act, onToast }: Props) {
   const [tab, setTab] = useState<"strength" | "run">("strength");
+  const [distance, setDistance] = useState("");
   const done = EXERCISES.reduce(
     (sum, exercise) => sum + (state.exercises[exercise.id] ?? 0),
     0,
@@ -334,6 +335,10 @@ function WorkoutSheet({ state, act }: Props) {
           Corrida
         </button>
       </div>
+      <p className="fine-print">
+        Ficha de exemplo: exercícios, séries e cargas ainda são predefinidos. O
+        registro de séries concluídas e quilômetros é salvo neste dispositivo.
+      </p>
       {tab === "strength" ? (
         <>
           <div className="sheet-section-title">
@@ -376,9 +381,9 @@ function WorkoutSheet({ state, act }: Props) {
                       aria-pressed={set < (state.exercises[exercise.id] ?? 0)}
                       onClick={() =>
                         act({
-                          type: "exercise",
+                          type: "exercise-total",
                           id: exercise.id,
-                          delta: set + 1 - (state.exercises[exercise.id] ?? 0),
+                          sets: set + 1,
                         })
                       }
                     >
@@ -436,6 +441,54 @@ function WorkoutSheet({ state, act }: Props) {
               Registrar 1 km
             </button>
           </div>
+          <form
+            className="running-distance-form meal-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const km = Number(distance);
+              if (
+                !distance.trim() ||
+                !Number.isFinite(km) ||
+                km < 0 ||
+                km > 100
+              )
+                return;
+              act({ type: "run-total", km });
+              setDistance("");
+              onToast("Distância do dia atualizada.");
+            }}
+          >
+            <label htmlFor="run-distance">
+              Distância total de hoje (km)
+              <input
+                id="run-distance"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="100"
+                step=".1"
+                required
+                placeholder="Ex.: 3,6"
+                value={distance}
+                onChange={(event) => setDistance(event.target.value)}
+              />
+            </label>
+            <button
+              className="secondary-button full-width"
+              disabled={
+                !distance.trim() ||
+                !Number.isFinite(Number(distance)) ||
+                Number(distance) < 0 ||
+                Number(distance) > 100
+              }
+            >
+              Salvar distância total
+            </button>
+            <p className="fine-print">
+              Substitui a distância acumulada de hoje, com precisão de 100
+              metros. Use zero para corrigir um registro indevido.
+            </p>
+          </form>
           {state.runKm >= state.targets.runKm && (
             <p className="text-emerald">
               Meta do dia alcançada. Bom movimento.
@@ -447,11 +500,35 @@ function WorkoutSheet({ state, act }: Props) {
   );
 }
 
-function NutritionSheet({ state, act, onClose }: Props) {
+function NutritionSheet({ state, act, onClose, onToast }: Props) {
   const [name, setName] = useState("");
   const [protein, setProtein] = useState("");
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
+  const [mealError, setMealError] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [correcting, setCorrecting] = useState(false);
+  const [correction, setCorrection] = useState({
+    protein: "",
+    carbs: "",
+    fat: "",
+  });
+  const [pendingCorrection, setPendingCorrection] = useState<
+    KernelState["nutrition"] | null
+  >(null);
+  const recorded = state.meals.reduce(
+    (sum, meal) => ({
+      protein: sum.protein + meal.macros.protein,
+      carbs: sum.carbs + meal.macros.carbs,
+      fat: sum.fat + meal.macros.fat,
+    }),
+    { protein: 0, carbs: 0, fat: 0 },
+  );
+  const hasPreviousTotal = calories(state.nutrition) > calories(recorded);
+  const exceedsDailyLimit =
+    state.nutrition.protein + Number(protein) > 10000 ||
+    state.nutrition.carbs + Number(carbs) > 10000 ||
+    state.nutrition.fat + Number(fat) > 10000;
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const macros = {
@@ -464,8 +541,18 @@ function NutritionSheet({ state, act, onClose }: Props) {
       Object.values(macros).some(
         (value) => !Number.isFinite(value) || value < 0 || value > 500,
       )
-    )
+    ) {
+      setMealError(
+        "Confira o nome e os nutrientes: informe de 0 a 500 g por campo.",
+      );
       return;
+    }
+    if (state.meals.length >= 100 || exceedsDailyLimit) {
+      setMealError(
+        "O registro excede o limite de refeições ou nutrientes do dia. Corrija um registro antes de continuar.",
+      );
+      return;
+    }
     act({ type: "meal", name, macros });
     onClose();
   };
@@ -483,6 +570,32 @@ function NutritionSheet({ state, act, onClose }: Props) {
           </strong>
         </span>
         <Leaf size={26} strokeWidth={1.5} />
+      </div>
+      <div className="water-adjust">
+        <Droplets size={22} />
+        <span>
+          <strong>Hidratação</strong>
+          <small>
+            {state.waterMl.toLocaleString("pt-BR")} /{" "}
+            {state.targets.waterMl.toLocaleString("pt-BR")} ml
+          </small>
+        </span>
+        <button
+          className="icon-button"
+          aria-label="Remover 250 ml de água"
+          disabled={state.waterMl === 0}
+          onClick={() => act({ type: "water", amount: -250 })}
+        >
+          <Minus size={17} />
+        </button>
+        <button
+          className="icon-button"
+          aria-label="Adicionar 250 ml de água"
+          disabled={state.waterMl >= 10000}
+          onClick={() => act({ type: "water", amount: 250 })}
+        >
+          <Plus size={17} />
+        </button>
       </div>
       <form onSubmit={submit} className="meal-form">
         <label htmlFor="meal-name">
@@ -551,41 +664,232 @@ function NutritionSheet({ state, act, onClose }: Props) {
           className="primary-button full-width"
           type="submit"
           disabled={
-            !name.trim() || !(Number(protein) + Number(carbs) + Number(fat) > 0)
+            !name.trim() ||
+            !(Number(protein) + Number(carbs) + Number(fat) > 0) ||
+            state.meals.length >= 100 ||
+            exceedsDailyLimit
           }
         >
           <Plus size={17} />
           Salvar refeição
         </button>
+        {(mealError || exceedsDailyLimit) && (
+          <p className="form-error" role="alert">
+            {exceedsDailyLimit
+              ? "A soma ultrapassa 10.000 g de um nutriente no dia. Confira os valores ou corrija o total atual."
+              : mealError}
+          </p>
+        )}
       </form>
-      <div className="water-adjust">
-        <Droplets size={22} />
-        <span>
-          <strong>Hidratação</strong>
-          <small>
-            {state.waterMl.toLocaleString("pt-BR")} /{" "}
-            {state.targets.waterMl.toLocaleString("pt-BR")} ml
-          </small>
-        </span>
-        <button
-          className="icon-button"
-          aria-label="Remover 250 ml de água"
-          disabled={state.waterMl === 0}
-          onClick={() => act({ type: "water", amount: -250 })}
+      {state.meals.length >= 100 && (
+        <p className="fine-print" role="status">
+          Você atingiu o limite de 100 refeições no dia. Remova um registro
+          incorreto antes de adicionar outro.
+        </p>
+      )}
+      <section
+        className="meal-entry-list"
+        aria-label="Refeições registradas hoje"
+      >
+        <div className="sheet-section-title">
+          <span>REFEIÇÕES DE HOJE</span>
+          <strong>
+            {state.meals.length}{" "}
+            {state.meals.length === 1 ? "registro" : "registros"}
+          </strong>
+        </div>
+        {state.meals.length ? (
+          state.meals
+            .slice()
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+            .map((meal) => (
+              <div className="meal-entry" key={meal.id}>
+                <div className="meal-entry-row">
+                  <span>
+                    <strong>{meal.name}</strong>
+                    <small>
+                      {calories(meal.macros).toLocaleString("pt-BR")} kcal · P{" "}
+                      {meal.macros.protein} g · C {meal.macros.carbs} g · G{" "}
+                      {meal.macros.fat} g
+                    </small>
+                  </span>
+                  <button
+                    className="icon-button"
+                    aria-label={`Remover refeição ${meal.name}`}
+                    onClick={() => setDeleting(meal.id)}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
+                {deleting === meal.id && (
+                  <div className="inline-confirm" role="alert">
+                    <p>
+                      Remover “{meal.name}”? Os nutrientes dessa refeição serão
+                      descontados do total de hoje.
+                    </p>
+                    <div>
+                      <button
+                        className="secondary-button"
+                        onClick={() => setDeleting(null)}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        className="secondary-button"
+                        onClick={() => {
+                          act({ type: "meal-remove", id: meal.id });
+                          setDeleting(null);
+                          onToast(
+                            "Refeição removida. Totais do dia ajustados.",
+                          );
+                        }}
+                      >
+                        Confirmar remoção
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+        ) : (
+          <p className="fine-print">
+            As refeições que você registrar aparecem aqui. Se precisar corrigir
+            uma, remova o registro e adicione os valores certos.
+          </p>
+        )}
+        {hasPreviousTotal && (
+          <p className="fine-print">
+            O total inclui nutrientes anteriores sem refeições individuais.
+            Apenas os novos registros podem ser removidos nesta lista.
+          </p>
+        )}
+      </section>
+      {correcting ? (
+        <form
+          className="nutrition-correction meal-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const macros = {
+              protein: Number(correction.protein),
+              carbs: Number(correction.carbs),
+              fat: Number(correction.fat),
+            };
+            if (
+              Object.values(macros).some(
+                (value) =>
+                  !Number.isFinite(value) || value < 0 || value > 10000,
+              )
+            )
+              return;
+            setPendingCorrection(macros);
+          }}
         >
-          <Minus size={17} />
-        </button>
+          <p className="sheet-lead">Qual é o total correto de hoje?</p>
+          <div className="macro-inputs">
+            {(
+              [
+                { key: "protein", label: "Proteína" },
+                { key: "carbs", label: "Carbo" },
+                { key: "fat", label: "Gordura" },
+              ] as const
+            ).map((field) => (
+              <label htmlFor={`correct-${field.key}`} key={field.key}>
+                {field.label} <span>g</span>
+                <input
+                  id={`correct-${field.key}`}
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="10000"
+                  step="any"
+                  required
+                  value={correction[field.key]}
+                  onChange={(event) => {
+                    setCorrection({
+                      ...correction,
+                      [field.key]: event.target.value,
+                    });
+                    setPendingCorrection(null);
+                  }}
+                />
+              </label>
+            ))}
+          </div>
+          <p className="fine-print">
+            A correção substitui o total de nutrientes e limpa a lista de
+            refeições de hoje. O registro da alteração permanece no histórico de
+            atividade. Novas refeições serão somadas ao total corrigido.
+          </p>
+          <div className="run-buttons">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => {
+                setCorrecting(false);
+                setPendingCorrection(null);
+              }}
+            >
+              Cancelar
+            </button>
+            <button className="secondary-button" type="submit">
+              Revisar correção
+            </button>
+          </div>
+          {pendingCorrection && (
+            <div className="inline-confirm" role="alert">
+              <p>
+                Substituir o total por{" "}
+                {calories(pendingCorrection).toLocaleString("pt-BR")} kcal? Os{" "}
+                {state.meals.length} registros individuais serão removidos da
+                lista de hoje.
+              </p>
+              <div>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setPendingCorrection(null)}
+                >
+                  Voltar à edição
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => {
+                    act({
+                      type: "nutrition-correct",
+                      macros: pendingCorrection,
+                    });
+                    setPendingCorrection(null);
+                    setCorrecting(false);
+                    setDeleting(null);
+                    onToast("Total de nutrientes corrigido.");
+                  }}
+                >
+                  Confirmar novo total
+                </button>
+              </div>
+            </div>
+          )}
+        </form>
+      ) : (
         <button
-          className="icon-button"
-          aria-label="Adicionar 250 ml de água"
-          disabled={state.waterMl >= 10000}
-          onClick={() => act({ type: "water", amount: 250 })}
+          className="secondary-button full-width nutrition-correction-toggle"
+          onClick={() => {
+            setCorrection({
+              protein: String(state.nutrition.protein),
+              carbs: String(state.nutrition.carbs),
+              fat: String(state.nutrition.fat),
+            });
+            setCorrecting(true);
+          }}
         >
-          <Plus size={17} />
+          Corrigir total do dia
         </button>
-      </div>
+      )}
       <p className="fine-print">
-        Metas e ficha alimentar são exemplos de demonstração.
+        {state.mode === "demo"
+          ? "Os totais iniciais são exemplos. Suas novas refeições ficam registradas neste dispositivo."
+          : "Valores informados manualmente. Suas metas podem ser ajustadas em Meu espaço."}
       </p>
     </div>
   );
@@ -715,6 +1019,8 @@ function EngineeringSheet({ state }: { state: KernelState }) {
 function LearningSheet({ state, act, onToast }: Props) {
   const [courseId, setCourseId] = useState(COURSES[0].id);
   const [text, setText] = useState("");
+  const [visibleInsights, setVisibleInsights] = useState(8);
+  const [deletingInsight, setDeletingInsight] = useState<string | null>(null);
   const course = COURSES.find((item) => item.id === courseId)!;
   const progress = state.courseProgress[courseId] ?? 0;
   const insights = state.insights.filter(
@@ -733,7 +1039,11 @@ function LearningSheet({ state, act, onToast }: Props) {
         <select
           id="course-select"
           value={courseId}
-          onChange={(event) => setCourseId(event.target.value)}
+          onChange={(event) => {
+            setCourseId(event.target.value);
+            setVisibleInsights(8);
+            setDeletingInsight(null);
+          }}
         >
           {COURSES.map((item) => (
             <option key={item.id} value={item.id}>
@@ -803,17 +1113,60 @@ function LearningSheet({ state, act, onToast }: Props) {
       </form>
       {insights.length > 0 && (
         <div className="saved-insights">
-          <span className="quiet-label">SEUS INSIGHTS</span>
-          {insights.slice(0, 8).map((insight) => (
+          <span className="quiet-label">SEUS INSIGHTS · {insights.length}</span>
+          {insights.slice(0, visibleInsights).map((insight) => (
             <blockquote key={insight.id}>
               <p>{insight.text}</p>
               <time>
                 {new Date(insight.createdAt).toLocaleDateString("pt-BR")}
               </time>
+              <button
+                className="secondary-button insight-remove"
+                aria-label={`Remover insight de ${new Date(insight.createdAt).toLocaleDateString("pt-BR")}: ${insight.text.slice(0, 48)}`}
+                onClick={() => setDeletingInsight(insight.id)}
+              >
+                <Trash2 size={15} />
+                Remover insight
+              </button>
+              {deletingInsight === insight.id && (
+                <div className="inline-confirm" role="alert">
+                  <p>Remover este insight? Essa ação não pode ser desfeita.</p>
+                  <div>
+                    <button
+                      className="secondary-button"
+                      onClick={() => setDeletingInsight(null)}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="secondary-button"
+                      onClick={() => {
+                        act({ type: "insight-delete", id: insight.id });
+                        setDeletingInsight(null);
+                        onToast("Insight removido do seu espaço.");
+                      }}
+                    >
+                      Confirmar remoção
+                    </button>
+                  </div>
+                </div>
+              )}
             </blockquote>
           ))}
+          {insights.length > visibleInsights && (
+            <button
+              className="secondary-button full-width"
+              onClick={() => setVisibleInsights((count) => count + 8)}
+            >
+              Mostrar mais insights ({insights.length - visibleInsights})
+            </button>
+          )}
         </div>
       )}
+      <p className="fine-print">
+        Os cursos são modelos predefinidos. O progresso e os insights que você
+        registra ficam salvos neste dispositivo.
+      </p>
     </div>
   );
 }
@@ -1047,7 +1400,9 @@ function WishlistSheet({ state, act }: Props) {
                 </h3>
                 <p>
                   {filter === "planned"
-                    ? "Seus itens já foram adquiridos. Planeje o próximo com intenção."
+                    ? state.wishlist.length
+                      ? "Seus itens já foram adquiridos. Planeje o próximo com intenção."
+                      : "Ainda não há itens planejados. Adicione algo que ajude nos seus objetivos."
                     : "Suas aquisições concluídas aparecem aqui."}
                 </p>
               </div>
@@ -1072,7 +1427,8 @@ function WishlistSheet({ state, act }: Props) {
             Adicionar item
           </button>
           <p className="fine-print">
-            A lista começa com exemplos. Nenhuma compra é realizada pelo app.
+            {state.mode === "demo" ? "A lista começa com exemplos. " : ""}
+            Nenhuma compra é realizada pelo app.
           </p>
         </>
       )}

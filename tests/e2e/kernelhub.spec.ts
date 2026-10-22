@@ -1,11 +1,16 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import {
+  readRecord,
+  stored,
+  STORAGE_KEY,
+  waitForReady,
+  writeRecord,
+} from "./storage";
 
-const stored = (page: Page) =>
-  page.evaluate(() => JSON.parse(localStorage.getItem("kernelhub:state:v1")!));
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
-  await page.waitForFunction(() => localStorage.getItem("kernelhub:state:v1"));
+  await waitForReady(page);
 });
 
 test("dashboard is usable, explicitly simulated and fits narrow screens", async ({
@@ -64,6 +69,7 @@ test("check-in saves perceived wellbeing and optional body measurements", async 
       steps: 8500,
     });
   await page.reload();
+  await waitForReady(page);
   await expect(
     page.getByRole("button", { name: "Revisar meu check-in" }),
   ).toBeVisible();
@@ -169,20 +175,17 @@ test("personal space requires confirmation and stops displaying fictional integr
 });
 
 test("invalid local data is preserved in a recovery file", async ({ page }) => {
-  await page.evaluate(() =>
-    localStorage.setItem("kernelhub:state:v1", '{"incompleto":'),
-  );
+  await writeRecord(page, '{"incompleto":');
   await page.reload();
+  await waitForReady(page);
   await expect(
     page.getByText("Um registro antigo incompatível foi preservado.", {
       exact: false,
     }),
   ).toBeVisible();
-  expect(
-    await page.evaluate(() =>
-      localStorage.getItem("kernelhub:state:v1:recovery"),
-    ),
-  ).toBe('{"incompleto":');
+  expect(await readRecord(page, `${STORAGE_KEY}:recovery`)).toBe(
+    '{"incompleto":',
+  );
 });
 
 test("water and habits update and survive a reload", async ({ page }) => {
@@ -197,6 +200,7 @@ test("water and habits update and survive a reload", async ({ page }) => {
     page.getByRole("checkbox", { name: "Suplementação", exact: true }),
   ).toBeChecked();
   await page.reload();
+  await waitForReady(page);
   await expect(
     page.getByRole("checkbox", { name: "Suplementação", exact: true }),
   ).toBeChecked();
@@ -262,6 +266,7 @@ test("learning records lessons and preserves an insight", async ({ page }) => {
       .getByText("O domínio deve ser independente da infraestrutura."),
   ).toBeVisible();
   await page.reload();
+  await waitForReady(page);
   await page.getByRole("button", { name: "Continuar aprendendo" }).click();
   await expect(
     page.getByText("O domínio deve ser independente da infraestrutura."),
@@ -370,6 +375,7 @@ test("PWA manifest, icons and first-visit offline interactions work", async ({
   await page.waitForFunction(() => navigator.serviceWorker.controller);
   await context.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
+  await waitForReady(page);
   await expect(
     page.getByText("Você está offline.", { exact: false }),
   ).toBeVisible();

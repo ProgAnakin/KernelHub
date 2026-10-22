@@ -245,6 +245,7 @@ export function createInitialState(
     exercises: { bench: 3, row: 1, shoulder: 0, lateral: 0, triceps: 0 },
     runKm: 0,
     nutrition: { protein: 114, carbs: 186, fat: 48 },
+    meals: [],
     courseProgress: { architecture: 7, swiftui: 3 },
     acquired: [],
     wishlist: WISHLIST.map((item) => ({ ...item })),

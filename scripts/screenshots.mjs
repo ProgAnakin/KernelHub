@@ -21,7 +21,7 @@ try {
   const page = await context.newPage();
   await page.clock.setFixedTime(new Date("2026-10-22T17:30:00+02:00"));
   await page.goto(origin);
-  await page.waitForFunction(() => localStorage.getItem("kernelhub:state:v1"));
+  await page.locator('.app-background[aria-busy="false"]').waitFor();
   await page.screenshot({ path: "docs/images/iphone-today.png" });
   await page
     .getByRole("button", { name: "Fazer meu check-in", exact: true })
@@ -58,6 +58,30 @@ try {
   await page.setViewportSize({ width: 1440, height: 1080 });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: "docs/images/overview.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByRole("button", { name: "Registrar refeição", exact: true })
+    .click();
+  await page.getByLabel("Nome da refeição").fill("Almoço");
+  await page.locator("#protein").fill("30");
+  await page.locator("#carbs").fill("45");
+  await page.locator("#fat").fill("12");
+  await page
+    .getByRole("button", { name: "Salvar refeição", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+  await page.locator(".toast").waitFor({ state: "detached" });
+  await page
+    .getByRole("button", { name: "Registrar refeição", exact: true })
+    .click();
+  await page.locator(".meal-entry-list").scrollIntoViewIfNeeded();
+  await page.waitForFunction(
+    () =>
+      Number(
+        getComputedStyle(document.querySelector(".bottom-sheet")).opacity,
+      ) > 0.995,
+  );
+  await page.screenshot({ path: "docs/images/iphone-nutrition.png" });
   console.log("Demo-only interface screenshots saved in docs/images.");
 } finally {
   await browser.close();

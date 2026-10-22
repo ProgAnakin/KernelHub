@@ -11,7 +11,23 @@ import {
 import { summarizeDay } from "./metrics.ts";
 
 export const STORAGE_KEY = "kernelhub:state:v1";
+export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
 const nonNegative = z.number().finite().nonnegative();
+const identifier = z.string().min(1).max(80);
+const nutritionSchema = z.object({
+  protein: nonNegative.max(10000),
+  carbs: nonNegative.max(10000),
+  fat: nonNegative.max(10000),
+});
+const mealMacrosSchema = z
+  .object({
+    protein: nonNegative.max(500),
+    carbs: nonNegative.max(500),
+    fat: nonNegative.max(500),
+  })
+  .refine((value) => value.protein + value.carbs + value.fat > 0);
+const uniqueIds = (items: { id: string }[]) =>
+  new Set(items.map((item) => item.id)).size === items.length;
 const rating = z.union([
   z.literal(1),
   z.literal(2),
@@ -51,7 +67,7 @@ const schema: z.ZodType<KernelState> = z.object({
   focusSessions: z
     .array(
       z.object({
-        id: z.string(),
+        id: identifier,
         minutes: z.number().int().min(1).max(480),
         category: z.enum(["project", "study"]),
         outcome: z.string().max(240),
@@ -69,8 +85,8 @@ const schema: z.ZodType<KernelState> = z.object({
         workoutSets: nonNegative.int().max(15),
         runKm: nonNegative.max(100),
         nutritionCalories: nonNegative.max(200000),
-        focusMinutes: nonNegative.max(24000),
-        studyMinutes: nonNegative.max(24000),
+        focusMinutes: nonNegative.int().max(1440),
+        studyMinutes: nonNegative.int().max(1440),
         checkin: checkinSchema.nullable(),
       }),
     )
@@ -84,22 +100,37 @@ const schema: z.ZodType<KernelState> = z.object({
     "skincare-pm": z.boolean(),
   }),
   waterMl: nonNegative.max(10000),
-  exercises: z.record(z.string(), nonNegative.int().max(3)),
+  exercises: z
+    .object({
+      bench: nonNegative.int().max(3),
+      row: nonNegative.int().max(3),
+      shoulder: nonNegative.int().max(3),
+      lateral: nonNegative.int().max(3),
+      triceps: nonNegative.int().max(3),
+    })
+    .strict(),
   runKm: nonNegative.max(100),
-  nutrition: z.object({
-    protein: nonNegative.max(10000),
-    carbs: nonNegative.max(10000),
-    fat: nonNegative.max(10000),
-  }),
+  nutrition: nutritionSchema,
+  meals: z
+    .array(
+      z.object({
+        id: identifier,
+        name: z.string().trim().min(1).max(80),
+        macros: mealMacrosSchema,
+        createdAt: z.iso.datetime(),
+      }),
+    )
+    .max(100)
+    .default([]),
   courseProgress: z.object({
     architecture: nonNegative.int().max(12),
     swiftui: nonNegative.int().max(10),
   }),
-  acquired: z.array(z.string()).max(100),
+  acquired: z.array(identifier).max(100),
   wishlist: z
     .array(
       z.object({
-        id: z.string(),
+        id: identifier,
         name: z.string().min(1).max(80),
         category: z.enum(["Suplemento", "Equipamento", "Vestuário"]),
         purpose: z.string().max(160),
@@ -111,9 +142,9 @@ const schema: z.ZodType<KernelState> = z.object({
   insights: z
     .array(
       z.object({
-        id: z.string(),
-        courseId: z.string(),
-        text: z.string().max(1000),
+        id: identifier,
+        courseId: identifier,
+        text: z.string().trim().min(1).max(1000),
         createdAt: z.iso.datetime(),
       }),
     )
@@ -121,9 +152,9 @@ const schema: z.ZodType<KernelState> = z.object({
   journal: z
     .array(
       z.object({
-        id: z.string(),
-        title: z.string(),
-        detail: z.string(),
+        id: identifier,
+        title: z.string().min(1).max(100),
+        detail: z.string().max(400),
         createdAt: z.iso.datetime(),
         kind: z.enum(["body", "build", "learn", "wishlist", "mind"]),
       }),
@@ -135,7 +166,8 @@ export function reconcileDay(
   state: KernelState,
   date = new Date(),
 ): KernelState {
-  if (state.day === localDay(date)) return state;
+  // A backwards device clock must not archive a future day into its past.
+  if (state.day >= localDay(date)) return state;
   const initial = createInitialState(date, state.mode);
   return {
     ...initial,
@@ -168,8 +200,10 @@ export function parseStoredState(
   value: string | null,
   date = new Date(),
 ): KernelState | null {
-  if (!value) return null;
+  if (!value || value.length > MAX_BACKUP_BYTES) return null;
   try {
+    if (new TextEncoder().encode(value).byteLength > MAX_BACKUP_BYTES)
+      return null;
     const result = schema.safeParse(JSON.parse(value));
     if (!result.success) return null;
     const data = result.data;
@@ -177,6 +211,20 @@ export function parseStoredState(
     if (
       ids.size !== data.wishlist.length ||
       new Set(data.acquired).size !== data.acquired.length ||
+      !uniqueIds(data.focusSessions) ||
+      !uniqueIds(data.meals) ||
+      !uniqueIds(data.insights) ||
+      !uniqueIds(data.journal) ||
+      data.focusSessions.reduce((sum, session) => sum + session.minutes, 0) >
+        1440 ||
+      data.history.some(
+        (day) => day.studyMinutes > day.focusMinutes || day.day >= data.day,
+      ) ||
+      (["protein", "carbs", "fat"] as const).some(
+        (macro) =>
+          data.meals.reduce((sum, meal) => sum + meal.macros[macro], 0) >
+          data.nutrition[macro] + 0.000001,
+      ) ||
       data.acquired.some((id) => !ids.has(id)) ||
       data.insights.some(
         (insight) => !COURSES.some((course) => course.id === insight.courseId),
@@ -194,11 +242,14 @@ export function kernelReducer(
   state: KernelState,
   action: KernelAction,
 ): KernelState {
-  if (action.type === "restore") return action.state;
+  if (action.type === "restore")
+    return parseStoredState(JSON.stringify(action.state)) ?? state;
   if (action.type === "rollover") return reconcileDay(state);
   if (action.type === "start-personal")
     return createInitialState(new Date(), "personal");
   state = reconcileDay(state);
+  const eventId = () => action.event?.id ?? crypto.randomUUID();
+  const eventTime = () => action.event?.createdAt ?? new Date().toISOString();
   let next = state;
   let title = "";
   let detail = "";
@@ -226,11 +277,11 @@ export function kernelReducer(
       )
         return state;
       const session = {
-        id: crypto.randomUUID(),
+        id: eventId(),
         minutes: action.minutes,
         category: action.category,
         outcome: action.outcome.trim().slice(0, 240),
-        createdAt: new Date().toISOString(),
+        createdAt: eventTime(),
       };
       next = { ...state, focusSessions: [...state.focusSessions, session] };
       title =
@@ -300,16 +351,15 @@ export function kernelReducer(
       detail = `${waterMl} ml no dia`;
       break;
     }
-    case "exercise": {
+    case "exercise":
+    case "exercise-total": {
       const exercise = EXERCISES.find((item) => item.id === action.id);
-      if (!exercise || !Number.isInteger(action.delta)) return state;
-      const completed = Math.max(
-        0,
-        Math.min(
-          exercise.sets,
-          (state.exercises[action.id] ?? 0) + action.delta,
-        ),
-      );
+      const value =
+        action.type === "exercise-total"
+          ? action.sets
+          : (state.exercises[action.id] ?? 0) + action.delta;
+      if (!exercise || !Number.isInteger(value)) return state;
+      const completed = Math.max(0, Math.min(exercise.sets, value));
       if (completed === state.exercises[action.id]) return state;
       next = {
         ...state,
@@ -319,12 +369,16 @@ export function kernelReducer(
       detail = `${completed}/${exercise.sets} séries`;
       break;
     }
-    case "run": {
-      if (!Number.isFinite(action.delta)) return state;
-      const runKm =
-        Math.round(
-          Math.max(0, Math.min(100, state.runKm + action.delta)) * 10,
-        ) / 10;
+    case "run":
+    case "run-total": {
+      const value =
+        action.type === "run-total" ? action.km : state.runKm + action.delta;
+      if (
+        !Number.isFinite(value) ||
+        (action.type === "run-total" && (value < 0 || value > 100))
+      )
+        return state;
+      const runKm = Math.round(Math.max(0, Math.min(100, value)) * 10) / 10;
       if (runKm === state.runKm) return state;
       next = { ...state, runKm };
       title = "Corrida registrada";
@@ -332,15 +386,27 @@ export function kernelReducer(
       break;
     }
     case "meal": {
+      const macros = mealMacrosSchema.safeParse(action.macros);
       if (
         !action.name.trim() ||
-        Object.values(action.macros).some(
-          (value) => !Number.isFinite(value) || value < 0 || value > 500,
+        !macros.success ||
+        state.meals.length >= 100 ||
+        (["protein", "carbs", "fat"] as const).some(
+          (macro) => state.nutrition[macro] + action.macros[macro] > 10000,
         )
       )
         return state;
       next = {
         ...state,
+        meals: [
+          ...state.meals,
+          {
+            id: eventId(),
+            name: action.name.trim().slice(0, 80),
+            macros: macros.data,
+            createdAt: eventTime(),
+          },
+        ],
         nutrition: {
           protein: Math.min(
             10000,
@@ -352,6 +418,30 @@ export function kernelReducer(
       };
       title = action.name.trim().slice(0, 80);
       detail = "Refeição adicionada";
+      break;
+    }
+    case "meal-remove": {
+      const meal = state.meals.find((item) => item.id === action.id);
+      if (!meal) return state;
+      next = {
+        ...state,
+        meals: state.meals.filter((item) => item.id !== action.id),
+        nutrition: {
+          protein: Math.max(0, state.nutrition.protein - meal.macros.protein),
+          carbs: Math.max(0, state.nutrition.carbs - meal.macros.carbs),
+          fat: Math.max(0, state.nutrition.fat - meal.macros.fat),
+        },
+      };
+      title = meal.name;
+      detail = "Refeição removida · totais ajustados";
+      break;
+    }
+    case "nutrition-correct": {
+      const result = nutritionSchema.safeParse(action.macros);
+      if (!result.success) return state;
+      next = { ...state, nutrition: result.data, meals: [] };
+      title = "Alimentação corrigida";
+      detail = "Totais do dia atualizados · lista de refeições reiniciada";
       break;
     }
     case "lesson": {
@@ -381,14 +471,26 @@ export function kernelReducer(
       )
         return state;
       const insight = {
-        id: crypto.randomUUID(),
+        id: eventId(),
         courseId: action.courseId,
         text: action.text.trim().slice(0, 1000),
-        createdAt: new Date().toISOString(),
+        createdAt: eventTime(),
       };
       next = { ...state, insights: [insight, ...state.insights].slice(0, 500) };
       title = "Insight guardado";
       detail = COURSES.find((course) => course.id === action.courseId)!.title;
+      kind = "learn";
+      break;
+    }
+    case "insight-delete": {
+      if (!state.insights.some((insight) => insight.id === action.id))
+        return state;
+      next = {
+        ...state,
+        insights: state.insights.filter((insight) => insight.id !== action.id),
+      };
+      title = "Insight removido";
+      detail = "Suas anotações foram atualizadas";
       kind = "learn";
       break;
     }
@@ -415,6 +517,7 @@ export function kernelReducer(
         item.price < 0 ||
         item.price > 1000000 ||
         ![1, 2, 3].includes(item.priority) ||
+        !["Suplemento", "Equipamento", "Vestuário"].includes(item.category) ||
         state.wishlist.length >= 100
       )
         return state;
@@ -424,7 +527,7 @@ export function kernelReducer(
           ...state.wishlist,
           {
             ...item,
-            id: crypto.randomUUID(),
+            id: eventId(),
             name: item.name.trim().slice(0, 80),
             purpose: item.purpose.trim().slice(0, 160),
           },
@@ -435,16 +538,18 @@ export function kernelReducer(
       kind = "wishlist";
       break;
     }
+    default:
+      return state;
   }
   return {
     ...next,
     journal: [
       {
-        id: crypto.randomUUID(),
+        id: eventId(),
         title,
         detail,
         kind,
-        createdAt: new Date().toISOString(),
+        createdAt: eventTime(),
       },
       ...next.journal,
     ].slice(0, 200),

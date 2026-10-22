@@ -29,7 +29,7 @@ import {
   WifiOff,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
 import {
   COURSES,
@@ -72,13 +72,12 @@ const NAV: { id: Section; label: string; icon: LucideIcon }[] = [
 
 function TelemetryCard({
   open,
-  now,
   state,
 }: {
   open: (sheet: Sheet) => void;
-  now: Date | null;
   state: KernelState;
 }) {
+  const now = useVisibleNow(state.mode === "demo", 12000);
   if (state.mode === "personal")
     return (
       <Card className="telemetry-card" label="Biometria pessoal">
@@ -101,7 +100,9 @@ function TelemetryCard({
         </CardLink>
       </Card>
     );
-  const telemetry = mockTelemetry(now ?? new Date("2026-10-22T12:00:00Z"));
+  const telemetry = now
+    ? mockTelemetry(now)
+    : { bodyBattery: 76, heartRate: 60, sleepScore: 84 };
   return (
     <Card className="telemetry-card" label="Biometria demonstrativa">
       <CardHeading
@@ -484,7 +485,7 @@ function EngineeringCard({
           role="img"
           aria-label="Histórico demonstrativo de contribuições em 13 semanas"
         >
-          {mockContributions(now ?? new Date("2026-10-22T12:00:00Z")).map(
+          {mockContributions(now ?? new Date(2026, 9, 22, 12)).map(
             (level, i) => (
               <span key={i} className={`level-${level}`} />
             ),
@@ -727,21 +728,41 @@ function ActivityJournal({ state }: { state: KernelState }) {
   );
 }
 
-function LiveClock() {
-  const [time, setTime] = useState("––:––");
+// Refresh only the consumer, align ticks to the displayed unit and sleep while hidden.
+function useVisibleNow(enabled: boolean, intervalMs: number) {
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      );
-    tick();
-    const timer = window.setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    if (!enabled) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = () => {
+      clearTimeout(timer);
+      if (document.visibilityState === "hidden") return;
+      setNow(new Date());
+      timer = setTimeout(refresh, intervalMs - (Date.now() % intervalMs));
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [enabled, intervalMs]);
+  return now;
+}
+
+function LiveClock() {
+  const now = useVisibleNow(true, 60000);
+  const time =
+    now?.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }) ?? "––:––";
   return <span className="live-clock">{time}</span>;
+}
+
+function LiveSheetContents(props: ComponentProps<typeof SheetContents>) {
+  const now = useVisibleNow(props.sheet === "telemetry", 12000);
+  return <SheetContents {...props} now={now ?? props.now} />;
 }
 
 export function Dashboard() {
@@ -753,9 +774,7 @@ export function Dashboard() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    setNow(new Date());
     setOnline(navigator.onLine);
-    const clock = window.setInterval(() => setNow(new Date()), 12000);
     const updateNetwork = () => setOnline(navigator.onLine);
     window.addEventListener("online", updateNetwork);
     window.addEventListener("offline", updateNetwork);
@@ -764,11 +783,16 @@ export function Dashboard() {
         .register(assetPath("/sw.js"), { scope: assetPath("/") })
         .catch(() => setToast("Não foi possível ativar o modo offline."));
     return () => {
-      clearInterval(clock);
       window.removeEventListener("online", updateNetwork);
       window.removeEventListener("offline", updateNetwork);
     };
   }, []);
+
+  useEffect(() => {
+    // The persistence hook rolls the day on midnight and on returning to the app.
+    // Dates and contribution labels do not need a dashboard-wide live timer.
+    setNow(new Date());
+  }, [state.day]);
 
   useEffect(() => {
     if (!toast) return;
@@ -838,7 +862,11 @@ export function Dashboard() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="app-background" inert={sheet !== null}>
+      <div
+        className="app-background"
+        aria-busy={!hydrated}
+        inert={sheet !== null || !hydrated}
+      >
         <aside className="sidebar">
           <Brand />
           <div className="sidebar-label">WORKSPACE PESSOAL</div>
@@ -877,7 +905,7 @@ export function Dashboard() {
               <span className="status-dot" />
               Seus dados ficam neste dispositivo
             </div>
-            <span className="version">KERNELHUB / V.02</span>
+            <span className="version">KERNELHUB / V.03</span>
           </div>
         </aside>
         <div className="main-shell">
@@ -986,7 +1014,7 @@ export function Dashboard() {
               >
                 {(section === "today" || section === "body") && (
                   <>
-                    <TelemetryCard open={setSheet} now={now} state={state} />
+                    <TelemetryCard open={setSheet} state={state} />
                     <WorkoutCard {...props} />
                     <NutritionCard {...props} />
                     <RoutineCard {...props} />
@@ -1123,7 +1151,7 @@ export function Dashboard() {
         subtitle={sheet ? SHEET_INFO[sheet].subtitle : ""}
         onClose={() => setSheet(null)}
       >
-        <SheetContents
+        <LiveSheetContents
           sheet={sheet}
           state={state}
           act={notifyAct}

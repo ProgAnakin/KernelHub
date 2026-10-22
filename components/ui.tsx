@@ -111,19 +111,22 @@ export function Progress({
   label: string;
 }) {
   const reduced = useReducedMotion();
+  const percentage = Number.isFinite(value)
+    ? Math.max(0, Math.min(100, value))
+    : 0;
 
   return (
     <div
       className={`progress-track ${color}`}
       role="progressbar"
-      aria-valuenow={Math.round(value)}
+      aria-valuenow={Math.round(percentage)}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
     >
       <motion.div
         initial={false}
-        animate={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        animate={{ width: `${percentage}%` }}
         transition={reduced ? { duration: 0 } : SPRING}
       />
     </div>

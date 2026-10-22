@@ -4,7 +4,7 @@
 
 O primeiro público assumido é uma pessoa que combina rotina física, trabalho técnico e aprendizado. A implementação não depende dessa hipótese: o protótipo permite experimentar os três e observar qual realmente merece destaque.
 
-## Estado atual · revisão 0.2
+## Estado atual · revisão 0.3
 
 O protótipo passou a incluir check-in de bem-estar, sono, peso e passos opcionais; blocos concluídos de projeto e estudo; metas pessoais; histórico diário e um panorama de sete dias. O modo pessoal começa sem dados fictícios e apresenta integrações indisponíveis de forma explícita. Exportação, restauração validada e recuperação de registros antigos completam o fluxo de backup local.
 

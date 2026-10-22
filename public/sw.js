@@ -1,7 +1,8 @@
 /* Cache only this app's public shell; keep authenticated APIs out of the cache. */
 const BASE = new URL(".", self.location.href).pathname;
-const PREFIX = `kernelhub-${BASE.replace(/[^a-z0-9]/gi, "") || "root"}-`;
-const CACHE = `${PREFIX}shell-v3`;
+const PREFIX = `kernelhub-${BASE === "/" ? "root" : encodeURIComponent(BASE)}-`;
+const CACHE = `${PREFIX}shell-v4`;
+const NAVIGATION_TIMEOUT_MS = 3000;
 const asset = (path) => `${BASE}${path}`;
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -55,19 +56,42 @@ self.addEventListener("fetch", (event) => {
   )
     return;
   if (event.request.mode === "navigate") {
+    const cachePromise = caches.open(CACHE);
+    const network = (async () => {
+      const response = await fetch(event.request);
+      if (
+        response.ok &&
+        (url.pathname === BASE || url.pathname === asset("index.html"))
+      ) {
+        const cache = await cachePromise;
+        await cache.put(BASE, response.clone());
+      }
+      return response;
+    })();
+    // Keep a late successful request alive after the cached shell has opened.
+    event.waitUntil(network.then(() => undefined).catch(() => undefined));
     event.respondWith(
       (async () => {
-        const cache = await caches.open(CACHE);
+        const cache = await cachePromise;
+        const cached = await cache.match(BASE);
+        let timeout;
         try {
-          const response = await fetch(event.request);
-          if (
-            response.ok &&
-            (url.pathname === BASE || url.pathname === asset("index.html"))
-          )
-            await cache.put(BASE, response.clone());
-          return response;
+          if (!cached) return await network;
+          // A stalled connection must not block a shell already on the device.
+          const response = await Promise.race([
+            network,
+            new Promise((resolve) => {
+              timeout = setTimeout(
+                () => resolve(cached),
+                NAVIGATION_TIMEOUT_MS,
+              );
+            }),
+          ]);
+          return response.ok ? response : cached;
         } catch {
-          return (await cache.match(BASE)) || Response.error();
+          return cached || Response.error();
+        } finally {
+          clearTimeout(timeout);
         }
       })(),
     );
@@ -81,10 +105,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE);
-        const cached = await cache.match(event.request);
+        // Static files are identified by their path. Arbitrary search strings
+        // must not create unlimited copies of the same public asset.
+        const key = `${url.origin}${url.pathname}`;
+        const cached = await cache.match(key);
         if (cached) return cached;
-        const response = await fetch(event.request);
-        if (response.ok) await cache.put(event.request, response.clone());
+        const response = await fetch(key);
+        if (response.ok) await cache.put(key, response.clone());
         return response;
       })(),
     );

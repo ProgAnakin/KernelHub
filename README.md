@@ -2,6 +2,8 @@
 
 **Seu sistema pessoal. Um pouco melhor, todos os dias.**
 
+Versão 0.3 · registros corrigíveis, transações entre abas e PWA mais resiliente. [Veja a revisão técnica](docs/QUALITY-REVIEW.md).
+
 KernelHub reúne corpo, bem-estar, rotina, carreira e aprendizado em um espaço diário pensado primeiro para iPhone. A pergunta central é simples: **como estou, o que merece atenção e o que avancei hoje?**
 
 ![Dashboard do KernelHub com recuperação, movimento, nutrição e evolução pessoal](docs/images/overview.png)
@@ -19,19 +21,21 @@ O fluxo é **consultar → agir → registrar → seguir o dia**. Navegação in
   </tr>
 </table>
 
+<p align="center"><img src="docs/images/iphone-nutrition.png" width="300" alt="Refeições do dia com nutrientes, remoção e correção de totais" /><br /><strong>Registros que podem ser corrigidos</strong></p>
+
 ## O que já funciona
 
-| Área                    | Registros e utilidade                                                                                                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Corpo e recuperação** | Telemetria demonstrativa identificada; check-in manual de sono, energia, humor, estresse, peso e passos opcionais.                                                            |
-| **Treino e corrida**    | Conclusão e correção de séries; registro de distância; estados de planejado, em andamento e concluído. A ficha inicial é um exemplo.                                          |
-| **Alimentação**         | Refeições por macronutrientes, calorias derivadas e água com ajuste reversível. Metas pessoais editáveis.                                                                     |
-| **Cuidado e aparência** | Rotina de skincare, proteção solar, cuidados pessoais e suplementação; sem notas de aparência ou recomendações de dosagem.                                                    |
-| **Carreira e projetos** | Blocos concluídos de foco com tempo e resultado; tempo de projeto separado de estudo. Commits, PRs e deploys demonstrativos permanecem distintos.                             |
-| **Conhecimento**        | Progresso de aulas, correção de conclusão e insights escritos. As duas trilhas iniciais são exemplos.                                                                         |
-| **Estilo de vida**      | Wishlist com objetivo, categoria, preço, prioridade, aquisição reversível e remoção confirmada.                                                                               |
-| **Evolução**            | Panorama de sete dias com foco acumulado, sono informado e variação de peso quando existem ao menos duas medidas. Lacunas continuam vazias.                                   |
-| **Dados pessoais**      | Exportação e restauração de backup JSON, validação antes de substituir dados, migração da primeira versão e preservação de registros incompatíveis em arquivo de recuperação. |
+| Área                    | Registros e utilidade                                                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Corpo e recuperação** | Telemetria demonstrativa identificada; check-in manual de sono, energia, humor, estresse, peso e passos opcionais.                                |
+| **Treino e corrida**    | Conclusão e correção de séries; registro de distância; estados de planejado, em andamento e concluído. A ficha inicial é um exemplo.              |
+| **Alimentação**         | Refeições por macronutrientes com remoção confirmada, correção de totais, calorias derivadas e água reversível. Metas editáveis.                  |
+| **Cuidado e aparência** | Rotina de skincare, proteção solar, cuidados pessoais e suplementação; sem notas de aparência ou recomendações de dosagem.                        |
+| **Carreira e projetos** | Blocos concluídos de foco com tempo e resultado; tempo de projeto separado de estudo. Commits, PRs e deploys demonstrativos permanecem distintos. |
+| **Conhecimento**        | Progresso de aulas, correção, insights paginados e remoção confirmada. As duas trilhas iniciais são exemplos.                                     |
+| **Estilo de vida**      | Wishlist com objetivo, categoria, preço, prioridade, aquisição reversível e remoção confirmada.                                                   |
+| **Evolução**            | Panorama de sete dias com foco acumulado, sono informado e variação de peso quando existem ao menos duas medidas. Lacunas continuam vazias.       |
+| **Dados pessoais**      | IndexedDB transacional entre abas, exportação/restauração validada de JSON, migração segura e recuperação de registros incompatíveis.             |
 
 ### Demonstração e espaço pessoal
 
@@ -41,7 +45,7 @@ No espaço pessoal, água, alimentação, séries, foco, cursos e wishlist come�
 
 ## Desenvolvimento local
 
-Requisitos: **Node.js 22.18+** (validado com 24.19) e npm. O protótipo não exige contas, banco ou credenciais.
+Requisitos: **Node.js 22.18+** (validado com 24.19), npm e navegador moderno (Safari 16.4+ para a base CSS do Tailwind 4). O protótipo não exige contas, banco ou credenciais.
 
 ```bash
 npm ci
@@ -82,6 +86,8 @@ O app respeita as áreas seguras, mantém zoom de acessibilidade e reduz animaç
 ## Verificação
 
 ```bash
+npm run format:check
+npm audit
 npm run typecheck
 npm run test:unit
 npm run build
@@ -90,29 +96,31 @@ npm run build:pages
 npm run test:pages
 ```
 
-Playwright cobre viewport iPhone e desktop, integridade dos registros, check-in, foco, metas, backups, modo pessoal, alimentação, hábitos, treino, wishlist, painéis, acessibilidade automatizada e offline. Os testes usam Chromium do sistema quando disponível ou o navegador instalado pelo Playwright. Em outras máquinas, execute `npx playwright install --with-deps chromium`; `PLAYWRIGHT_CHROMIUM_PATH` permite indicar outro executável.
+Playwright cobre viewport iPhone e desktop, concorrência entre abas, migração e falhas de gravação, datas/fusos distintos, integridade dos registros, check-in, foco, metas, backups, modo pessoal, alimentação, hábitos, treino, wishlist, painéis, acessibilidade automatizada e offline. Os testes usam Chromium do sistema quando disponível ou o navegador instalado pelo Playwright. Em outras máquinas, execute `npx playwright install --with-deps chromium`; `PLAYWRIGHT_CHROMIUM_PATH` permite indicar outro executável.
 
 Emulação não substitui Safari físico: instalação, teclado, safe areas, VoiceOver e gestos de toque precisam de validação no iPhone antes de um lançamento público.
 
 ## Arquitetura
 
-| Camada                                                      | Local                                   |
-| ----------------------------------------------------------- | --------------------------------------- |
-| Next.js App Router, React 19, shell e metadados             | `app/`                                  |
-| Tokens OLED, Tailwind, estilos responsivos e acessibilidade | `tailwind.config.ts`, `app/globals.css` |
-| Contratos de dados e ações discriminadas                    | `types/kernel.ts`                       |
-| Fixtures, cálculos, histórico e próximo passo contextual    | `lib/mock-engine.ts`, `lib/metrics.ts`  |
-| Reducer, validação Zod, migração e persistência             | `lib/state.ts`, `lib/use-kernel.ts`     |
-| Módulos, registros e componentes de interação               | `components/`                           |
-| Cache restrito ao caminho do app e assets públicos          | `public/sw.js`                          |
-| Exportação e verificação de Pages                           | `scripts/`                              |
+| Camada                                                      | Local                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| Next.js App Router, React 19, shell e metadados             | `app/`                                                |
+| Tokens OLED, Tailwind, estilos responsivos e acessibilidade | `tailwind.config.ts`, `app/globals.css`               |
+| Contratos de dados e ações discriminadas                    | `types/kernel.ts`                                     |
+| Fixtures, cálculos, histórico e próximo passo contextual    | `lib/mock-engine.ts`, `lib/metrics.ts`                |
+| Reducer, validação Zod e transações IndexedDB               | `lib/state.ts`, `lib/storage.ts`, `lib/use-kernel.ts` |
+| Módulos, registros e componentes de interação               | `components/`                                         |
+| Cache restrito ao caminho do app e assets públicos          | `public/sw.js`                                        |
+| Exportação e verificação de Pages                           | `scripts/`                                            |
 
 ## Privacidade e limites
 
-Os registros ficam no navegador, em `localStorage`, sem sincronização ou backup automático. Esse armazenamento **não é criptografado pelo aplicativo**. Apagar os dados do navegador remove os registros; mantenha um backup fora dele. O histórico comporta 90 resumos diários, 200 eventos recentes e 500 insights. A importação aceita JSON validado de até 2 MB e pede confirmação antes de substituir registros.
+Os registros ficam no navegador, em **IndexedDB**, sem sincronização remota ou backup automático. Transações serializam ações de múltiplas abas; BroadcastChannel avisa quando atualizar a interface. O JSON de `localStorage` da versão anterior é migrado e só removido após commit confirmado. Recarregue abas antigas da versão 0.2 antes de continuar. Esse armazenamento **não é criptografado pelo aplicativo**. Outras páginas da mesma origem compartilham seu acesso: caminhos diferentes no GitHub Pages não isolam dados pessoais. Prefira uma origem dedicada para uso real. Apagar os dados do navegador remove os registros; mantenha um backup fora dele. O histórico comporta 90 resumos diários, 200 eventos recentes e 500 insights. A importação aceita JSON validado de até 2 MB e pede confirmação antes de substituir registros.
+
+Os headers de segurança de `next.config.ts` funcionam no modo com servidor; o export estático de Pages exige hospedagem/proxy que aplique esses headers. Não há login ou API de autenticação neste protótipo para um teste real de brute force.
 
 Garmin e GitHub reais dependem de autorização e de uma camada de servidor. Nenhuma senha, token ou dado pessoal deve ser colocado no frontend, nas imagens do README ou no repositório. Publicar no GitHub não publica os registros locais de quem usa o app.
 
 O nome KernelHub e o domínio `KernelHub.dev` continuam como identidade de trabalho; disponibilidade de domínio e marca não foi validada.
 
-Consulte o [conceito e a arquitetura de produto](docs/PRODUCT.md), a [auditoria de UX e decisões desta revisão](docs/UX-REVIEW.md) e o [registro de evolução](CHANGELOG.md).
+Consulte a [revisão de qualidade, segurança e performance da versão 0.3](docs/QUALITY-REVIEW.md), os [limites de segurança](SECURITY.md), o [conceito e a arquitetura de produto](docs/PRODUCT.md), a [auditoria de UX da versão 0.2](docs/UX-REVIEW.md) e o [registro de evolução](CHANGELOG.md).

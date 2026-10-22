@@ -1,6 +1,6 @@
 {
   "name": "kernelhub",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,11 +9,11 @@
     "build:pages": "node scripts/build-pages.mjs",
     "test:pages": "node scripts/test-pages.mjs",
     "screenshots": "node scripts/screenshots.mjs",
-    "format:check": "prettier --check app components lib types tests scripts docs README.md next.config.ts playwright.config.ts",
+    "format:check": "prettier --check app components lib types tests scripts docs README.md SECURITY.md CHANGELOG.md next.config.ts playwright.config.ts",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "playwright test",
-    "test:unit": "node --experimental-strip-types --test tests/domain.test.ts"
+    "test:unit": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "framer-motion": "14.6.0",
@@ -29,10 +29,10 @@
     "@types/node": "^24.0.0",
     "@types/react": "19.3.0",
     "@types/react-dom": "^19.0.0",
-    "autoprefixer": "^10.4.21",
+    "@tailwindcss/postcss": "4.3.3",
     "postcss": "^8.5.6",
     "prettier": "3.9.10",
-    "tailwindcss": "3.4.19",
+    "tailwindcss": "4.3.3",
     "typescript": "~5.9.3"
   }
 }
