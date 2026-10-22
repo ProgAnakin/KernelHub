@@ -134,22 +134,18 @@ test("backups validate before explicit replacement and preserve data on errors",
   });
   await expect(page.getByText("Restaurar este backup?")).toBeVisible();
   expect((await stored(page)).waterMl).toBe(current.waterMl);
-  await page
-    .getByLabel("Arquivo de backup")
-    .setInputFiles({
-      name: "invalid-after-valid.json",
-      mimeType: "application/json",
-      buffer: Buffer.from('{"version":99}'),
-    });
+  await page.getByLabel("Arquivo de backup").setInputFiles({
+    name: "invalid-after-valid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from('{"version":99}'),
+  });
   await expect(page.getByText("Restaurar este backup?")).not.toBeVisible();
   expect((await stored(page)).waterMl).toBe(current.waterMl);
-  await page
-    .getByLabel("Arquivo de backup")
-    .setInputFiles({
-      name: "backup.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify({ ...current, waterMl: 2250 })),
-    });
+  await page.getByLabel("Arquivo de backup").setInputFiles({
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({ ...current, waterMl: 2250 })),
+  });
   await page
     .getByRole("button", { name: "Restaurar registros", exact: true })
     .click();
