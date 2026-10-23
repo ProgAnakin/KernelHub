@@ -23,6 +23,8 @@
 | Metadados do shell tinham contraste insuficiente e atributo ARIA inválido          | Contraste aumentado e papel semântico corrigido; verificações de acessibilidade automatizada passaram.                                                                     |
 | Sono antigo podia aparecer com a data da última métrica do arquivo                 | A medida principal usa a data da própria leitura de sono.                                                                                                                  |
 
+| Voltar ao build normal após exportar Pages incluía assets TS gerados na checagem | A pasta de saída `out/` foi excluída do programa TypeScript; o ciclo exportar → build normal foi validado. |
+
 ## Validação
 
 - 55 testes unitários de domínio, importação, GitHub, timer e entradas adversariais.
