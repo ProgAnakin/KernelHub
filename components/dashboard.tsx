@@ -1,5 +1,7 @@
 "use client";
 
+import { SkincareSummary } from "./skincare-summary";
+
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import {
   Activity,
@@ -244,7 +246,10 @@ function NutritionCard({ state, open, act }: StateProps) {
 }
 
 function RoutineCard({ state, open, act }: StateProps) {
-  const done = HABITS.filter((habit) => state.habits[habit.id]).length;
+  const careHabits = HABITS.filter(
+    (habit) => habit.id === "supplements" || habit.id === "grooming",
+  );
+  const done = careHabits.filter((habit) => state.habits[habit.id]).length;
   return (
     <Card className="routine-card" label="Rotina de cuidado">
       <CardHeading
@@ -253,15 +258,16 @@ function RoutineCard({ state, open, act }: StateProps) {
         right={
           <span className="count-label">
             {done}
-            <span>/{HABITS.length}</span>
+            <span>/{careHabits.length}</span>
           </span>
         }
       />
       <p className="card-description routine-intro">
         O básico bem feito, todos os dias.
       </p>
+      <SkincareSummary onOpen={() => open("routine")} />
       <div className="habit-list">
-        {HABITS.map((habit) => (
+        {careHabits.map((habit) => (
           <div
             className={`habit-row ${state.habits[habit.id] ? "is-done" : ""}`}
             key={habit.id}

@@ -44,6 +44,7 @@ import { money } from "@/lib/format";
 import { CircleCheck, ListAction, Progress } from "./ui";
 import { CheckinSheet, FocusSheet, WorkspaceSheet } from "./growth-sheets";
 import { nextStep } from "@/lib/metrics";
+import { SkincareCabinet } from "./skincare-cabinet";
 
 export const SHEET_INFO: Record<
   NonNullable<Sheet>,
@@ -896,17 +897,26 @@ function NutritionSheet({ state, act, onClose, onToast }: Props) {
 }
 
 function RoutineSheet({ state, act }: Props) {
+  const otherHabits = HABITS.filter(
+    (habit) => habit.id === "supplements" || habit.id === "grooming",
+  );
+  const legacyEntries = state.journal.filter(
+    (entry) =>
+      entry.kind === "body" &&
+      /skincare|proteção solar/i.test(`${entry.title} ${entry.detail}`),
+  );
   return (
     <div>
+      <SkincareCabinet legacyEntries={legacyEntries} />
       <div className="sheet-section-title">
-        <span>SEU CHECKLIST DIÁRIO</span>
+        <span>OUTROS CUIDADOS</span>
         <strong>
-          {HABITS.filter((habit) => state.habits[habit.id]).length}/
-          {HABITS.length}
+          {otherHabits.filter((habit) => state.habits[habit.id]).length}/
+          {otherHabits.length}
         </strong>
       </div>
       <div className="routine-sheet-list">
-        {HABITS.map((habit) => (
+        {otherHabits.map((habit) => (
           <div
             key={habit.id}
             className={state.habits[habit.id] ? "is-done" : ""}

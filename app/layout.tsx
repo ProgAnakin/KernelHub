@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./shell.css";
 import "./pulse.css";
+import "./skincare.css";
+import "./skincare-history.css";
 import { assetPath } from "@/lib/paths";
 import packageInfo from "../package.json";
 

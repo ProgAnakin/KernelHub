@@ -1,5 +1,7 @@
 "use client";
 
+import { SkincareSummary } from "./skincare-summary";
+
 import { useId, type ReactNode } from "react";
 import {
   Activity,
@@ -883,14 +885,18 @@ function RoutineCard({
   act,
   open,
 }: Pick<PulseOverviewProps, "state" | "act" | "open">) {
-  const count = HABITS.filter((habit) => state.habits[habit.id]).length;
+  const careHabits = HABITS.filter(
+    (habit) => habit.id === "supplements" || habit.id === "grooming",
+  );
+  const count = careHabits.filter((habit) => state.habits[habit.id]).length;
   return (
     <section className="kp-card kp-routine-card" aria-label="Rotina de cuidado">
-      <CardTitle icon={Check} meta={`${count}/${HABITS.length}`}>
+      <CardTitle icon={Check} meta={`${count}/${careHabits.length}`}>
         O cuidado, na prática
       </CardTitle>
+      <SkincareSummary onOpen={() => open("routine")} />
       <div className="kp-routine-list">
-        {HABITS.map((habit) => (
+        {careHabits.map((habit) => (
           <button
             className={
               state.habits[habit.id] ? "kp-habit kp-habit-done" : "kp-habit"
