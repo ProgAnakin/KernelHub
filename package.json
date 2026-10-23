@@ -1,11 +1,11 @@
 {
   "name": "kernelhub",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
-    "build": "next build",
+    "build": "node scripts/precache.mjs --clean && next build && node scripts/precache.mjs",
     "build:pages": "node scripts/build-pages.mjs",
     "test:pages": "node scripts/test-pages.mjs",
     "screenshots": "node scripts/screenshots.mjs",

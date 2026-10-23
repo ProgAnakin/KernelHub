@@ -3,48 +3,36 @@
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import {
   Activity,
-  BatteryMedium,
   BookOpen,
   Check,
   ChevronRight,
   Code2,
   Droplets,
   Dumbbell,
-  Flame,
   Footprints,
-  GitBranch,
-  GitCommitHorizontal,
-  Heart,
   House,
   Layers3,
   Leaf,
   Moon,
   Plus,
-  Rocket,
   Settings2,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
   Sun,
   WifiOff,
+  Radio,
+  ArrowUpRight,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ComponentProps } from "react";
 import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
-import {
-  COURSES,
-  EXERCISES,
-  GIT_EVENTS,
-  HABITS,
-  calories,
-  mockContributions,
-  mockTelemetry,
-} from "@/lib/mock-engine";
+import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { useKernel } from "@/lib/use-kernel";
 import { money } from "@/lib/format";
 import {
   BottomSheet,
-  Brand,
   Card,
   CardHeading,
   CardLink,
@@ -53,8 +41,13 @@ import {
   SPRING,
 } from "./ui";
 import { SheetContents, SHEET_INFO } from "./sheets";
-import { CheckinCard, FocusCard, TodayBrief, WeeklyCard } from "./growth";
+import { CheckinCard, FocusCard, WeeklyCard } from "./growth";
 import { assetPath } from "@/lib/paths";
+import { useGithub } from "@/lib/use-github";
+import { useHealth } from "@/lib/use-health";
+import { SourceCenter, GithubActivity } from "./source-center";
+import { FocusTracker } from "./focus-tracker";
+import { PulseOverview } from "./pulse-overview";
 
 type StateProps = {
   state: KernelState;
@@ -69,121 +62,6 @@ const NAV: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "learn", label: "Conhecimento", icon: BookOpen },
   { id: "wishlist", label: "Wishlist", icon: ShoppingBag },
 ];
-
-function TelemetryCard({
-  open,
-  state,
-}: {
-  open: (sheet: Sheet) => void;
-  state: KernelState;
-}) {
-  const now = useVisibleNow(state.mode === "demo", 12000);
-  if (state.mode === "personal")
-    return (
-      <Card className="telemetry-card" label="Biometria pessoal">
-        <CardHeading
-          icon={Activity}
-          label="Corpo & energia"
-          color="blue"
-          right={<span className="quiet-label">SEM CONEXÃO</span>}
-        />
-        <div className="disconnected-state">
-          <Activity size={32} strokeWidth={1.5} />
-          <h3>Uma base de dados real.</h3>
-          <p>
-            Seu Garmin ainda não está conectado. Até lá, acompanhe sono, peso e
-            passos no check-in manual.
-          </p>
-        </div>
-        <CardLink onClick={() => open("checkin")}>
-          Registrar minhas medidas
-        </CardLink>
-      </Card>
-    );
-  const telemetry = now
-    ? mockTelemetry(now)
-    : { bodyBattery: 76, heartRate: 60, sleepScore: 84 };
-  return (
-    <Card className="telemetry-card" label="Biometria demonstrativa">
-      <CardHeading
-        icon={Activity}
-        label="Corpo & energia"
-        color="blue"
-        right={
-          <span className="source-label">
-            GARMIN <span>DEMO</span>
-          </span>
-        }
-      />
-      <div className="telemetry-main">
-        <div className="energy-ring">
-          <svg viewBox="0 0 180 180" aria-hidden="true">
-            <defs>
-              <linearGradient id="ring-gradient" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stopColor="#30D158" />
-                <stop offset="100%" stopColor="#b6f48b" />
-              </linearGradient>
-            </defs>
-            <circle cx="90" cy="90" r="73" className="ring-track" />
-            <circle
-              cx="90"
-              cy="90"
-              r="73"
-              className="ring-value"
-              stroke="url(#ring-gradient)"
-              strokeDasharray={`${(2 * Math.PI * 73 * telemetry.bodyBattery) / 100} ${2 * Math.PI * 73}`}
-            />
-            <circle cx="90" cy="90" r="60" className="ring-inner" />
-          </svg>
-          <div className="ring-center">
-            <BatteryMedium size={19} strokeWidth={1.5} />
-            <strong>
-              {telemetry.bodyBattery}
-              <span>%</span>
-            </strong>
-            <small>Body Battery</small>
-          </div>
-        </div>
-        <div className="energy-caption">
-          <span className="status-dot" />
-          Boa energia
-          <span>
-            Um bom ritmo
-            <br />
-            para o seu dia.
-          </span>
-        </div>
-      </div>
-      <div className="biometric-stats">
-        <div>
-          <span>
-            <Heart size={13} /> Frequência
-          </span>
-          <strong>
-            {telemetry.heartRate}
-            <small>bpm</small>
-          </strong>
-          <span className="tiny-trend">Em repouso</span>
-        </div>
-        <div>
-          <span>
-            <Moon size={13} /> Sono
-          </span>
-          <strong>
-            7<small>h</small>42<small>m</small>
-          </strong>
-          <span className="tiny-trend">
-            Score {telemetry.sleepScore}{" "}
-            <span className="text-emerald">· Bom</span>
-          </span>
-        </div>
-      </div>
-      <CardLink onClick={() => open("telemetry")}>
-        Ver minha recuperação
-      </CardLink>
-    </Card>
-  );
-}
 
 function WorkoutCard({ state, open }: StateProps) {
   const done = EXERCISES.reduce(
@@ -413,108 +291,6 @@ function RoutineCard({ state, open, act }: StateProps) {
   );
 }
 
-function EngineeringCard({
-  open,
-  now,
-  state,
-}: {
-  open: (sheet: Sheet) => void;
-  now: Date | null;
-  state: KernelState;
-}) {
-  if (state.mode === "personal")
-    return (
-      <Card className="engineering-card" label="Engenharia pessoal">
-        <CardHeading
-          icon={Code2}
-          label="O que você está construindo"
-          right={<GitBranch size={18} />}
-        />
-        <div className="disconnected-state">
-          <Code2 size={28} strokeWidth={1.5} />
-          <h3>Código com contexto.</h3>
-          <p>
-            GitHub ainda não está conectado. Registre blocos de projeto e
-            resultados no módulo de foco. Commits, PRs e deploys só aparecerão
-            com uma fonte real.
-          </p>
-        </div>
-        <CardLink onClick={() => open("focus")}>
-          Registrar avanço de projeto
-        </CardLink>
-      </Card>
-    );
-  const events = GIT_EVENTS;
-  return (
-    <Card className="engineering-card" label="Engenharia demonstrativa">
-      <CardHeading
-        icon={Code2}
-        label="O que você está construindo"
-        right={<GitBranch size={18} className="muted-icon" />}
-      />
-      <div className="engineering-stats">
-        <div>
-          <strong>
-            {events.filter((event) => event.kind === "commit").length}
-            <span>commits</span>
-          </strong>
-        </div>
-        <div>
-          <strong>
-            {events.filter((event) => event.kind === "pull-request").length}
-            <span>PR fechado</span>
-          </strong>
-        </div>
-        <div>
-          <strong className="text-emerald">
-            {events.filter((event) => event.kind === "deploy").length}
-            <span>deploys</span>
-          </strong>
-        </div>
-        <span className="streak">
-          <Flame size={13} />
-          12 dias
-        </span>
-      </div>
-      <div className="contribution-wrap">
-        <span className="contribution-caption">
-          UM POUCO DE CÓDIGO, TODOS OS DIAS
-        </span>
-        <div
-          className="contribution-grid"
-          role="img"
-          aria-label="Histórico demonstrativo de contribuições em 13 semanas"
-        >
-          {mockContributions(now ?? new Date(2026, 9, 22, 12)).map(
-            (level, i) => (
-              <span key={i} className={`level-${level}`} />
-            ),
-          )}
-        </div>
-        <div className="contribution-axis">
-          <span>AGO</span>
-          <span>SET</span>
-          <span>OUT</span>
-          <span>
-            menos <i />
-            <i />
-            <i />
-            <i /> mais
-          </span>
-        </div>
-      </div>
-      <div className="latest-commit">
-        <GitCommitHorizontal size={16} />
-        <span>feat: anel de energia e telemetria</span>
-        <code>a82f3c1</code>
-      </div>
-      <CardLink onClick={() => open("engineering")}>
-        Explorar atividade <span className="inline-demo">DEMO</span>
-      </CardLink>
-    </Card>
-  );
-}
-
 function KnowledgeCard({ state, open }: StateProps) {
   const course = COURSES[0],
     done = state.courseProgress[course.id] ?? 0;
@@ -637,51 +413,6 @@ function WishlistCard({ state, open }: StateProps) {
   );
 }
 
-function DailyFocus({ state }: Pick<StateProps, "state">) {
-  const habits = HABITS.filter((habit) => state.habits[habit.id]).length;
-  const completed =
-    habits +
-    Number(state.waterMl >= state.targets.waterMl) +
-    Number(
-      EXERCISES.every(
-        (exercise) => state.exercises[exercise.id] === exercise.sets,
-      ) || state.runKm >= state.targets.runKm,
-    );
-  return (
-    <div className="daily-focus">
-      <div className="mini-ring">
-        <svg viewBox="0 0 48 48" aria-hidden="true">
-          <circle cx="24" cy="24" r="20" className="ring-track" />
-          <circle
-            cx="24"
-            cy="24"
-            r="20"
-            className="focus-ring"
-            strokeDasharray={`${(completed / 7) * 125.66} 125.66`}
-          />
-        </svg>
-        <span>
-          {completed}
-          <small>/7</small>
-        </span>
-      </div>
-      <div>
-        <span>SEU RITMO, SUA EVOLUÇÃO</span>
-        <strong>
-          {completed === 7
-            ? "O essencial está feito."
-            : "Cada pequeno passo conta."}
-        </strong>
-        <small>
-          {completed === 7
-            ? "Reserve um tempo para descansar."
-            : `${7 - completed} cuidados para completar o dia`}
-        </small>
-      </div>
-    </div>
-  );
-}
-
 function ActivityJournal({ state }: { state: KernelState }) {
   return (
     <Card className="journal-card">
@@ -768,11 +499,17 @@ function LiveSheetContents(props: ComponentProps<typeof SheetContents>) {
 export function Dashboard() {
   const { state, act, hydrated, storageError, dayConflict, recoveryAvailable } =
     useKernel();
+  const github = useGithub();
+  const health = useHealth();
   const [section, setSection] = useState<Section>("today");
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [overlay, setOverlay] = useState<
+    "sources" | "timer" | "activity" | null
+  >(null);
   const [now, setNow] = useState<Date | null>(null);
   const [online, setOnline] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const modalOpen = sheet !== null || overlay !== null;
 
   useEffect(() => {
     setOnline(navigator.onLine);
@@ -781,213 +518,207 @@ export function Dashboard() {
     window.addEventListener("offline", updateNetwork);
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production")
       navigator.serviceWorker
-        .register(assetPath("/sw.js"), { scope: assetPath("/") })
+        .register(assetPath("/sw.js"), {
+          scope: assetPath("/"),
+          updateViaCache: "none",
+        })
         .catch(() => setToast("Não foi possível ativar o modo offline."));
     return () => {
       window.removeEventListener("online", updateNetwork);
       window.removeEventListener("offline", updateNetwork);
     };
   }, []);
-
   useEffect(() => {
-    // The persistence hook rolls the day on midnight and on returning to the app.
-    // Dates and contribution labels do not need a dashboard-wide live timer.
     setNow(new Date());
   }, [state.day]);
-
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(timer);
   }, [toast]);
 
+  const openOverlay = (value: "sources" | "timer" | "activity") => {
+    setSheet(null);
+    setOverlay(value);
+  };
+  const close = () => {
+    setSheet(null);
+    setOverlay(null);
+  };
+  const open = (value: Sheet) => {
+    if (value === "telemetry") {
+      openOverlay("sources");
+      return;
+    }
+    if (value === "engineering" && github.snapshot) {
+      openOverlay("activity");
+      return;
+    }
+    setOverlay(null);
+    setSheet(value);
+  };
   const notifyAct = (action: KernelAction) => {
     if (!hydrated) return;
     act(action);
     if (action.type === "water")
       setToast(
         action.amount > 0
-          ? "+250 ml. Um cuidado a mais."
+          ? "+250 ml. Hidratação registrada."
           : "Registro de água ajustado.",
       );
-    if (action.type === "meal")
-      setToast("Refeição registrada. Bom combustível.");
+    if (action.type === "meal") setToast("Refeição registrada.");
     if (action.type === "insight") setToast("Insight salvo no seu espaço.");
   };
   const navigate = (id: Section) => {
     setSection(id);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
-  const props: StateProps = { state, open: setSheet, act: notifyAct };
-  const pageInfo: Record<
+  const props: StateProps = { state, open, act: notifyAct };
+  const sourceCount =
+    Number(Boolean(github.snapshot)) + Number(Boolean(health.snapshot));
+  const titles: Record<
     Section,
-    { eyebrow: string; title: string; accent: string; description: string }
+    { label: string; title: string; detail: string }
   > = {
     today: {
-      eyebrow: "SEU SISTEMA PESSOAL",
-      title: "Um pouco melhor.",
-      accent: "Todos os dias.",
-      description: "Cuide de você. Construa o que importa.",
+      label: "OVERVIEW",
+      title: "Hoje",
+      detail: "Sinais, contexto e próximos passos.",
     },
     body: {
-      eyebrow: "CORPO & ROTINA",
+      label: "BODY / DAILY",
       title: "Sua melhor base.",
-      accent: "É você.",
-      description: "Energia, movimento e os cuidados que sustentam tudo.",
+      detail: "Corpo, movimento e cuidados em um só ritmo.",
     },
     build: {
-      eyebrow: "ENGENHARIA & EVOLUÇÃO",
-      title: "Menos intenção.",
-      accent: "Mais construção.",
-      description: "Do primeiro insight ao próximo deploy.",
+      label: "BUILD / LEARN",
+      title: "Faça o tempo contar.",
+      detail: "Trabalho, aprendizado e o que avançou de verdade.",
     },
     learn: {
-      eyebrow: "CONHECIMENTO",
-      title: "Continue curioso.",
-      accent: "Vá mais fundo.",
-      description: "Aprender, aplicar, registrar. Repetir.",
+      label: "KNOWLEDGE",
+      title: "Conhecimento em prática.",
+      detail: "Retome, entenda, aplique.",
     },
     wishlist: {
-      eyebrow: "AQUISIÇÕES COM INTENÇÃO",
-      title: "O que faz sentido.",
-      accent: "No seu tempo.",
-      description: "Recursos para os seus objetivos, com prioridade.",
+      label: "COLLECTION",
+      title: "Escolhas com direção.",
+      detail: "O que vale entrar na sua rotina.",
     },
   };
-  const info = pageInfo[section];
-  const date = now?.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const info = titles[section];
+  const date = now
+    ?.toLocaleDateString("pt-BR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+    })
+    .replaceAll(".", "");
+  const overlayInfo =
+    overlay === "sources"
+      ? {
+          title: "Suas fontes.",
+          subtitle: "Dados disponíveis, sem preencher lacunas.",
+        }
+      : overlay === "timer"
+        ? {
+            title: "Entre no foco.",
+            subtitle: "O tempo é acompanhado por você.",
+          }
+        : {
+            title: "Seu trabalho em movimento.",
+            subtitle: "Atividade pública do GitHub",
+          };
 
   return (
     <MotionConfig reducedMotion="user">
       <div
-        className="app-background"
+        className="app-background kh"
         aria-busy={!hydrated}
-        inert={sheet !== null || !hydrated}
+        inert={modalOpen || !hydrated}
       >
-        <aside className="sidebar">
-          <Brand />
-          <div className="sidebar-label">WORKSPACE PESSOAL</div>
+        <aside className="kh-sidebar">
+          <button
+            className="kh-logo"
+            onClick={() => navigate("today")}
+            aria-label="KernelHub, início"
+          >
+            <span className="kh-logomark">
+              K<span />
+            </span>
+            KernelHub<span className="kh-brand-dot">.</span>
+          </button>
+          <span className="kh-nav-label">PERSONAL OPERATING SYSTEM</span>
           <nav aria-label="Navegação principal">
             {NAV.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                className={section === id ? "active" : ""}
-                onClick={() => navigate(id)}
+                className={section === id ? "is-active" : ""}
                 aria-current={section === id ? "page" : undefined}
+                onClick={() => navigate(id)}
               >
                 <Icon size={19} strokeWidth={1.5} />
                 <span>{label}</span>
-                {section === id && <span className="nav-current" />}
+                {section === id && <span className="kh-nav-indicator" />}
               </button>
             ))}
           </nav>
-          <div className="sidebar-note">
-            <div className="note-orbit">
-              <Leaf size={21} />
+          <div className="kh-sidebar-bottom">
+            <div className="kh-source-mini">
+              <span className={sourceCount ? "kh-dot is-live" : "kh-dot"} />
+              <span>
+                {sourceCount
+                  ? `${sourceCount} fonte${sourceCount > 1 ? "s" : ""} disponível${sourceCount > 1 ? "s" : ""}`
+                  : "Seu próximo sinal está aqui"}
+              </span>
             </div>
-            <strong>Consistência &gt; intensidade.</strong>
-            <p>
-              Seu próximo nível começa
-              <br />
-              no que você faz hoje.
-            </p>
-          </div>
-          <div className="sidebar-bottom">
-            <button onClick={() => setSheet("settings")}>
-              <Settings2 size={18} strokeWidth={1.5} />
-              Seu espaço
-              <ChevronRight size={15} />
+            <button
+              className="kh-source-link"
+              onClick={() => openOverlay("sources")}
+            >
+              <Radio size={18} />
+              Central de fontes
+              <ArrowUpRight size={16} />
             </button>
-            <div>
-              <span className="status-dot" />
-              Seus dados ficam neste dispositivo
-            </div>
-            <span className="version">KERNELHUB / V.03</span>
+            <button onClick={() => open("settings")}>
+              <Settings2 size={17} />
+              Seu espaço
+            </button>
+            <span className="kh-version">KERNELHUB / 0.4 · LOCAL FIRST</span>
           </div>
         </aside>
-        <div className="main-shell">
-          <header className="topbar">
-            <div className="mobile-brand">
-              <Brand small />
+        <div className="kh-workspace">
+          <header className="kh-topbar">
+            <div className="kh-mobile-brand">
+              <span className="kh-logomark">
+                K<span />
+              </span>
+              <strong>
+                KernelHub<span>.</span>
+              </strong>
             </div>
-            <div className="desktop-breadcrumb">
-              Meu espaço <ChevronRight size={12} />
-              <span>{NAV.find((item) => item.id === section)?.label}</span>
+            <div className="kh-breadcrumb">
+              <span>Meu espaço</span>
+              <ChevronRight size={13} />
+              {info.title}
             </div>
-            <div className="live-status">
+            <div className="kh-top-context">
               <LiveClock />
-              <span className="header-separator" />
+              <span className="kh-top-divider" />
+              <span className="kh-top-date">{date ?? "Seu dia"}</span>
               <span
-                className="battery-status"
+                className={`kh-online-dot ${online ? "is-online" : ""}`}
                 role="img"
-                aria-label={
-                  state.mode === "demo"
-                    ? "Body Battery demonstrativa: 76 por cento"
-                    : "Body Battery: sem conexão"
-                }
-              >
-                <BatteryMedium size={16} />
-                {state.mode === "demo" ? (
-                  <>
-                    76<span>%</span>
-                  </>
-                ) : (
-                  "—"
-                )}
-              </span>
-              <span className="deploy-status">
-                <Rocket size={13} />
-                {state.mode === "demo" ? 2 : "—"}
-                <span>deploys</span>
-              </span>
-            </div>
-            <div className="profile" aria-hidden="true">
-              K<span />
+                aria-label={online ? "Online" : "Offline"}
+              />
             </div>
           </header>
-          <main id="main-content">
-            <div className="hero">
-              <div className="hero-copy">
-                <div className="eyebrow">
-                  <span />
-                  {info.eyebrow}
-                </div>
-                <h1>
-                  {info.title}
-                  <br />
-                  <span>{info.accent}</span>
-                </h1>
-                <p>{info.description}</p>
-              </div>
-              <div className="hero-side">
-                <span className="today-date">
-                  <span className="date-line" />
-                  {date ?? "Seu dia começa aqui"}
-                </span>
-                <DailyFocus state={state} />
-              </div>
-            </div>
-            <div className="section-heading">
-              <h2>
-                {section === "today"
-                  ? "Hoje, em equilíbrio"
-                  : NAV.find((item) => item.id === section)?.label}
-              </h2>
-              <span className="demo-indicator">
-                <span />
-                {state.mode === "demo"
-                  ? "Dados de demonstração"
-                  : "Seu espaço · dados locais"}
-              </span>
-            </div>
+          <main className="kh-main" id="main-content">
             {!online && (
               <div className="inline-notice">
                 <WifiOff size={15} />
-                Você está offline. Os registros continuam neste dispositivo.
+                Você está offline. Os registros continuam neste dispositivo. As
+                fontes mostram a última atualização salva.
               </div>
             )}
             {recoveryAvailable && (
@@ -1005,169 +736,230 @@ export function Dashboard() {
                   : "O navegador bloqueou o armazenamento. Os registros desta sessão podem se perder."}
               </div>
             )}
-            {section === "today" && <TodayBrief state={state} />}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={section}
-                className={`dashboard-grid view-${section}`}
-                initial={false}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.18 }}
-              >
-                {(section === "today" || section === "body") && (
-                  <>
-                    <TelemetryCard open={setSheet} state={state} />
-                    <WorkoutCard {...props} />
-                    <NutritionCard {...props} />
-                    <RoutineCard {...props} />
-                    <CheckinCard {...props} />
-                  </>
-                )}
-                {(section === "today" ||
-                  section === "build" ||
-                  section === "learn") && <FocusCard {...props} />}
-                {(section === "today" || section === "build") && (
-                  <EngineeringCard open={setSheet} now={now} state={state} />
-                )}
-                {(section === "today" ||
-                  section === "body" ||
-                  section === "build") && <WeeklyCard state={state} />}
-                {(section === "today" ||
-                  section === "build" ||
-                  section === "learn") && <KnowledgeCard {...props} />}
-                {(section === "today" || section === "wishlist") && (
-                  <WishlistCard {...props} />
-                )}
-                {section !== "today" && <ActivityJournal state={state} />}
-                {section === "learn" && (
-                  <Card className="insights-card">
-                    <CardHeading
-                      icon={Sparkles}
-                      label="Ideias que ficam"
-                      color="blue"
-                    />
-                    {state.insights.length ? (
-                      state.insights.slice(0, 5).map((insight) => (
-                        <blockquote
-                          className="insight-preview"
-                          key={insight.id}
-                        >
-                          <p>{insight.text}</p>
-                          <cite>
-                            {
-                              COURSES.find(
-                                (course) => course.id === insight.courseId,
-                              )?.title
-                            }
-                          </cite>
-                        </blockquote>
-                      ))
-                    ) : (
-                      <div className="empty-state">
-                        <BookOpen size={26} />
-                        <h3>De consumir a compreender.</h3>
+            {section === "today" ? (
+              <PulseOverview
+                {...props}
+                health={health}
+                github={github}
+                onSources={() => openOverlay("sources")}
+                onTimer={() => openOverlay("timer")}
+              />
+            ) : (
+              <>
+                <div className="kh-page-heading">
+                  <div>
+                    <span className="kh-eyebrow">{info.label}</span>
+                    <h1>{info.title}</h1>
+                    <p>{info.detail}</p>
+                  </div>
+                  <button
+                    className="kh-round-action"
+                    aria-label="Abrir central de fontes"
+                    onClick={() => openOverlay("sources")}
+                  >
+                    <Radio size={19} />
+                  </button>
+                </div>
+                <div
+                  className="kh-section-tabs"
+                  role="group"
+                  aria-label="Áreas do sistema"
+                >
+                  {[
+                    { id: "body", label: "Corpo" },
+                    { id: "build", label: "Evoluir" },
+                    { id: "wishlist", label: "Coleção" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => navigate(item.id as Section)}
+                      aria-pressed={section === item.id}
+                      className={section === item.id ? "is-active" : ""}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <div className={`dashboard-grid kh-detail view-${section}`}>
+                  {section === "body" && (
+                    <>
+                      <div className="kh-body-source glass-card">
+                        <div className="kh-section-label">
+                          <span>SAÚDE / DISPONIBILIDADE</span>
+                          <Radio size={17} />
+                        </div>
+                        <h2>
+                          {health.snapshot
+                            ? `${Object.values(health.snapshot.metrics).filter((item) => item.value !== null).length} métricas recebidas.`
+                            : "Cada fonte, seus sinais."}
+                        </h2>
                         <p>
-                          Registre uma ideia com suas palavras.
-                          <br />O aprendizado passa a ser seu.
+                          {health.snapshot
+                            ? `Leituras de ${health.snapshot.sources.join(", ")}. Valores sem amostra permanecem vazios.`
+                            : "Sono, frequência, passos e energia são preenchidos a partir do que sua fonte entregar."}
                         </p>
+                        <button
+                          className="kh-text-button"
+                          onClick={() => openOverlay("sources")}
+                        >
+                          Ver fontes e leituras <ArrowUpRight size={15} />
+                        </button>
                       </div>
-                    )}
-                    <CardLink onClick={() => setSheet("learning")}>
-                      Registrar um insight
-                    </CardLink>
-                  </Card>
-                )}
-              </motion.div>
-            </AnimatePresence>
-            <footer className="dashboard-footer">
+                      <CheckinCard state={state} open={open} />
+                      <WorkoutCard {...props} />
+                      <NutritionCard {...props} />
+                      <RoutineCard {...props} />
+                      <WeeklyCard state={state} />
+                    </>
+                  )}
+                  {(section === "build" || section === "learn") && (
+                    <>
+                      <div className="glass-card kh-github-detail">
+                        <GithubActivity
+                          github={github}
+                          onSources={() => openOverlay("sources")}
+                        />
+                      </div>
+                      <div className="glass-card kh-start-focus">
+                        <span className="kh-eyebrow">TEMPO EM MOVIMENTO</span>
+                        <Timer size={30} />
+                        <h2>Um bloco. Uma direção.</h2>
+                        <p>
+                          Inicie o cronômetro. O tempo continua sendo medido
+                          enquanto você trabalha ou estuda fora do app.
+                        </p>
+                        <button
+                          className="primary-button"
+                          onClick={() => openOverlay("timer")}
+                        >
+                          Iniciar foco <ArrowUpRight size={16} />
+                        </button>
+                      </div>
+                      <FocusCard state={state} open={open} />
+                      <KnowledgeCard {...props} />
+                      <WeeklyCard state={state} />
+                      <ActivityJournal state={state} />
+                    </>
+                  )}
+                  {section === "wishlist" && (
+                    <>
+                      <WishlistCard {...props} />
+                      <ActivityJournal state={state} />
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+            <footer className="kh-footer">
               <span>
-                <span className="footer-dot" /> Feito de pequenos avanços.
+                <ShieldCheck size={13} />
+                Dados locais. Seu ritmo.
               </span>
-              <button
-                className="footer-settings"
-                onClick={() => setSheet("settings")}
-              >
-                <Settings2 size={13} />
-                Meu espaço
-              </button>
+              <div>
+                <button onClick={() => open("wishlist")}>Coleção</button>
+                <button onClick={() => openOverlay("sources")}>Fontes</button>
+                <button onClick={() => open("settings")}>Meu espaço</button>
+              </div>
             </footer>
           </main>
         </div>
-        <nav className="bottom-nav" aria-label="Navegação do iPhone">
+        <nav className="kh-bottom-nav" aria-label="Navegação do iPhone">
           <button
-            className={section === "today" ? "active" : ""}
-            aria-current={section === "today" ? "page" : undefined}
+            className={section === "today" ? "is-active" : ""}
             onClick={() => navigate("today")}
+            aria-current={section === "today" ? "page" : undefined}
           >
-            <House size={21} strokeWidth={1.5} />
+            <House size={22} strokeWidth={1.5} />
             <span>Hoje</span>
           </button>
           <button
-            className={section === "body" ? "active" : ""}
-            aria-current={section === "body" ? "page" : undefined}
+            className={section === "body" ? "is-active" : ""}
             onClick={() => navigate("body")}
+            aria-current={section === "body" ? "page" : undefined}
           >
-            <Activity size={21} strokeWidth={1.5} />
+            <Activity size={22} strokeWidth={1.5} />
             <span>Corpo</span>
           </button>
           <button
-            className="quick-add"
-            onClick={() => setSheet("quick")}
+            className="kh-quick-button"
             aria-label="Registro rápido"
+            onClick={() => open("quick")}
           >
-            <Plus size={25} strokeWidth={1.5} />
+            <Plus size={28} strokeWidth={1.5} />
           </button>
           <button
             className={
-              section === "build" || section === "learn" ? "active" : ""
+              section === "build" || section === "learn" ? "is-active" : ""
             }
+            onClick={() => navigate("build")}
             aria-current={
               section === "build" || section === "learn" ? "page" : undefined
             }
-            onClick={() => navigate("build")}
           >
-            <Code2 size={21} strokeWidth={1.5} />
+            <Code2 size={22} strokeWidth={1.5} />
             <span>Evoluir</span>
           </button>
-          <button
-            className={section === "wishlist" ? "active" : ""}
-            aria-current={section === "wishlist" ? "page" : undefined}
-            onClick={() => navigate("wishlist")}
-          >
-            <ShoppingBag size={21} strokeWidth={1.5} />
-            <span>Coleção</span>
+          <button onClick={() => openOverlay("sources")}>
+            <Radio size={22} strokeWidth={1.5} />
+            <span>Fontes</span>
           </button>
         </nav>
-        <button
-          className="desktop-quick"
-          aria-label="Registro rápido"
-          onClick={() => setSheet("quick")}
-        >
-          <Plus size={18} />
-          Registro rápido<span>+</span>
-        </button>
       </div>
       <BottomSheet
-        open={sheet !== null}
-        title={sheet ? SHEET_INFO[sheet].title : ""}
-        subtitle={sheet ? SHEET_INFO[sheet].subtitle : ""}
-        onClose={() => setSheet(null)}
+        open={modalOpen}
+        title={
+          overlay ? overlayInfo.title : sheet ? SHEET_INFO[sheet].title : ""
+        }
+        subtitle={
+          overlay
+            ? overlayInfo.subtitle
+            : sheet
+              ? SHEET_INFO[sheet].subtitle
+              : ""
+        }
+        onClose={close}
       >
-        <LiveSheetContents
-          sheet={sheet}
-          state={state}
-          act={notifyAct}
-          open={setSheet}
-          now={now}
-          onClose={() => setSheet(null)}
-          onToast={setToast}
-        />
+        <div className="kh-sheet" key={overlay ?? sheet}>
+          {overlay === "sources" ? (
+            <SourceCenter health={health} github={github} onToast={setToast} />
+          ) : overlay === "timer" ? (
+            <FocusTracker
+              onToast={setToast}
+              targetMinutes={state.targets.focusMinutes}
+            />
+          ) : overlay === "activity" ? (
+            <GithubActivity
+              github={github}
+              onSources={() => openOverlay("sources")}
+            />
+          ) : (
+            <>
+              <LiveSheetContents
+                sheet={sheet}
+                state={state}
+                act={notifyAct}
+                open={open}
+                now={now}
+                onClose={close}
+                onToast={setToast}
+              />
+              {sheet === "quick" && (
+                <button
+                  className="primary-button full-width kh-timer-quick"
+                  onClick={() => openOverlay("timer")}
+                >
+                  <Timer size={18} />
+                  Iniciar foco com cronômetro
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </BottomSheet>
       <AnimatePresence>
         {toast && (
           <motion.div
-            className="toast"
+            className="toast kh-toast"
             role="status"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

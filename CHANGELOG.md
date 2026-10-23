@@ -1,5 +1,16 @@
 # Evolução do KernelHub
 
+## 0.4.0 · 23 de outubro de 2026
+
+- Novo panorama “Hoje” e shell móvel com hierarquia de saúde, contexto, atividade técnica, foco e ações frequentes.
+- Central de fontes que distingue conexão pública, importação pontual, prévia e dados ausentes.
+- GitHub público real por usuário, com atualização automática limitada, cache local, cobertura explícita e métricas que não confundem pushes, commits e deploys.
+- Importador local de export.xml do Apple Saúde em Web Worker: oito métricas opcionais, até 14 dias, limite de 12 MiB e agregação com uma fonte por métrica/dia.
+- Séries com lacunas preservadas, origem/data das leituras e contexto de sono/FC em repouso somente quando há base suficiente.
+- Cronômetro de foco real com pausa, retomada, persistência entre recargas e conclusão atômica com o registro do bloco.
+- Pesquisa de integrações e benchmark com distinção entre evidência consultada, bloqueios de acesso e propostas futuras.
+- README e direção de produto atualizados para o fluxo receber → contextualizar → agir, com limites de backups e integrações explícitos.
+
 ## 0.3.1 · 23 de outubro de 2026
 
 - Publicação do site em GitHub Pages após habilitação do serviço.

@@ -17,9 +17,11 @@ test("dashboard is usable, explicitly simulated and fits narrow screens", async 
   page,
 }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Um pouco melhor.Todos os dias.",
+    "Seu ritmo,em perspectiva.",
   );
-  await expect(page.getByText("Dados de demonstração")).toBeVisible();
+  await expect(
+    page.getByText("Você está explorando a demonstração."),
+  ).toBeVisible();
   for (const width of [320, 375, 390, 430]) {
     await page.setViewportSize({ width, height: 844 });
     expect(
@@ -28,7 +30,7 @@ test("dashboard is usable, explicitly simulated and fits narrow screens", async 
       ),
     ).toBe(true);
     const sizes = await page
-      .locator(".dashboard-grid > .glass-card")
+      .locator(".kp-grid > .kp-card")
       .evaluateAll((elements) =>
         elements.map((element) => element.getBoundingClientRect().width),
       );
@@ -41,7 +43,7 @@ test("dashboard is usable, explicitly simulated and fits narrow screens", async 
   );
   await nav.getByRole("button", { name: "Hoje", exact: true }).click();
   await expect(
-    page.getByRole("region", { name: "Biometria demonstrativa" }),
+    page.getByRole("region", { name: "Panorama de saúde ilustrativo" }),
   ).toBeVisible();
 });
 
@@ -167,9 +169,21 @@ test("personal space requires confirmation and stops displaying fictional integr
   expect((await stored(page)).mode).toBe("demo");
   await page.getByRole("button", { name: "Começar sem exemplos" }).click();
   await expect.poll(async () => (await stored(page)).mode).toBe("personal");
-  await expect(page.locator(".battery-status")).toHaveText("—");
-  await expect(page.locator(".deploy-status")).toHaveText("—deploys");
-  await expect(page.getByText("Seu espaço · dados locais")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Panorama de saúde", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".kp-preview-tag")).toHaveCount(0);
+  await expect(
+    page.getByText("Saúde · sem dados", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".kp-metric-number")).toHaveText([
+    "—",
+    "—",
+    "—",
+    "—",
+    "—",
+    "—",
+  ]);
   expect((await stored(page)).history).toHaveLength(0);
   expect((await stored(page)).wishlist).toHaveLength(0);
 });
@@ -276,7 +290,7 @@ test("learning records lessons and preserves an insight", async ({ page }) => {
 test("wishlist supports creating, acquiring and reverting a planned item", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Organizar minha wishlist" }).click();
+  await page.getByRole("button", { name: "Coleção", exact: true }).click();
   await page
     .getByRole("button", { name: "Adicionar item", exact: true })
     .click();
@@ -299,27 +313,21 @@ test("wishlist supports creating, acquiring and reverting a planned item", async
   expect((await stored(page)).wishlist).toHaveLength(4);
 });
 
-test("activity filters distinguish commits, PRs and deploys", async ({
+test("unconnected engineering offers a source instead of fabricated live events", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: /Explorar atividade/ }).click();
-  await expect(page.locator(".git-feed>div")).toHaveCount(6);
   await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Deploys", exact: true })
+    .getByRole("button", { name: "Conectar GitHub", exact: true })
     .click();
-  await expect(page.locator(".git-feed>div")).toHaveCount(2);
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Commits", exact: true })
-    .click();
-  await expect(page.locator(".git-feed>div")).toHaveCount(3);
+  await expect(page.getByRole("dialog")).toContainText("Sem senha ou token");
+  await expect(page.getByLabel("Usuário público")).toHaveValue("ProgAnakin");
+  expect(await page.locator(".kh-activity-list a").count()).toBe(0);
 });
 
 test("sheet traps keyboard focus, restores it and dismisses by swipe", async ({
   page,
 }) => {
-  const trigger = page.getByRole("button", { name: "Ver minha recuperação" });
+  const trigger = page.getByRole("button", { name: "Fontes e conexões" });
   await trigger.click();
   const dialog = page.getByRole("dialog");
   await page.keyboard.press("Tab");

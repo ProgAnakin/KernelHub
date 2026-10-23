@@ -35,7 +35,7 @@ test("concurrent tabs retain every action without echoing snapshots", async ({
   const other = await context.newPage();
   await other.goto("/");
   await waitForReady(other);
-  await expect(other.locator(".hydration strong")).toContainText("1,5");
+  await expect(other.locator(".kp-water strong")).toContainText("1,5");
   await page.evaluate(() => {
     const original = IDBObjectStore.prototype.put;
     const target = window as typeof window & { writeCount: number };
@@ -48,13 +48,13 @@ test("concurrent tabs retain every action without echoing snapshots", async ({
   const burst = (target: Page) =>
     target.evaluate(() => {
       const button =
-        document.querySelector<HTMLButtonElement>(".hydration button")!;
+        document.querySelector<HTMLButtonElement>(".kp-water button")!;
       for (let i = 0; i < 5; i++) button.click();
     });
   await Promise.all([burst(page), burst(other)]);
   await expect.poll(async () => (await read(page)).waterMl).toBe(4000);
-  await expect(page.locator(".hydration strong")).toContainText("4");
-  await expect(other.locator(".hydration strong")).toContainText("4");
+  await expect(page.locator(".kp-water strong")).toContainText("4");
+  await expect(other.locator(".kp-water strong")).toContainText("4");
   await Promise.all([
     page.getByRole("checkbox", { name: "Suplementação", exact: true }).click(),
     other
@@ -94,9 +94,9 @@ test("a full storage keeps session changes and resumes saving without discarding
     exact: true,
   });
   await water.click();
-  await expect(page.locator(".hydration strong")).toContainText("1,75");
+  await expect(page.locator(".kp-water strong")).toContainText("1,75");
   await water.click();
-  await expect(page.locator(".hydration strong")).toHaveText("2 / 2,5 L");
+  await expect(page.locator(".kp-water strong")).toHaveText("2 / 2,5 L");
   await expect(
     page.getByText("O navegador bloqueou o armazenamento.", { exact: false }),
   ).toBeVisible();

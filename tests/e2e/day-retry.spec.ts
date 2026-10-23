@@ -38,7 +38,7 @@ test("retry after midnight saves yesterday's pending water before rolling the da
 }) => {
   await blockWrites(page);
   await water(page).click();
-  await expect(page.locator(".hydration strong")).toContainText("1,75");
+  await expect(page.locator(".kp-water strong")).toContainText("1,75");
   expect((await stored(page)).waterMl).toBe(1500);
   await page.clock.setFixedTime(afterMidnight);
   await allowWrites(page);
@@ -61,7 +61,7 @@ test("an already archived day preserves both snapshots until explicit backup sel
 }) => {
   await blockWrites(page);
   await water(page).click();
-  await expect(page.locator(".hydration strong")).toContainText("1,75");
+  await expect(page.locator(".kp-water strong")).toContainText("1,75");
   await page.clock.setFixedTime(afterMidnight);
   const other = await context.newPage();
   await other.clock.setFixedTime(afterMidnight);

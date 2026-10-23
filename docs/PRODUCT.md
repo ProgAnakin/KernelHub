@@ -4,19 +4,23 @@ Atualizado em **23 de outubro de 2026**, a partir das decisões do usuário.
 
 **Um sistema pessoal para acompanhar a vida com precisão e transformar intenção em avanços observáveis.** Corpo, recuperação, rotina, aparência, estudo, carreira e aquisições permanecem no mesmo conceito. A tela inicial deve responder “como estou, o que merece atenção e o que avancei hoje” em poucos segundos.
 
-A profundidade fica disponível nos detalhes. A experiência diária precisa ser simples de consultar e operar, sem exigir que a pessoa preencha todos os módulos ou configure tudo antes de começar.
+A profundidade fica disponível nos detalhes. A experiência diária precisa devolver contexto com os dados recebidos, sem transferir ao usuário a tarefa de recompor uma planilha. Registro manual continua para percepções, decisões e informações que nenhuma fonte fornece.
 
-## Base implementada · ciclo 0.3.1
+## Base implementada · ciclo 0.4
 
-O protótipo oferece check-in manual de energia, humor, estresse, sono, peso e passos opcionais; água e refeições corrigíveis; séries e distância de corrida; cinco cuidados diários; foco em projeto/estudo; progresso e insights de cursos; wishlist; metas; panorama de sete dias e backups locais validados. IndexedDB mantém os registros no navegador e coordena gravações entre abas.
+“Hoje” passou a reunir panorama de saúde, estado das fontes, séries com lacunas, contexto do dia, atividade técnica, foco e ações de rotina. A central de fontes permite conectar um perfil GitHub público e importar medidas do Apple Saúde em lote. O cronômetro mede foco com pausa/retomada, persiste entre recargas e registra sua conclusão atomicamente.
 
-**Treinos, cursos e cuidados ainda usam modelos predefinidos.** Telemetria Garmin e eventos GitHub são demonstrações identificadas. O espaço pessoal começa sem registros fictícios e mostra integrações indisponíveis. Ainda não existem agentes, conexão com Apple Saúde, exportação de treino para outras apps ou sincronização entre dispositivos.
+GitHub recebe até 100 eventos públicos e atualiza enquanto a página está visível, em cadência mínima de dez minutos sujeita à disponibilidade e quota. Essa cobertura não representa todo o histórico, commits não são inferidos de pushes e a conexão não lê repositórios privados.
 
-A [revisão de qualidade](QUALITY-REVIEW.md) documenta verificações e limites da base. As propostas abaixo são direção de produto; não são funcionalidades já conectadas.
+A saúde vem de um XML compatível escolhido pelo usuário, até 12 MiB, processado localmente em Web Worker. O importador normaliza oito métricas opcionais e retém até 14 dias a partir da medida mais recente do arquivo. Origem e data permanecem visíveis; ausências continuam `null`. Importar não é sincronizar continuamente com HealthKit ou Garmin.
+
+A base anterior continua disponível: check-in, água, refeições corrigíveis, séries, corrida, cuidados diários, cursos/insights predefinidos, wishlist, metas e resumos locais. **Treinos, cursos e cuidados ainda usam modelos fixos.** O modo pessoal começa sem registros fictícios; as prévias são identificadas. Ainda não existem agentes, transferência de treino para outras apps ou sincronização entre dispositivos. O backup do espaço não inclui snapshots de fontes nem cronômetro ativo; fontes são reconectadas/reimportadas separadamente.
+
+A [revisão de qualidade](QUALITY-REVIEW.md) documenta verificações e limites. A [pesquisa de integrações](INTEGRATIONS.md) separa vias verificadas e propostas; o [benchmark](MARKET-RESEARCH.md) registra as restrições de acesso aos concorrentes, sem apresentar uma comparação não realizada.
 
 ## Experiência diária
 
-O núcleo permanece **consultar → agir → registrar → continuar o dia**. “Hoje” oferece contexto; “Corpo” reúne rotina e recuperação; “Evoluir” aproxima construção e aprendizado; “Coleção” mantém planos de aquisição fora do caminho das ações frequentes. O botão central abre registros rápidos.
+O núcleo evolui para **receber → normalizar → contextualizar → permitir agir**. “Hoje” oferece uma leitura do dia; “Corpo” reúne rotina e recuperação; “Evoluir” aproxima construção e aprendizado; “Fontes” explicita conexão, importação e cobertura. Planos de aquisição permanecem acessíveis sem dominar o acompanhamento. O botão central abre registros rápidos.
 
 - Priorizar poucos sinais e próximos passos relevantes em “Hoje”. Detalhes, histórico e ajustes abrem sob demanda; módulos podem ser ativados conforme a rotina da pessoa.
 - Preservar ações diretas, correção e desfazer. Um hábito não pode exigir o mesmo formulário de uma refeição ou de um protocolo de treino.
@@ -28,7 +32,7 @@ O núcleo permanece **consultar → agir → registrar → continuar o dia**. �
 
 O acompanhamento deve funcionar entre plataformas, sem depender de integrações específicas para começar. O cadastro livre inclui nome, plataforma, URL, objetivo e estado: planejado, em andamento, pausado ou concluído. A pessoa informa módulos/aulas quando conhece essa estrutura; sem denominador confiável, o app não inventa uma porcentagem.
 
-Cada sessão de estudo pode ser vinculada a um curso ou tema, com tempo efetivamente registrado, conteúdo estudado e um próximo passo opcional. O foco já existente é uma base para essa ligação; o vínculo ainda precisa ser implementado. Duração prevista do curso e tempo dedicado são informações distintas.
+Cada sessão de estudo poderá ser vinculada a um curso ou tema, com tempo medido, conteúdo estudado e um próximo passo opcional. O cronômetro de foco já oferece a base temporal; o vínculo com cursos ainda precisa ser implementado. Duração prevista do curso, tempo dedicado e evidências de aprendizagem são informações distintas.
 
 A compreensão deve aparecer por evidências simples: um insight, exercício concluído, explicação com palavras próprias, código/projeto produzido ou aplicação prática. Revisões curtas podem recuperar essas ideias depois. Uma percepção de compreensão deve ser identificada como subjetiva; minutos assistidos e aulas marcadas não comprovam qualidade da aprendizagem.
 
@@ -42,7 +46,7 @@ Registrar por data, permitir corrigir/desfazer e distinguir “não previsto”,
 
 ## Saúde · Apple Saúde como fonte principal
 
-A direção escolhida é reunir no Apple Saúde os dados que os dispositivos e suas apps autorizarem compartilhar. Garmin, Whoop, Fitbit e outros podem ter coberturas e políticas diferentes; não se presume que toda métrica do dispositivo chegará ao Apple Saúde.
+A direção escolhida é reunir no Apple Saúde os dados que os dispositivos e suas apps autorizarem compartilhar. O XML local da versão 0.4 já permite acompanhar um subconjunto dessas medidas sem digitar valor por valor, mas exige nova importação para atualizar. Garmin, WHOOP, Fitbit e outros têm coberturas e políticas diferentes; não se presume que toda métrica do dispositivo chegará ao Apple Saúde.
 
 **Uma PWA no Safari não acessa HealthKit diretamente.** Essa integração exige uma camada nativa iOS com as permissões e capacidades necessárias. Uma opção a avaliar é preservar a interface web em um contêiner como Capacitor e implementar uma ponte HealthKit. Essa viabilidade precisa ser validada antes de prometer sincronização; não está implementada.
 
@@ -63,11 +67,11 @@ Um agente de apoio é futuro e opcional. Ele precisará consultar fontes confiá
 
 O usuário poderá fornecer contexto e objetivos para um agente com uma estrutura mais profunda: exercícios, séries, repetições, carga, repetições em reserva (RIR), intervalos, progressão e técnicas como rest-pause quando pertinentes. A proposta precisa ser revisável e explicar suas escolhas; não deve reduzir o treino a uma ficha genérica ou impor apoio por IA a quem não o deseja.
 
-O KernelHub poderá preparar uma estrutura de passagem para uma app especializada de execução, como a Hevy: PDF legível e, se houver suporte verificado, formato de importação. **Não foi confirmada uma API, importação automática ou formato aceito pela Hevy.** O fluxo de transferência será decidido após validar essas possibilidades, sem prometer sincronização inexistente.
+O KernelHub poderá preparar uma estrutura de passagem para uma app especializada de execução, como a Hevy: PDF legível e, se houver acesso e formato suportados, transferência estruturada. A pesquisa encontrou uma especificação OpenAPI/OAuth no repositório oficial do HevyGPT, incluindo leitura de treinos/rotinas e escrita de rotinas. Isso não confirma acesso geral ao mesmo OAuth, elegibilidade, plano ou contrato de produção para o KernelHub. A integração não está implementada; a passagem precisa validar quais campos e permissões são realmente aceitos.
 
 ## Engenharia, aquisições e dados
 
-GitHub permanece como integração futura de leitura, com o menor escopo possível no backend. Commits, PRs e deploys são eventos distintos; deploy não deve ser inferido de commits. Autorização, credenciais, webhooks assinados, deduplicação e reconciliação precisam existir antes da conexão real. Contagem de atividade não equivale a qualidade ou valor do trabalho.
+GitHub público já é uma fonte real de leitura, sem senha/token no frontend. Dados privados, webhooks e acompanhamento contínuo ainda exigem backend e autorização com menor escopo. Commits, PRs, releases e deploys são eventos distintos; o feed limitado não comprova histórico completo nem streak. Contagem de atividade não equivale a qualidade ou valor do trabalho.
 
 A wishlist mantém objetivo, prioridade, custo e estado, ajudando a escolher recursos para a rotina. Não precisa virar checkout ou inventário complexo para ser útil.
 
@@ -75,10 +79,10 @@ Na evolução do domínio, separar catálogos, protocolos e eventos de execuçã
 
 ## Ordem de evolução
 
-1. Resolver bugs de integridade e validar “Hoje” no iPhone real: instalação, teclado, safe areas, VoiceOver e conclusão das ações frequentes.
-2. Implementar cursos livres e hábitos configuráveis, com registros corrigíveis e detalhes progressivos. Observar quais campos são usados antes de ampliar formulários.
-3. Decidir a camada nativa para HealthKit e validar um conjunto pequeno de medidas úteis, com permissões e origem claras.
-4. Conectar fontes reais que reduzam digitação, incluindo GitHub; estruturar suplementação com unidades e referências verificáveis.
+1. Validar o novo panorama no iPhone real: instalação, teclado, safe areas, VoiceOver, arquivo real de saúde, retomada do cronômetro e ações frequentes. Resolver falhas antes de ampliar fontes.
+2. Observar o contexto recebido e refinar comparações úteis, cobertura, datas e próximos passos; uma métrica ausente não deve bloquear as demais.
+3. Implementar cursos livres e hábitos configuráveis, aproveitando o foco medido e mantendo detalhes progressivos.
+4. Viabilizar a camada nativa HealthKit e conectores autorizados que reduzam novas importações/digitação. Estruturar suplementação com unidades e referências verificáveis.
 5. Adicionar agentes opcionais de treino e suplementação após consolidar dados, limites, revisão e transferência para outras apps.
 
 Durante o uso, avaliar tempo até o primeiro registro, campos abandonados, correções necessárias, módulos ignorados e retorno às anotações. A próxima mudança deve reduzir esforço ou melhorar uma decisão concreta; aumentar o número de métricas não basta.

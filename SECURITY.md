@@ -1,6 +1,6 @@
 # Segurança do KernelHub
 
-O protótipo atual não possui servidor de contas, login, API de integração ou armazenamento remoto. Os registros são locais, em IndexedDB; a migração da versão anterior preserva o JSON de localStorage até confirmar a gravação. O service worker armazena somente o shell e arquivos públicos.
+O aplicativo não possui servidor próprio de contas, login ou armazenamento remoto. A conexão opcional do GitHub consulta exclusivamente a API pública, sem senha ou token; a importação de saúde é processada localmente em um Web Worker. Os registros são locais, em IndexedDB; a migração da versão anterior preserva o JSON de localStorage até confirmar a gravação. O service worker armazena somente o shell e arquivos públicos.
 
 ## Proteções implementadas
 
@@ -8,8 +8,12 @@ O protótipo atual não possui servidor de contas, login, API de integração ou
 - Transações atômicas para ações em múltiplas abas; falhas de gravação preservam a sessão e exibem aviso.
 - Renderização de texto pelo React, sem HTML fornecido pelo usuário.
 - Cache limitado à origem/caminho do app e fora das APIs; variantes de consulta dos assets usam chave canônica.
+- XML de saúde limitado a 12 MiB e 150 mil registros; entidades externas e estruturas incompatíveis são rejeitadas. O importador não executa XML nem busca recursos externos.
+- Snapshots das fontes passam por validação; revisões transacionais impedem que respostas anteriores restaurem uma conexão ou dados removidos em outra aba.
+- Conclusão do cronômetro grava o bloco e consome a sessão em uma única transação, sem duplicar minutos.
+- GitHub: timeout, limite de resposta, URLs validadas, respeito à quota e preservação da última leitura quando a atualização falha.
 - Dependências fixadas por lockfile, Actions fixadas por SHA e verificações automatizadas.
-- Headers contra MIME sniffing e framing no modo com servidor, com CSP específica do worker.
+- Headers contra MIME sniffing e framing no modo com servidor, com CSP específica do service worker. O importador de saúde usa um worker de mesma origem, sem Blob ou código remoto.
 
 ## Limites importantes
 
@@ -17,7 +21,7 @@ Os dados e backups não são criptografados pelo app. Outras páginas da mesma o
 
 Os headers de `next.config.ts` não são aplicados no export estático pelo GitHub Pages. Uma hospedagem/proxy deve configurá-los. CSP estrita da página, autenticação, rate limiting, OAuth e testes de brute force precisam ser tratados quando existir backend; atualmente não há endpoints desse tipo.
 
-Após atualizar da versão 0.2, recarregue as abas antigas antes de continuar. Limpar os dados do navegador remove o banco local. Durante uma falha de gravação, ações ainda não confirmadas podem se perder se o app for fechado; exporte a sessão antes de sair.
+Após atualizar da versão 0.2, recarregue as abas antigas antes de continuar. Limpar os dados do navegador remove os bancos locais. O backup JSON inclui os registros do KernelHub; snapshots de GitHub/Saúde e o cronômetro em andamento são separados e não entram nele. Durante uma falha de gravação, ações ainda não confirmadas podem se perder se o app for fechado; exporte a sessão antes de sair.
 
 ## Verificação
 

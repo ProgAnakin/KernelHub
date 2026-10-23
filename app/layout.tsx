@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./shell.css";
+import "./pulse.css";
 import { assetPath } from "@/lib/paths";
 import packageInfo from "../package.json";
 
@@ -7,7 +9,7 @@ export const metadata: Metadata = {
   applicationName: "KernelHub",
   title: "KernelHub — Sua evolução, todos os dias",
   description:
-    "Um espaço pessoal para cuidar do corpo, construir projetos e continuar aprendendo. Protótipo local com dados demonstrativos.",
+    "Um espaço pessoal para cuidar do corpo, construir projetos e continuar aprendendo. Saúde importada, atividade pública do GitHub e foco acompanhado em um espaço local e privado.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

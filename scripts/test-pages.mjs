@@ -4,18 +4,24 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
 import { chromium, expect } from "@playwright/test";
 
-async function stored(page) {
+async function record(page, database, store, key) {
   const raw = await page.evaluate(
-    () =>
+    ({ database, store, key }) =>
       new Promise((resolve, reject) => {
-        const open = indexedDB.open("kernelhub", 1);
+        const open = indexedDB.open(database, 1);
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
           const db = open.result;
-          const transaction = db.transaction("records", "readonly");
-          const request = transaction
-            .objectStore("records")
-            .get("kernelhub:state:v1");
+          let transaction;
+          let request;
+          try {
+            transaction = db.transaction(store, "readonly");
+            request = transaction.objectStore(store).get(key);
+          } catch (error) {
+            db.close();
+            reject(error);
+            return;
+          }
           let value = null;
           request.onsuccess = () => {
             value = request.result;
@@ -30,10 +36,17 @@ async function stored(page) {
           };
         };
       }),
+    { database, store, key },
   );
-  assert.equal(typeof raw, "string", "KernelHub record exists after hydration");
+  if (raw === undefined || raw === null) return null;
+  assert.equal(typeof raw, "string", "IndexedDB record contains JSON text");
   return JSON.parse(raw);
 }
+
+const stored = (page) =>
+  record(page, "kernelhub", "records", "kernelhub:state:v1");
+const healthRecord = (page) =>
+  record(page, "kernelhub-health", "snapshots", "latest");
 
 const base =
   (process.env.NEXT_PUBLIC_BASE_PATH ?? "/KernelHub").replace(/\/$/, "") + "/";
@@ -113,6 +126,11 @@ try {
     await navigator.serviceWorker.ready;
   });
   await page.waitForFunction(() => navigator.serviceWorker.controller);
+  assert.equal(
+    await healthRecord(page),
+    null,
+    "No health import was performed during the initial online visit",
+  );
   slowNavigation = true;
   const reloadStarted = performance.now();
   await page.reload({ waitUntil: "domcontentloaded" });
@@ -129,9 +147,71 @@ try {
     .getByRole("button", { name: "Adicionar 250 ml de água", exact: true })
     .click();
   await expect.poll(async () => (await stored(page)).waterMl).toBe(2000);
+  // The first actual XML parse happens after going offline and reloading. Its
+  // worker and every bootstrap/import dependency must come from the app cache.
+  await page
+    .getByRole("button", { name: "Fontes e conexões", exact: true })
+    .click();
+  const start = new Date(Date.now() - 2 * 3600_000).toISOString();
+  const end = new Date(Date.now() - 3600_000).toISOString();
+  await page.getByLabel("Arquivo XML do Apple Saúde").setInputFiles({
+    name: "offline-export.xml",
+    mimeType: "application/xml",
+    buffer: Buffer.from(
+      `<?xml version="1.0"?><HealthData><Record type="HKQuantityTypeIdentifierStepCount" sourceName="Relógio offline de teste" unit="count" value="1800" startDate="${start}" endDate="${end}"/></HealthData>`,
+    ),
+  });
+  const importer = page.getByRole("region", { name: "Importação Apple Saúde" });
+  await expect(
+    importer.getByText("Arquivo importado", { exact: true }),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(importer).toContainText("1 de 8 métricas");
+  await expect
+    .poll(async () => (await healthRecord(page))?.metrics.steps.value)
+    .toBe(1800);
+  const health = await healthRecord(page);
+  assert.equal(health.fileName, "offline-export.xml");
+  assert.equal(health.metrics.steps.samples, 1);
+  assert.equal(health.metrics.sleepHours.value, null);
+  assert.ok(
+    Object.entries(health.metrics)
+      .filter(([metric]) => metric !== "steps")
+      .every(([, reading]) => reading.value === null),
+    "Metrics absent from the XML remain empty",
+  );
+  assert.deepEqual(health.sources, ["Relógio offline de teste"]);
+  assert.equal(health.coverage.records, 1);
+  assert.equal(health.coverage.acceptedRecords, 1);
+  assert.equal(health.coverage.ignoredRecords, 0);
+  await page
+    .getByRole("button", { name: "Fechar painel", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+  await expect(
+    page.getByRole("button", { name: "Fontes e conexões", exact: true }),
+  ).toContainText("1 fonte com dados");
+  const panorama = page.getByRole("region", {
+    name: "Panorama de saúde",
+    exact: true,
+  });
+  await expect(panorama).toContainText("1/8 medidas · XML local");
+  await expect(panorama.locator(".kp-sleep-value")).toHaveText("—");
+  await expect(panorama.locator(".kp-preview-tag")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", {
+      name: "Panorama de saúde ilustrativo",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.locator('.app-background[aria-busy="false"]').waitFor();
+  await expect(panorama).toContainText("1/8 medidas · XML local");
+  await expect(panorama.locator(".kp-sleep-value")).toHaveText("—");
+  assert.deepEqual(await healthRecord(page), health);
+  assert.equal((await stored(page)).waterMl, 2000);
   assert.deepEqual(errors, []);
   console.log(
-    "Static Pages build: prefixed assets, manifest, slow-network fallback and offline IndexedDB records passed.",
+    "Static Pages build: prefixed assets, manifest, slow-network fallback, offline records and first offline XML worker import passed.",
   );
 } finally {
   await browser?.close();

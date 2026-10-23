@@ -1,7 +1,7 @@
 import { chromium, devices } from "@playwright/test";
 import { existsSync, mkdirSync } from "node:fs";
 
-const origin = process.env.SCREENSHOT_URL ?? "http://localhost:3002";
+const origin = process.env.SCREENSHOT_URL ?? "http://localhost:3030";
 mkdirSync("docs/images", { recursive: true });
 const browser = await chromium.launch({
   executablePath:
@@ -19,70 +19,62 @@ try {
     reducedMotion: "reduce",
   });
   const page = await context.newPage();
-  await page.clock.setFixedTime(new Date("2026-10-22T17:30:00+02:00"));
+  await page.clock.install({ time: new Date("2026-10-23T10:30:00+02:00") });
   await page.goto(origin);
   await page.locator('.app-background[aria-busy="false"]').waitFor();
   await page.screenshot({ path: "docs/images/iphone-today.png" });
   await page
-    .getByRole("button", { name: "Fazer meu check-in", exact: true })
+    .getByRole("button", { name: "Fontes e conexões", exact: true })
     .click();
-  await page.getByRole("button", { name: "Fechar painel" }).hover();
-  await page
-    .getByRole("button", { name: "Energia percebida: 4, Boa", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Humor: 4, Bem", exact: true })
-    .click();
+  await page.getByRole("dialog").waitFor();
   await page.waitForFunction(
     () =>
       Number(
         getComputedStyle(document.querySelector(".bottom-sheet")).opacity,
       ) > 0.995,
   );
-  await page.screenshot({ path: "docs/images/iphone-checkin.png" });
-  await page.getByLabel("Sono de ontem (h)").fill("7.5");
-  await page.getByLabel("Peso (kg)", { exact: false }).fill("76.4");
-  await page.getByLabel("Passos de hoje", { exact: false }).fill("8200");
-  await page.getByRole("button", { name: "Salvar meu check-in" }).click();
-  await page
-    .getByRole("button", { name: "Registrar bloco de foco", exact: true })
-    .click();
-  await page.getByRole("button", { name: "50 min", exact: true }).click();
-  await page
-    .getByLabel("O que avançou?", { exact: false })
-    .fill("Entreguei a próxima etapa do projeto.");
-  await page.getByRole("button", { name: "Registrar bloco concluído" }).click();
+  await page.screenshot({ path: "docs/images/iphone-sources.png" });
   await page.getByRole("button", { name: "Fechar painel" }).click();
+  await page.clock.runFor(500);
   await page.getByRole("dialog").waitFor({ state: "detached" });
-  await page.locator(".toast").waitFor({ state: "detached" });
-  await page.setViewportSize({ width: 1440, height: 1080 });
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: "docs/images/overview.png", fullPage: true });
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Iniciar foco", exact: true }).click();
+  await page.getByRole("button", { name: /^50\s?min$/ }).click();
   await page
-    .getByRole("button", { name: "Registrar refeição", exact: true })
-    .click();
-  await page.getByLabel("Nome da refeição").fill("Almoço");
-  await page.locator("#protein").fill("30");
-  await page.locator("#carbs").fill("45");
-  await page.locator("#fat").fill("12");
-  await page
-    .getByRole("button", { name: "Salvar refeição", exact: true })
-    .click();
-  await page.getByRole("dialog").waitFor({ state: "detached" });
-  await page.locator(".toast").waitFor({ state: "detached" });
-  await page
-    .getByRole("button", { name: "Registrar refeição", exact: true })
-    .click();
-  await page.locator(".meal-entry-list").scrollIntoViewIfNeeded();
+    .getByLabel("Uma intenção", { exact: false })
+    .fill("Construir a próxima etapa do projeto");
   await page.waitForFunction(
     () =>
       Number(
         getComputedStyle(document.querySelector(".bottom-sheet")).opacity,
       ) > 0.995,
   );
-  await page.screenshot({ path: "docs/images/iphone-nutrition.png" });
-  console.log("Demo-only interface screenshots saved in docs/images.");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Iniciar foco", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Pausar", exact: true }).waitFor();
+  await page.clock.fastForward(65_000);
+  await page.getByRole("button", { name: "Pausar", exact: true }).click();
+  await page.locator(".sheet-content").evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await page.screenshot({ path: "docs/images/iphone-focus.png" });
+  const desktop = await browser.newContext({
+    viewport: { width: 1440, height: 1080 },
+    deviceScaleFactor: 1,
+    locale: "pt-BR",
+    timezoneId: "Europe/Rome",
+    reducedMotion: "reduce",
+  });
+  const overview = await desktop.newPage();
+  await overview.clock.setFixedTime(new Date("2026-10-23T10:30:00+02:00"));
+  await overview.goto(origin);
+  await overview.locator('.app-background[aria-busy="false"]').waitFor();
+  await overview.screenshot({
+    path: "docs/images/overview.png",
+    fullPage: true,
+  });
+  console.log("Demo-only screenshots saved in docs/images.");
 } finally {
   await browser.close();
 }

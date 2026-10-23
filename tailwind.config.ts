@@ -6,6 +6,8 @@ export default {
     extend: {
       colors: {
         oled: "#000000",
+        pulse: "#C8F06A",
+        signal: "#55AAFF",
         surface: "rgba(255,255,255,0.04)",
         hairline: "rgba(255,255,255,0.08)",
         emerald: "#30D158",
