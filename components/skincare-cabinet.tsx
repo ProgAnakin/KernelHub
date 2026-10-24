@@ -154,238 +154,242 @@ export function SkincareCabinet({
         ))}
       </div>
       {view === "routine" && (
-        <>
-          <div className="sk-cabinet-stage">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                className={`sk-cabinet sk-light-${skin.period}`}
-                role="group"
-                key={skin.period}
-                initial={
-                  reduced ? { opacity: 1 } : { rotateY: -80, opacity: 0 }
-                }
-                animate={{ rotateY: 0, opacity: 1 }}
-                exit={reduced ? { opacity: 1 } : { rotateY: 80, opacity: 0 }}
-                transition={reduced ? { duration: 0 } : SPRING}
-                aria-label={`Armário ${skin.period.toUpperCase()}, três prateleiras`}
-              >
-                <div className="sk-cabinet-light" aria-hidden="true" />
-                {[1, 2, 3].map((shelf) => (
-                  <div
-                    className="sk-shelf"
-                    role="group"
-                    key={shelf}
-                    aria-label={`Prateleira ${shelf}`}
-                  >
-                    <span className="sk-shelf-number" aria-hidden="true">
-                      0{shelf}
-                    </span>
-                    <div className="sk-shelf-products">
-                      {active
-                        .filter((p) => p.shelf === shelf)
-                        .map((product) => {
-                          const status =
-                            skin.today.entries[skin.period][product.id]
-                              ?.status ?? "pending";
-                          return (
-                            <button
-                              key={product.id}
-                              className={`sk-bottle sk-bottle-${product.kind} sk-bottle-${status}`}
-                              onClick={() => selectProduct(product.id)}
-                              aria-label={`Ver ${product.name} na rotina ${skin.period.toUpperCase()}`}
-                              disabled={busy || !doorsOpen}
-                            >
-                              <span className="sk-bottle-lid" />
-                              <span className="sk-bottle-body">
-                                <span
-                                  className="sk-bottle-mark"
-                                  aria-hidden="true"
-                                >
-                                  K
-                                </span>
-                                <strong>{product.name}</strong>
-                                <small>
-                                  {product.brand || KINDS[product.kind]}
-                                </small>
-                                <span
-                                  className="sk-bottle-status"
-                                  aria-hidden="true"
-                                >
-                                  {status === "used" ? (
-                                    <Check size={11} />
-                                  ) : status === "skipped" ? (
-                                    <X size={11} />
-                                  ) : (
-                                    "·"
-                                  )}
-                                </span>
-                              </span>
-                            </button>
-                          );
-                        })}
-                      {!active.some((p) => p.shelf === shelf) && (
-                        <span className="sk-shelf-empty">
-                          {shelf === 2 && !active.length
-                            ? "Um espaço para seus cuidados."
-                            : "Espaço livre"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <div className="sk-door-track" aria-hidden="true">
-                  <motion.div
-                    className="sk-door sk-door-left"
-                    animate={{ x: doorsOpen ? "-99%" : "0%" }}
-                    transition={reduced ? { duration: 0 } : SPRING}
-                  >
-                    <span />
-                  </motion.div>
-                  <motion.div
-                    className="sk-door sk-door-right"
-                    animate={{ x: doorsOpen ? "99%" : "0%" }}
-                    transition={reduced ? { duration: 0 } : SPRING}
-                  >
-                    <span />
-                  </motion.div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          <div className="sk-cabinet-controls">
-            <span>
-              {skin.period === "am" ? <Sun size={14} /> : <Moon size={14} />}{" "}
-              {skin.period === "am" ? "Luz da manhã" : "Luz do fim do dia"}
-            </span>
-            <button
-              onClick={() => setDoorsOpen(!doorsOpen)}
-              aria-expanded={doorsOpen}
-            >
-              <DoorOpen size={16} />
-              {doorsOpen ? "Fechar portas" : "Abrir portas"}
-            </button>
-          </div>
-          <div
-            className="sk-metrics"
-            role="group"
-            aria-label="Conclusão diária por período"
-          >
-            {PERIODS.map(({ id, label }) => {
-              const m = routineMetrics(skin.today, id);
-              return (
-                <div
-                  key={id}
-                  className={skin.period === id ? "is-current" : ""}
-                >
-                  <div>
-                    <span>{label}</span>
-                    <strong>{m.percent}%</strong>
-                  </div>
-                  <div
-                    className="sk-progress"
-                    role="progressbar"
-                    aria-label={`Conclusão ${id.toUpperCase()}`}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={m.percent}
-                  >
-                    <i style={{ width: `${m.percent}%` }} />
-                  </div>
-                  <b>
-                    {m.used}/{m.planned} utilizados
-                  </b>
-                  <small>
-                    {m.planned
-                      ? `${m.pending} pendentes · ${m.skipped} não usados`
-                      : "Sem produtos planejados"}
-                  </small>
-                </div>
-              );
-            })}
-          </div>
-          <div className="sk-section-heading">
-            <div>
-              <h3>Sua sequência · {skin.period.toUpperCase()}</h3>
-              <p>A ordem e os checks pertencem a este período.</p>
-            </div>
-            <button
-              className="icon-button"
-              onClick={() => setView("products")}
-              aria-label="Gerenciar produtos de skincare"
-            >
-              <Plus size={18} />
-            </button>
-          </div>
-          {skin.today.plans[skin.period].length ? (
-            <ol className="sk-routine-list" ref={list}>
-              {skin.today.plans[skin.period].map((product, index) => (
-                <RoutineStep
-                  key={`${skin.day}-${skin.period}-${product.id}`}
-                  skin={skin}
-                  product={product}
-                  index={index}
-                  highlighted={highlight === product.id}
-                />
-              ))}
-            </ol>
-          ) : (
-            <div className="sk-empty">
-              <FlaskConical size={27} />
-              <h3>Uma rotina que começa por você.</h3>
-              <p>
-                Cadastre seus produtos e escolha quando usá-los. O mesmo frasco
-                pode participar da manhã e da noite.
-              </p>
-              <button
-                className="primary-button"
-                onClick={() => setView("products")}
-              >
-                <Plus size={16} />
-                Adicionar meus produtos
-              </button>
-            </div>
-          )}
-          <details className="sk-auto-settings">
-            <summary>
-              Horário automático <ChevronRight size={15} />
-            </summary>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                const [hour, minute] = (
-                  transition ?? timeLabel(skin.settings.transitionMinute)
-                )
-                  .split(":")
-                  .map(Number);
-                void skin.updateTransition(hour * 60 + minute).then((ok) => {
-                  if (ok) setTransition(null);
-                });
-              }}
-            >
-              <label>
-                Trocar para a noite às
-                <input
-                  type="time"
-                  value={
-                    transition ?? timeLabel(skin.settings.transitionMinute)
+        <div className="sk-routine-workspace">
+          <div className="sk-cabinet-column">
+            <div className="sk-cabinet-stage">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  className={`sk-cabinet sk-light-${skin.period}`}
+                  role="group"
+                  key={skin.period}
+                  initial={
+                    reduced ? { opacity: 1 } : { rotateY: -80, opacity: 0 }
                   }
-                  min="00:01"
-                  max="23:59"
-                  required
-                  onChange={(event) => setTransition(event.target.value)}
-                  disabled={busy}
-                />
-              </label>
-              <button className="secondary-button" disabled={busy}>
-                Salvar horário
+                  animate={{ rotateY: 0, opacity: 1 }}
+                  exit={reduced ? { opacity: 1 } : { rotateY: 80, opacity: 0 }}
+                  transition={reduced ? { duration: 0 } : SPRING}
+                  aria-label={`Armário ${skin.period.toUpperCase()}, três prateleiras`}
+                >
+                  <div className="sk-cabinet-light" aria-hidden="true" />
+                  {[1, 2, 3].map((shelf) => (
+                    <div
+                      className="sk-shelf"
+                      role="group"
+                      key={shelf}
+                      aria-label={`Prateleira ${shelf}`}
+                    >
+                      <span className="sk-shelf-number" aria-hidden="true">
+                        0{shelf}
+                      </span>
+                      <div className="sk-shelf-products">
+                        {active
+                          .filter((p) => p.shelf === shelf)
+                          .map((product) => {
+                            const status =
+                              skin.today.entries[skin.period][product.id]
+                                ?.status ?? "pending";
+                            return (
+                              <button
+                                key={product.id}
+                                className={`sk-bottle sk-bottle-${product.kind} sk-bottle-${status}`}
+                                onClick={() => selectProduct(product.id)}
+                                aria-label={`Ver ${product.name} na rotina ${skin.period.toUpperCase()}`}
+                                disabled={busy || !doorsOpen}
+                              >
+                                <span className="sk-bottle-lid" />
+                                <span className="sk-bottle-body">
+                                  <span
+                                    className="sk-bottle-mark"
+                                    aria-hidden="true"
+                                  >
+                                    K
+                                  </span>
+                                  <strong>{product.name}</strong>
+                                  <small>
+                                    {product.brand || KINDS[product.kind]}
+                                  </small>
+                                  <span
+                                    className="sk-bottle-status"
+                                    aria-hidden="true"
+                                  >
+                                    {status === "used" ? (
+                                      <Check size={11} />
+                                    ) : status === "skipped" ? (
+                                      <X size={11} />
+                                    ) : (
+                                      "·"
+                                    )}
+                                  </span>
+                                </span>
+                              </button>
+                            );
+                          })}
+                        {!active.some((p) => p.shelf === shelf) && (
+                          <span className="sk-shelf-empty">
+                            {shelf === 2 && !active.length
+                              ? "Um espaço para seus cuidados."
+                              : "Espaço livre"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="sk-door-track" aria-hidden="true">
+                    <motion.div
+                      className="sk-door sk-door-left"
+                      animate={{ x: doorsOpen ? "-99%" : "0%" }}
+                      transition={reduced ? { duration: 0 } : SPRING}
+                    >
+                      <span />
+                    </motion.div>
+                    <motion.div
+                      className="sk-door sk-door-right"
+                      animate={{ x: doorsOpen ? "99%" : "0%" }}
+                      transition={reduced ? { duration: 0 } : SPRING}
+                    >
+                      <span />
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <div className="sk-cabinet-controls">
+              <span>
+                {skin.period === "am" ? <Sun size={14} /> : <Moon size={14} />}{" "}
+                {skin.period === "am" ? "Luz da manhã" : "Luz do fim do dia"}
+              </span>
+              <button
+                onClick={() => setDoorsOpen(!doorsOpen)}
+                aria-expanded={doorsOpen}
+              >
+                <DoorOpen size={16} />
+                {doorsOpen ? "Fechar portas" : "Abrir portas"}
               </button>
-            </form>
-            <p>
-              Horário deste dispositivo. À meia-noite, o armário volta para AM.
-              Uma escolha manual termina na próxima mudança automática.
-            </p>
-          </details>
-        </>
+            </div>
+            <div
+              className="sk-metrics"
+              role="group"
+              aria-label="Conclusão diária por período"
+            >
+              {PERIODS.map(({ id, label }) => {
+                const m = routineMetrics(skin.today, id);
+                return (
+                  <div
+                    key={id}
+                    className={skin.period === id ? "is-current" : ""}
+                  >
+                    <div>
+                      <span>{label}</span>
+                      <strong>{m.percent}%</strong>
+                    </div>
+                    <div
+                      className="sk-progress"
+                      role="progressbar"
+                      aria-label={`Conclusão ${id.toUpperCase()}`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={m.percent}
+                    >
+                      <i style={{ width: `${m.percent}%` }} />
+                    </div>
+                    <b>
+                      {m.used}/{m.planned} utilizados
+                    </b>
+                    <small>
+                      {m.planned
+                        ? `${m.pending} pendentes · ${m.skipped} não usados`
+                        : "Sem produtos planejados"}
+                    </small>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="sk-steps-column">
+            <div className="sk-section-heading">
+              <div>
+                <h3>Sua sequência · {skin.period.toUpperCase()}</h3>
+                <p>A ordem e os checks pertencem a este período.</p>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setView("products")}
+                aria-label="Gerenciar produtos de skincare"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+            {skin.today.plans[skin.period].length ? (
+              <ol className="sk-routine-list" ref={list}>
+                {skin.today.plans[skin.period].map((product, index) => (
+                  <RoutineStep
+                    key={`${skin.day}-${skin.period}-${product.id}`}
+                    skin={skin}
+                    product={product}
+                    index={index}
+                    highlighted={highlight === product.id}
+                  />
+                ))}
+              </ol>
+            ) : (
+              <div className="sk-empty">
+                <FlaskConical size={27} />
+                <h3>Uma rotina que começa por você.</h3>
+                <p>
+                  Cadastre seus produtos e escolha quando usá-los. O mesmo
+                  frasco pode participar da manhã e da noite.
+                </p>
+                <button
+                  className="primary-button"
+                  onClick={() => setView("products")}
+                >
+                  <Plus size={16} />
+                  Adicionar meus produtos
+                </button>
+              </div>
+            )}
+            <details className="sk-auto-settings">
+              <summary>
+                Horário automático <ChevronRight size={15} />
+              </summary>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const [hour, minute] = (
+                    transition ?? timeLabel(skin.settings.transitionMinute)
+                  )
+                    .split(":")
+                    .map(Number);
+                  void skin.updateTransition(hour * 60 + minute).then((ok) => {
+                    if (ok) setTransition(null);
+                  });
+                }}
+              >
+                <label>
+                  Trocar para a noite às
+                  <input
+                    type="time"
+                    value={
+                      transition ?? timeLabel(skin.settings.transitionMinute)
+                    }
+                    min="00:01"
+                    max="23:59"
+                    required
+                    onChange={(event) => setTransition(event.target.value)}
+                    disabled={busy}
+                  />
+                </label>
+                <button className="secondary-button" disabled={busy}>
+                  Salvar horário
+                </button>
+              </form>
+              <p>
+                Horário deste dispositivo. À meia-noite, o armário volta para
+                AM. Uma escolha manual termina na próxima mudança automática.
+              </p>
+            </details>
+          </div>
+        </div>
       )}
       {view === "products" && <Products skin={skin} />}
       {view === "history" && (

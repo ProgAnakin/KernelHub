@@ -10,10 +10,12 @@ import {
   ArrowUpRight,
   Check,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export const SPRING = { type: "spring" as const, stiffness: 400, damping: 30 };
 
@@ -199,11 +201,59 @@ export function BottomSheet({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+  const gesture = useRef<{ id: number; y: number } | null>(null);
+  const [desktop, setDesktop] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const previousFocus = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const reduced = useReducedMotion();
   const dragControls = useDragControls();
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 900px)");
+    const update = () => setDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!open) setExpanded(false);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || desktop) return;
+    const viewport = window.visualViewport;
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const layer = layerRef.current;
+        if (!layer) return;
+        const height = viewport?.height ?? window.innerHeight;
+        layer.style.setProperty("--sheet-viewport-height", `${height}px`);
+        layer.style.setProperty(
+          "--sheet-viewport-top",
+          `${viewport?.offsetTop ?? 0}px`,
+        );
+        layer.dataset.keyboard = String(height < window.innerHeight - 120);
+      });
+    };
+    update();
+    viewport?.addEventListener("resize", update);
+    viewport?.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport?.removeEventListener("resize", update);
+      viewport?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      layerRef.current?.style.removeProperty("--sheet-viewport-height");
+      layerRef.current?.style.removeProperty("--sheet-viewport-top");
+    };
+  }, [open, desktop]);
 
   useEffect(() => {
     if (!open) return;
@@ -217,8 +267,14 @@ export function BottomSheet({
         onCloseRef.current();
       }
       if (event.key === "Tab") {
-        const controls = ref.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), textarea, select, [tabindex="0"]',
+        const controls = Array.from(
+          ref.current?.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex="0"]',
+          ) ?? [],
+        ).filter(
+          (element) =>
+            element.getClientRects().length > 0 &&
+            getComputedStyle(element).visibility !== "hidden",
         );
         if (!controls?.length) {
           event.preventDefault();
@@ -255,7 +311,7 @@ export function BottomSheet({
   return (
     <AnimatePresence>
       {open && (
-        <div className="sheet-layer">
+        <div className="sheet-layer" ref={layerRef} data-desktop={desktop}>
           <motion.div
             className="sheet-backdrop"
             initial={{ opacity: 0 }}
@@ -266,46 +322,97 @@ export function BottomSheet({
           />
           <motion.div
             className="bottom-sheet"
+            data-expanded={expanded}
+            onFocusCapture={(event) => {
+              if (
+                !desktop &&
+                event.target instanceof HTMLElement &&
+                event.target.matches("input, textarea, select")
+              )
+                setExpanded(true);
+            }}
             ref={ref}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="sheet-title"
-            initial={{ y: reduced ? 0 : "100%", opacity: reduced ? 0 : 1 }}
+            initial={{
+              y: reduced || desktop ? 0 : "12%",
+              opacity: 1,
+            }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: reduced ? 0 : "100%", opacity: reduced ? 0 : 1 }}
-            transition={SPRING}
-            drag="y"
+            exit={{ y: reduced || desktop ? 0 : "100%", opacity: 0 }}
+            transition={reduced ? { duration: 0 } : SPRING}
+            drag={desktop ? false : "y"}
             dragListener={false}
+            dragMomentum={false}
             dragControls={dragControls}
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.5 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.y > 65 || info.velocity.y > 600) onClose();
-            }}
+            dragElastic={{ top: 0.15, bottom: 0.45 }}
           >
             <div
               className="sheet-drag-zone"
-              onPointerDown={(event) => dragControls.start(event)}
+              onPointerDown={(event) => {
+                if (desktop || event.button !== 0 || !event.isPrimary) return;
+                gesture.current = { id: event.pointerId, y: event.clientY };
+                event.currentTarget.setPointerCapture(event.pointerId);
+                dragControls.start(event);
+              }}
+              onPointerUp={(event) => {
+                const start = gesture.current;
+                gesture.current = null;
+                if (!start || start.id !== event.pointerId) return;
+                const distance = event.clientY - start.y;
+                if (distance < -45) setExpanded(true);
+                else if (distance > 65) {
+                  if (expanded) setExpanded(false);
+                  else onClose();
+                }
+              }}
+              onPointerCancel={() => {
+                gesture.current = null;
+              }}
               aria-hidden="true"
             >
               <span />
             </div>
             <header className="sheet-header">
-              <div>
+              <div className="sheet-title-group">
+                <span className="sheet-workspace-label">
+                  KERNELHUB / MEU ESPAÇO
+                </span>
                 <h2 id="sheet-title">{title}</h2>
                 {subtitle && <p>{subtitle}</p>}
               </div>
-              <button
-                className="icon-button close-button"
-                onClick={onClose}
-                aria-label="Fechar painel"
-              >
-                <X size={20} />
-              </button>
+              <div className="sheet-window-actions">
+                <button
+                  type="button"
+                  className="icon-button sheet-expand-button"
+                  aria-label={expanded ? "Reduzir painel" : "Expandir painel"}
+                  aria-expanded={expanded}
+                  aria-controls="sheet-content"
+                  onClick={() => setExpanded((value) => !value)}
+                >
+                  {expanded ? (
+                    <ChevronDown size={20} />
+                  ) : (
+                    <ChevronUp size={20} />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="icon-button close-button"
+                  onClick={onClose}
+                  aria-label="Fechar painel"
+                >
+                  <span className="sheet-desktop-back">Voltar ao painel</span>
+                  <X size={20} />
+                </button>
+              </div>
             </header>
             <div
               className="sheet-content"
+              id="sheet-content"
               tabIndex={0}
               role="region"
               aria-label="Conteúdo do painel"

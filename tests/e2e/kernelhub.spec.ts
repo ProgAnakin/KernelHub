@@ -341,6 +341,13 @@ test("sheet traps keyboard focus, restores it and dismisses by swipe", async ({
   await expect(trigger).toBeFocused();
   await trigger.click();
   const handle = page.locator(".sheet-drag-zone");
+  if (!(await handle.isVisible())) {
+    await dialog
+      .getByRole("button", { name: "Fechar painel", exact: true })
+      .click();
+    await expect(dialog).not.toBeVisible();
+    return;
+  }
   await handle.hover();
   const box = await handle.boundingBox();
   if (!box) throw new Error("Drag handle unavailable");

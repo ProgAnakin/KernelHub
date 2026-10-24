@@ -4,6 +4,7 @@ import "./shell.css";
 import "./pulse.css";
 import "./skincare.css";
 import "./skincare-history.css";
+import "./panels.css";
 import { assetPath } from "@/lib/paths";
 import packageInfo from "../package.json";
 
