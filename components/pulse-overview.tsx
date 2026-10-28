@@ -33,7 +33,7 @@ import { useFocusTimer } from "@/lib/use-focus-timer";
 import type { useGithub } from "@/lib/use-github";
 import { summarizeGithubEvents } from "@/lib/github";
 import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
-import { summarizeDay, weekOf } from "@/lib/metrics";
+import { nextStep, summarizeDay, weekOf } from "@/lib/metrics";
 
 export interface PulseOverviewProps {
   state: KernelState;
@@ -260,6 +260,60 @@ function TextAction({
       <span>{children}</span>
       <ArrowUpRight size={17} strokeWidth={1.5} />
     </button>
+  );
+}
+function NextStepCard({
+  state,
+  act,
+  open,
+  onTimer,
+}: Pick<PulseOverviewProps, "state" | "act" | "open" | "onTimer">) {
+  const step = nextStep(state);
+  return (
+    <section className="kp-card kp-next" aria-label="Próximo passo">
+      <div className="kp-next-copy">
+        <span className="kp-overline">PRÓXIMO PASSO</span>
+        <h2>{step.title}</h2>
+        <p>{step.detail}</p>
+      </div>
+      <button
+        className="kp-primary-button kp-next-primary"
+        onClick={() => open(step.sheet)}
+        aria-label={`Próximo passo: ${step.label}`}
+      >
+        {step.label}
+        <ArrowUpRight size={17} strokeWidth={1.5} />
+      </button>
+      <div
+        className="kp-next-quick"
+        role="group"
+        aria-label="Atalhos de registro"
+      >
+        <button
+          onClick={() => act({ type: "water", amount: 250 })}
+          disabled={state.waterMl >= 10000}
+          aria-label="Atalho: +250 ml de água"
+        >
+          <Droplets size={15} strokeWidth={1.5} />
+          +250 ml
+        </button>
+        <button onClick={() => open("nutrition")} aria-label="Atalho: refeição">
+          <Flame size={15} strokeWidth={1.5} />
+          Refeição
+        </button>
+        <button onClick={onTimer} aria-label="Atalho: foco com cronômetro">
+          <Timer size={15} strokeWidth={1.5} />
+          Foco
+        </button>
+        <button
+          onClick={() => open("routine")}
+          aria-label="Atalho: armário de skincare"
+        >
+          <Check size={15} strokeWidth={1.5} />
+          Skincare
+        </button>
+      </div>
+    </section>
   );
 }
 function HealthCard({
@@ -1090,6 +1144,7 @@ export function PulseOverview(props: PulseOverviewProps) {
           Dados pessoais neste dispositivo
         </span>
       </div>
+      <NextStepCard {...props} />
       <div className="kp-grid">
         <HealthCard {...props} />
         <ContextCard {...props} />

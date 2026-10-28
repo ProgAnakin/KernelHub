@@ -399,3 +399,31 @@
 .backup-panel .inline-confirm > div {
   flex-wrap: wrap;
 }
+
+/* A reading from the imported file that can fill a check-in field. */
+.suggestion-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px dashed #c8f06a55;
+  border-radius: 12px;
+  background: #c8f06a08;
+  color: #d9e6c0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+}
+.suggestion-chip svg {
+  flex: none;
+  margin-top: 2px;
+  color: #c8f06a;
+}
+.suggestion-chip small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #98a58b;
+}

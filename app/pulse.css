@@ -1389,3 +1389,72 @@
     height: 25px;
   }
 }
+
+/* The first screen offers an action, not only a reading. */
+.kp-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-areas:
+    "copy primary"
+    "copy quick";
+  align-items: center;
+  gap: 14px 24px;
+  margin-bottom: 17px;
+  border-color: #c8f06a30;
+  background:
+    radial-gradient(120% 140% at 0% 0%, #c8f06a12, transparent 60%), #0d100d;
+}
+.kp-next-copy {
+  grid-area: copy;
+  min-width: 0;
+}
+.kp-next-copy h2 {
+  margin: 8px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.kp-next-copy p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a9b19c;
+}
+.kp-next-primary {
+  grid-area: primary;
+}
+.kp-next-quick {
+  grid-area: quick;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.kp-next-quick button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 52px;
+  padding: 8px 4px;
+  border: 1px solid #ffffff12;
+  border-radius: 11px;
+  background: #ffffff06;
+  color: #d4dcc8;
+  font-size: 11px;
+}
+.kp-next-quick button:disabled {
+  opacity: 0.45;
+}
+@media (max-width: 767px) {
+  .kp-next {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "copy" "primary" "quick";
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .kp-next-copy h2 {
+    font-size: 19px;
+  }
+}

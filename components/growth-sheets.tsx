@@ -8,6 +8,7 @@ import {
   Plus,
   ShieldCheck,
   Smartphone,
+  Sparkles,
 } from "lucide-react";
 import type {
   KernelAction,
@@ -16,7 +17,7 @@ import type {
   Rating,
 } from "@/types/kernel";
 import { checkinSchema, targetsSchema } from "@/lib/state";
-import { summarizeDay } from "@/lib/metrics";
+import { summarizeDay, type CheckinSuggestions } from "@/lib/metrics";
 import { readRecovery } from "@/lib/storage";
 import { saveBlob } from "@/lib/download";
 import { BackupPanel, type BackupBridge } from "./backup-panel";
@@ -31,13 +32,22 @@ interface Props {
 interface WorkspaceProps extends Props {
   backup: BackupBridge;
 }
+interface CheckinProps extends Props {
+  suggestions: CheckinSuggestions;
+}
 const RATING_LABELS = {
   energy: ["Muito baixa", "Baixa", "Regular", "Boa", "Muito boa"],
   mood: ["Muito difícil", "Difícil", "Neutro", "Bem", "Muito bem"],
   stress: ["Muito baixo", "Baixo", "Moderado", "Alto", "Muito alto"],
 };
 
-export function CheckinSheet({ state, act, onClose, onToast }: Props) {
+export function CheckinSheet({
+  state,
+  act,
+  onClose,
+  onToast,
+  suggestions,
+}: CheckinProps) {
   const [energy, setEnergy] = useState<Rating>(state.checkin?.energy ?? 3),
     [mood, setMood] = useState<Rating>(state.checkin?.mood ?? 3),
     [stress, setStress] = useState<Rating>(state.checkin?.stress ?? 2);
@@ -154,6 +164,48 @@ export function CheckinSheet({ state, act, onClose, onToast }: Props) {
           />
         </label>
       </div>
+      {(
+        [
+          {
+            key: "sleepHours",
+            label: "sono importado",
+            current: sleep,
+            apply: setSleep,
+          },
+          {
+            key: "weightKg",
+            label: "peso importado",
+            current: weight,
+            apply: setWeight,
+          },
+          {
+            key: "steps",
+            label: "passos importados",
+            current: steps,
+            apply: setSteps,
+          },
+        ] as const
+      ).map(({ key, label, current, apply }) => {
+        const suggestion = suggestions[key];
+        if (!suggestion || current === String(suggestion.value)) return null;
+        return (
+          <button
+            type="button"
+            key={key}
+            className="suggestion-chip"
+            onClick={() => apply(String(suggestion.value))}
+          >
+            <Sparkles size={14} />
+            <span>
+              Usar {label}: <strong>{suggestion.display}</strong>
+              <small>
+                {suggestion.source} ·{" "}
+                {suggestion.day.split("-").reverse().slice(0, 2).join("/")}
+              </small>
+            </span>
+          </button>
+        );
+      })}
       <label className="field-label" htmlFor="daily-steps">
         Passos de hoje <small>opcional · registro manual</small>
         <input

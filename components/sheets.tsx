@@ -32,7 +32,7 @@ import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { money } from "@/lib/format";
 import { CircleCheck, ListAction, Progress, useDraftGuard } from "./ui";
 import { CheckinSheet, FocusSheet, WorkspaceSheet } from "./growth-sheets";
-import { nextStep } from "@/lib/metrics";
+import { nextStep, type CheckinSuggestions } from "@/lib/metrics";
 import { SkincareCabinet } from "./skincare-cabinet";
 import type { BackupBridge } from "./backup-panel";
 
@@ -86,6 +86,7 @@ interface Props {
   onClose: () => void;
   onToast: (text: string) => void;
   backup: BackupBridge;
+  suggestions: CheckinSuggestions;
 }
 
 export function SheetContents(props: Props) {

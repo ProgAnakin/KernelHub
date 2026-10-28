@@ -33,6 +33,7 @@ import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
 import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { useKernel } from "@/lib/use-kernel";
 import { money } from "@/lib/format";
+import { checkinSuggestions } from "@/lib/metrics";
 import {
   BottomSheet,
   Card,
@@ -941,6 +942,7 @@ export function Dashboard() {
                 open={open}
                 onClose={close}
                 onToast={setToast}
+                suggestions={checkinSuggestions(health.snapshot, state.day)}
                 backup={{
                   githubUsername: github.username,
                   restore,
