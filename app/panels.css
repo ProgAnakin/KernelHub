@@ -322,3 +322,31 @@
     transition: none;
   }
 }
+
+/* Confirmation shown when a panel is closed with unsaved input. */
+.sheet-discard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 18px;
+  flex-shrink: 0;
+  padding: 14px 24px;
+  border-bottom: 1px solid #cbb18838;
+  background: #1b1810;
+}
+.sheet-discard strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.sheet-discard p {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c2cbb3;
+}
+.sheet-discard > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}

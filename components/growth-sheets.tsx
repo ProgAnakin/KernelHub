@@ -25,6 +25,7 @@ import {
 } from "@/lib/state";
 import { summarizeDay } from "@/lib/metrics";
 import { readRecovery } from "@/lib/storage";
+import { useDraftGuard } from "./ui";
 
 interface Props {
   state: KernelState;
@@ -48,6 +49,22 @@ export function CheckinSheet({ state, act, onClose, onToast }: Props) {
     [weight, setWeight] = useState(state.checkin?.weightKg?.toString() ?? ""),
     [steps, setSteps] = useState(state.checkin?.steps?.toString() ?? "");
   const [error, setError] = useState("");
+  const initial = useRef({
+    energy,
+    mood,
+    stress,
+    sleep,
+    weight,
+    steps,
+  }).current;
+  useDraftGuard(
+    energy !== initial.energy ||
+      mood !== initial.mood ||
+      stress !== initial.stress ||
+      sleep !== initial.sleep ||
+      weight !== initial.weight ||
+      steps !== initial.steps,
+  );
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const result = checkinSchema.safeParse({
@@ -175,6 +192,7 @@ export function FocusSheet({ state, act, onToast }: Props) {
     [minutes, setMinutes] = useState("25"),
     [outcome, setOutcome] = useState("");
   const total = summarizeDay(state).focusMinutes;
+  useDraftGuard(outcome.trim() !== "");
   const submit = (event: FormEvent) => {
     event.preventDefault();
     const value = Number(minutes);
@@ -326,10 +344,43 @@ function downloadJson(value: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const TARGET_FIELDS = [
+  "waterMl",
+  "focusMinutes",
+  "sleepHours",
+  "runKm",
+  "protein",
+  "carbs",
+  "fat",
+] as const;
+type TargetDraft = Record<(typeof TARGET_FIELDS)[number], string>;
+// Fields stay text while typing, so clearing one does not snap it back to 0.
+const targetDraft = (targets: PersonalTargets): TargetDraft => ({
+  waterMl: String(targets.waterMl),
+  focusMinutes: String(targets.focusMinutes),
+  sleepHours: String(targets.sleepHours),
+  runKm: String(targets.runKm),
+  protein: String(targets.macros.protein),
+  carbs: String(targets.macros.carbs),
+  fat: String(targets.macros.fat),
+});
+const targetsFromDraft = (draft: TargetDraft): PersonalTargets => ({
+  waterMl: Number(draft.waterMl),
+  focusMinutes: Number(draft.focusMinutes),
+  sleepHours: Number(draft.sleepHours),
+  runKm: Number(draft.runKm),
+  macros: {
+    protein: Number(draft.protein),
+    carbs: Number(draft.carbs),
+    fat: Number(draft.fat),
+  },
+});
+
 export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
   const [tab, setTab] = useState<"targets" | "data">("targets"),
-    [targets, setTargets] = useState<PersonalTargets>(
-      structuredClone(state.targets),
+    [draft, setDraft] = useState<TargetDraft>(() => targetDraft(state.targets)),
+    [savedDraft, setSavedDraft] = useState<TargetDraft>(() =>
+      targetDraft(state.targets),
     ),
     [pending, setPending] = useState<KernelState | null>(null),
     [error, setError] = useState(""),
@@ -348,14 +399,23 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
       active = false;
     };
   }, []);
+  useDraftGuard(
+    TARGET_FIELDS.some((field) => draft[field] !== savedDraft[field]),
+  );
   const submitTargets = (event: FormEvent) => {
     event.preventDefault();
-    const result = targetsSchema.safeParse(targets);
-    if (!result.success) {
-      setError("Confira as metas. Informe ao menos um macronutriente.");
+    const filled = TARGET_FIELDS.every((field) => draft[field].trim() !== "");
+    const result = filled
+      ? targetsSchema.safeParse(targetsFromDraft(draft))
+      : null;
+    if (!result?.success) {
+      setError(
+        "Confira as metas. Preencha todos os campos e informe ao menos um macronutriente.",
+      );
       return;
     }
     act({ type: "targets", value: result.data });
+    setSavedDraft(draft);
     setError("");
     onToast("Metas atualizadas para o seu ritmo.");
   };
@@ -459,12 +519,9 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
                   max={field.max}
                   step={field.step}
                   required
-                  value={targets[field.key]}
+                  value={draft[field.key]}
                   onChange={(event) =>
-                    setTargets({
-                      ...targets,
-                      [field.key]: Number(event.target.value),
-                    })
+                    setDraft({ ...draft, [field.key]: event.target.value })
                   }
                 />
               </label>
@@ -488,15 +545,9 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
                   max={field.max}
                   step="1"
                   required
-                  value={targets.macros[field.key]}
+                  value={draft[field.key]}
                   onChange={(event) =>
-                    setTargets({
-                      ...targets,
-                      macros: {
-                        ...targets.macros,
-                        [field.key]: Number(event.target.value),
-                      },
-                    })
+                    setDraft({ ...draft, [field.key]: event.target.value })
                   }
                 />
               </label>

@@ -30,7 +30,7 @@ import type {
 } from "@/types/kernel";
 import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { money } from "@/lib/format";
-import { CircleCheck, ListAction, Progress } from "./ui";
+import { CircleCheck, ListAction, Progress, useDraftGuard } from "./ui";
 import { CheckinSheet, FocusSheet, WorkspaceSheet } from "./growth-sheets";
 import { nextStep } from "@/lib/metrics";
 import { SkincareCabinet } from "./skincare-cabinet";
@@ -186,6 +186,7 @@ export function SheetContents(props: Props) {
 function WorkoutSheet({ state, act, onToast }: Props) {
   const [tab, setTab] = useState<"strength" | "run">("strength");
   const [distance, setDistance] = useState("");
+  useDraftGuard(distance.trim() !== "");
   const done = EXERCISES.reduce(
     (sum, exercise) => sum + (state.exercises[exercise.id] ?? 0),
     0,
@@ -395,6 +396,16 @@ function NutritionSheet({ state, act, onClose, onToast }: Props) {
   const [pendingCorrection, setPendingCorrection] = useState<
     KernelState["nutrition"] | null
   >(null);
+  useDraftGuard(
+    name.trim() !== "" ||
+      protein !== "" ||
+      carbs !== "" ||
+      fat !== "" ||
+      (correcting &&
+        (correction.protein !== String(state.nutrition.protein) ||
+          correction.carbs !== String(state.nutrition.carbs) ||
+          correction.fat !== String(state.nutrition.fat))),
+  );
   const recorded = state.meals.reduce(
     (sum, meal) => ({
       protein: sum.protein + meal.macros.protein,
@@ -839,6 +850,7 @@ function LearningSheet({ state, act, onToast }: Props) {
   const [text, setText] = useState("");
   const [visibleInsights, setVisibleInsights] = useState(8);
   const [deletingInsight, setDeletingInsight] = useState<string | null>(null);
+  useDraftGuard(text.trim() !== "");
   const course = COURSES.find((item) => item.id === courseId)!;
   const progress = state.courseProgress[courseId] ?? 0;
   const insights = state.insights.filter(
@@ -999,6 +1011,9 @@ function WishlistSheet({ state, act }: Props) {
   const [priority, setPriority] = useState<1 | 2 | 3>(2);
   const [category, setCategory] =
     useState<WishlistItem["category"]>("Equipamento");
+  useDraftGuard(
+    adding && (name.trim() !== "" || purpose.trim() !== "" || price !== ""),
+  );
   const items = state.wishlist
     .filter(
       (item) => state.acquired.includes(item.id) === (filter === "acquired"),

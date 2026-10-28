@@ -64,7 +64,10 @@ test("laptop and wide desktop use a full workspace and keep the editing draft on
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
   expect(result.violations).toEqual([]);
+  // The product is half-filled, so closing asks before discarding it.
   await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await page.getByRole("button", { name: "Descartar e fechar" }).click();
   await expect(dialog).toBeHidden();
   await expect(
     page.getByRole("button", {

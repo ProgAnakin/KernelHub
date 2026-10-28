@@ -15,9 +15,35 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 export const SPRING = { type: "spring" as const, stiffness: 400, damping: 30 };
+
+type DraftRegistry = (id: string, dirty: boolean) => void;
+const DraftContext = createContext<DraftRegistry | null>(null);
+
+/**
+ * A form calls this with "does the person have unsaved input?". While true,
+ * closing the surrounding panel by button, Escape, backdrop or swipe asks for
+ * confirmation. Programmatic closes after a successful save bypass the check.
+ */
+export function useDraftGuard(dirty: boolean) {
+  const register = useContext(DraftContext);
+  const id = useId();
+  useEffect(() => {
+    register?.(id, dirty);
+    return () => register?.(id, false);
+  }, [register, id, dirty]);
+}
 
 export function Card({
   children,
@@ -179,6 +205,22 @@ export function BottomSheet({
   const previousFocus = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const dirtyIds = useRef(new Set<string>());
+  const [discarding, setDiscarding] = useState(false);
+  const keepEditing = useRef<HTMLButtonElement>(null);
+  const discardingRef = useRef(false);
+  discardingRef.current = discarding;
+  const register = useCallback<DraftRegistry>((id, dirty) => {
+    if (dirty) dirtyIds.current.add(id);
+    else dirtyIds.current.delete(id);
+  }, []);
+  // Every user-initiated close goes through here; a clean panel closes at once.
+  const requestClose = useCallback(() => {
+    if (dirtyIds.current.size > 0) setDiscarding(true);
+    else onCloseRef.current();
+  }, []);
+  const requestCloseRef = useRef(requestClose);
+  requestCloseRef.current = requestClose;
   const reduced = useReducedMotion();
   const dragControls = useDragControls();
 
@@ -191,8 +233,14 @@ export function BottomSheet({
   }, []);
 
   useEffect(() => {
-    if (!open) setExpanded(false);
+    if (!open) {
+      setExpanded(false);
+      setDiscarding(false);
+    }
   }, [open]);
+  useEffect(() => {
+    if (discarding) keepEditing.current?.focus();
+  }, [discarding]);
 
   useEffect(() => {
     if (!open || desktop) return;
@@ -235,7 +283,9 @@ export function BottomSheet({
     const keydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onCloseRef.current();
+        // A second Escape dismisses the confirmation instead of the panel.
+        if (discardingRef.current) setDiscarding(false);
+        else requestCloseRef.current();
       }
       if (event.key === "Tab") {
         const controls = Array.from(
@@ -288,7 +338,7 @@ export function BottomSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={requestClose}
             aria-hidden="true"
           />
           <motion.div
@@ -337,7 +387,7 @@ export function BottomSheet({
                 if (distance < -45) setExpanded(true);
                 else if (distance > 65) {
                   if (expanded) setExpanded(false);
-                  else onClose();
+                  else requestClose();
                 }
               }}
               onPointerCancel={() => {
@@ -373,7 +423,7 @@ export function BottomSheet({
                 <button
                   type="button"
                   className="icon-button close-button"
-                  onClick={onClose}
+                  onClick={requestClose}
                   aria-label="Fechar painel"
                 >
                   <span className="sheet-desktop-back">Voltar ao painel</span>
@@ -381,6 +431,43 @@ export function BottomSheet({
                 </button>
               </div>
             </header>
+            {discarding && (
+              <div
+                className="sheet-discard"
+                role="alertdialog"
+                aria-labelledby="sheet-discard-title"
+                aria-describedby="sheet-discard-text"
+              >
+                <div>
+                  <strong id="sheet-discard-title">
+                    Descartar o que você preencheu?
+                  </strong>
+                  <p id="sheet-discard-text">
+                    Há informações que ainda não foram salvas.
+                  </p>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    ref={keepEditing}
+                    className="primary-button"
+                    onClick={() => setDiscarding(false)}
+                  >
+                    Continuar editando
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => {
+                      setDiscarding(false);
+                      onClose();
+                    }}
+                  >
+                    Descartar e fechar
+                  </button>
+                </div>
+              </div>
+            )}
             <div
               className="sheet-content"
               id="sheet-content"
@@ -388,7 +475,9 @@ export function BottomSheet({
               role="region"
               aria-label="Conteúdo do painel"
             >
-              {children}
+              <DraftContext.Provider value={register}>
+                {children}
+              </DraftContext.Provider>
             </div>
           </motion.div>
         </div>

@@ -29,6 +29,7 @@ import {
   type Period,
 } from "@/lib/skincare";
 import type { useSkincare } from "@/lib/use-skincare";
+import { useDraftGuard } from "./ui";
 import type { SkincarePhoto } from "@/lib/skincare-storage";
 import type { JournalEntry } from "@/types/kernel";
 
@@ -598,6 +599,7 @@ export function SkincarePhotos({ skin }: { skin: Skin }) {
     if (!dateTouched) setDate(skin.day);
   }, [skin.day, dateTouched]);
   const [note, setNote] = useState("");
+  useDraftGuard(file !== null || note.trim() !== "");
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);

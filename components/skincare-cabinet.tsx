@@ -27,7 +27,7 @@ import {
 } from "@/lib/skincare";
 import { useSkincare } from "@/lib/use-skincare";
 import { SkincareHistory, SkincarePhotos } from "./skincare-history";
-import { SPRING } from "./ui";
+import { SPRING, useDraftGuard } from "./ui";
 
 type Skin = ReturnType<typeof useSkincare>;
 const KINDS: Record<Product["kind"], string> = {
@@ -52,6 +52,57 @@ function dayLabel(day: string) {
   });
 }
 
+interface ProductDraft {
+  /** undefined: no form open · null: new product · Product: editing it. */
+  editing: Product | null | undefined;
+  name: string;
+  brand: string;
+  kind: Product["kind"];
+  shelf: 1 | 2 | 3;
+  am: boolean;
+  pm: boolean;
+  dirty: boolean;
+  open: (product: Product | null) => void;
+  close: () => void;
+  set: (
+    patch: Partial<
+      Pick<ProductDraft, "name" | "brand" | "kind" | "shelf" | "am" | "pm">
+    >,
+  ) => void;
+}
+function baseDraft(product: Product | null | undefined) {
+  return {
+    name: product?.name ?? "",
+    brand: product?.brand ?? "",
+    kind: product?.kind ?? ("cleanser" as Product["kind"]),
+    shelf: product?.shelf ?? (1 as 1 | 2 | 3),
+    am: product ? product.periods.includes("am") : true,
+    pm: product ? product.periods.includes("pm") : true,
+  };
+}
+/** Lives above the tabs, so switching tabs cannot discard a half-filled product. */
+function useProductDraft(): ProductDraft {
+  const [editing, setEditing] = useState<Product | null | undefined>(undefined);
+  const [fields, setFields] = useState(() => baseDraft(undefined));
+  const base = baseDraft(editing);
+  const dirty =
+    editing !== undefined &&
+    (Object.keys(base) as (keyof typeof base)[]).some(
+      (key) => base[key] !== fields[key],
+    );
+  return {
+    editing,
+    ...fields,
+    dirty,
+    open: (product) => {
+      setEditing(product);
+      setFields(baseDraft(product));
+    },
+    close: () => setEditing(undefined),
+    set: (patch) => setFields((current) => ({ ...current, ...patch })),
+  };
+}
+
 export function SkincareCabinet({
   legacyEntries = [],
 }: {
@@ -63,6 +114,8 @@ export function SkincareCabinet({
   const skin = useSkincare({
     history: view === "history" || view === "photos",
   });
+  const productDraft = useProductDraft();
+  useDraftGuard(productDraft.dirty);
   const reduced = useReducedMotion();
   const [doorsOpen, setDoorsOpen] = useState(true);
   const [highlight, setHighlight] = useState<string | null>(null);
@@ -391,7 +444,7 @@ export function SkincareCabinet({
           </div>
         </div>
       )}
-      {view === "products" && <Products skin={skin} />}
+      {view === "products" && <Products skin={skin} draft={productDraft} />}
       {view === "history" && (
         <SkincareHistory skin={skin} legacyEntries={legacyEntries} />
       )}
@@ -419,6 +472,7 @@ function RoutineStep({
   const status = entry?.status ?? "pending";
   const [reasonOpen, setReasonOpen] = useState(false);
   const [reason, setReason] = useState(entry?.reason ?? "");
+  useDraftGuard(reasonOpen && reason !== (entry?.reason ?? ""));
   const ids = productsForPeriod(skin.settings, skin.period).map((p) => p.id);
   const position = ids.indexOf(product.id);
   const move = (delta: number) => {
@@ -574,24 +628,12 @@ function RoutineStep({
   );
 }
 
-function Products({ skin }: { skin: Skin }) {
-  const [editing, setEditing] = useState<Product | null | undefined>(undefined);
+function Products({ skin, draft }: { skin: Skin; draft: ProductDraft }) {
   const [removing, setRemoving] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [brand, setBrand] = useState("");
-  const [kind, setKind] = useState<Product["kind"]>("cleanser");
-  const [shelf, setShelf] = useState<1 | 2 | 3>(1);
-  const [am, setAm] = useState(true);
-  const [pm, setPm] = useState(true);
   const [formError, setFormError] = useState("");
+  const { editing, name, brand, kind, shelf, am, pm } = draft;
   const edit = (product: Product | null) => {
-    setEditing(product);
-    setName(product?.name ?? "");
-    setBrand(product?.brand ?? "");
-    setKind(product?.kind ?? "cleanser");
-    setShelf(product?.shelf ?? 1);
-    setAm(product ? product.periods.includes("am") : true);
-    setPm(product ? product.periods.includes("pm") : true);
+    draft.open(product);
     setFormError("");
   };
   const submit = async (event: FormEvent) => {
@@ -615,7 +657,7 @@ function Products({ skin }: { skin: Skin }) {
         periods,
       })
     ) {
-      setEditing(undefined);
+      draft.close();
       setFormError("");
     }
   };
@@ -642,7 +684,7 @@ function Products({ skin }: { skin: Skin }) {
             Nome do produto
             <input
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => draft.set({ name: event.target.value })}
               maxLength={100}
               required
               autoComplete="off"
@@ -652,7 +694,7 @@ function Products({ skin }: { skin: Skin }) {
             Marca (opcional)
             <input
               value={brand}
-              onChange={(event) => setBrand(event.target.value)}
+              onChange={(event) => draft.set({ brand: event.target.value })}
               maxLength={80}
               autoComplete="off"
             />
@@ -663,7 +705,7 @@ function Products({ skin }: { skin: Skin }) {
               <select
                 value={kind}
                 onChange={(event) =>
-                  setKind(event.target.value as Product["kind"])
+                  draft.set({ kind: event.target.value as Product["kind"] })
                 }
               >
                 {Object.entries(KINDS).map(([id, label]) => (
@@ -678,7 +720,7 @@ function Products({ skin }: { skin: Skin }) {
               <select
                 value={shelf}
                 onChange={(event) =>
-                  setShelf(Number(event.target.value) as 1 | 2 | 3)
+                  draft.set({ shelf: Number(event.target.value) as 1 | 2 | 3 })
                 }
               >
                 {[1, 2, 3].map((number) => (
@@ -695,7 +737,7 @@ function Products({ skin }: { skin: Skin }) {
               <input
                 type="checkbox"
                 checked={am}
-                onChange={(event) => setAm(event.target.checked)}
+                onChange={(event) => draft.set({ am: event.target.checked })}
               />
               Usar na manhã (AM)
             </label>
@@ -703,7 +745,7 @@ function Products({ skin }: { skin: Skin }) {
               <input
                 type="checkbox"
                 checked={pm}
-                onChange={(event) => setPm(event.target.checked)}
+                onChange={(event) => draft.set({ pm: event.target.checked })}
               />
               Usar na noite (PM)
             </label>
@@ -717,7 +759,7 @@ function Products({ skin }: { skin: Skin }) {
             <button
               type="button"
               className="secondary-button"
-              onClick={() => setEditing(undefined)}
+              onClick={draft.close}
               disabled={skin.busy}
             >
               Cancelar edição
@@ -793,7 +835,7 @@ function Products({ skin }: { skin: Skin }) {
                       onClick={async () => {
                         if (await skin.archiveProduct(product.id)) {
                           setRemoving(null);
-                          if (editing?.id === product.id) setEditing(undefined);
+                          if (editing?.id === product.id) draft.close();
                         }
                       }}
                     >
