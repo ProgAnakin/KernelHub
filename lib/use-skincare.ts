@@ -323,6 +323,16 @@ export function useSkincare(options: { history?: boolean } = {}) {
     },
     [change],
   );
+  const markPendingUsed = useCallback(
+    (period: Period) => {
+      const at = new Date();
+      return change(
+        { type: "check-pending", day: skincareDay(at), period },
+        at,
+      );
+    },
+    [change],
+  );
   const addPhoto = useCallback(
     async (blob: Blob, day: string, note = "") => {
       try {
@@ -369,6 +379,7 @@ export function useSkincare(options: { history?: boolean } = {}) {
     reorder,
     updateTransition,
     setCheck,
+    markPendingUsed,
     addPhoto,
     removePhoto,
     getPhoto,

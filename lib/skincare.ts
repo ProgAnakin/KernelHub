@@ -412,6 +412,29 @@ export function applySkincareCheck(
   };
 }
 
+/** Marks every still-pending product of one period as used; decisions already made stay. */
+export function markPendingUsed(
+  log: DayLog,
+  period: Period,
+  now = new Date(),
+): DayLog {
+  const current = requiredLog(log);
+  validDate(now);
+  if (!periodSchema.safeParse(period).success) invalid("Período inválido.");
+  const entries = { ...current.entries[period] };
+  for (const product of current.plans[period])
+    if (!entries[product.id] || entries[product.id].status === "pending")
+      entries[product.id] = {
+        status: "used",
+        reason: "",
+        updatedAt: now.toISOString(),
+      };
+  return requiredLog({
+    ...current,
+    entries: { ...current.entries, [period]: entries },
+  });
+}
+
 export interface RoutineMetrics {
   planned: number;
   used: number;

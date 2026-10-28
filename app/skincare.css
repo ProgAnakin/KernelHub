@@ -795,3 +795,21 @@
     perspective: none;
   }
 }
+
+/* Fast path through a routine: mark everything pending, and show what is next. */
+.sk-use-all {
+  width: 100%;
+  margin: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.sk-step.is-next {
+  border-color: #c8f06a55;
+  background: #c8f06a08;
+}
+.sk-step.is-next .sk-status-pending {
+  color: #c8f06a;
+  border-color: #c8f06a40;
+}

@@ -30,7 +30,11 @@ import {
 } from "@/lib/skincare";
 import type { useSkincare } from "@/lib/use-skincare";
 import { useDraftGuard } from "./ui";
-import type { SkincarePhoto } from "@/lib/skincare-storage";
+import {
+  MAX_SKINCARE_PHOTO_BYTES,
+  MAX_SKINCARE_SOURCE_BYTES,
+  type SkincarePhoto,
+} from "@/lib/skincare-storage";
 import type { JournalEntry } from "@/types/kernel";
 
 type Skin = ReturnType<typeof useSkincare>;
@@ -450,8 +454,8 @@ export function SkincareHistory({
 
 /** Re-encoding removes file metadata; original bytes never enter the photo store. */
 async function normalisePhoto(file: File): Promise<Blob> {
-  if (!file.size || file.size > 5 * 1024 * 1024)
-    throw new Error("Escolha uma foto JPEG, PNG ou WebP de até 5 MB.");
+  if (!file.size || file.size > MAX_SKINCARE_SOURCE_BYTES)
+    throw new Error("Escolha uma foto JPEG, PNG ou WebP de até 25 MB.");
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   const jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
   const png =
@@ -523,7 +527,7 @@ async function normalisePhoto(file: File): Promise<Blob> {
         0.85,
       ),
     );
-    if (blob.size > 5 * 1024 * 1024)
+    if (blob.size > MAX_SKINCARE_PHOTO_BYTES)
       throw new Error(
         "A foto preparada ainda é muito grande. Escolha uma versão menor.",
       );
@@ -760,8 +764,8 @@ export function SkincarePhotos({ skin }: { skin: Skin }) {
       <p className="skh-footnote skh-privacy">
         <ShieldCheck size={14} />
         Fotos locais, redimensionadas até 1600 px e regravadas sem os metadados
-        do arquivo original. Limite de entrada: 5 MB. Elas não entram no backup
-        geral do KernelHub.
+        do arquivo original. Limite de entrada: 25 MB. Elas entram no backup de
+        Meu espaço quando você escolhe incluí-las.
       </p>
       {!skin.photos.length && (
         <div className="skh-empty">
@@ -794,6 +798,40 @@ export function SkincarePhotos({ skin }: { skin: Skin }) {
                       <Trash2 size={15} />
                       Remover
                     </button>
+                    {removing === photo.id && (
+                      <div className="inline-confirm" role="alert">
+                        <strong>Remover esta foto?</strong>
+                        <p>
+                          A imagem será excluída deste dispositivo. Os registros
+                          de produtos e rotinas serão preservados.
+                        </p>
+                        <div>
+                          <button
+                            className="secondary-button"
+                            disabled={busy}
+                            onClick={() => setRemoving(null)}
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            className="primary-button"
+                            disabled={busy}
+                            onClick={async () => {
+                              if (await skin.removePhoto(photo.id)) {
+                                if (first === photo.id) setFirst("");
+                                if (last === photo.id) setLast("");
+                                setRemoving(null);
+                              } else
+                                setError(
+                                  "Não foi possível remover a foto. Tente novamente.",
+                                );
+                            }}
+                          >
+                            Confirmar remoção da foto
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </article>
               ))}
@@ -808,38 +846,6 @@ export function SkincarePhotos({ skin }: { skin: Skin }) {
         >
           Mostrar mais fotos ({skin.photos.length - visible})
         </button>
-      )}
-      {removing && (
-        <div className="inline-confirm" role="alert">
-          <strong>Remover esta foto?</strong>
-          <p>
-            A imagem será excluída deste dispositivo. Os registros de produtos e
-            rotinas serão preservados.
-          </p>
-          <div>
-            <button
-              className="secondary-button"
-              disabled={busy}
-              onClick={() => setRemoving(null)}
-            >
-              Cancelar
-            </button>
-            <button
-              className="primary-button"
-              disabled={busy}
-              onClick={async () => {
-                if (await skin.removePhoto(removing)) {
-                  if (first === removing) setFirst("");
-                  if (last === removing) setLast("");
-                  setRemoving(null);
-                } else
-                  setError("Não foi possível remover a foto. Tente novamente.");
-              }}
-            >
-              Confirmar remoção da foto
-            </button>
-          </div>
-        </div>
       )}
       {skin.photos.length >= 2 && (
         <div className="skh-photo-comparison">

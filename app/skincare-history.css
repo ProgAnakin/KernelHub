@@ -482,3 +482,11 @@
     scroll-behavior: auto;
   }
 }
+
+/* The removal question appears on the photo itself and takes the full row. */
+.skh-photo:has(.inline-confirm) {
+  grid-column: 1 / -1;
+}
+.skh-photo .inline-confirm {
+  margin: 10px 0 0;
+}

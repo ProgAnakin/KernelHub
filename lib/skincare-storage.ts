@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   applySkincareCheck,
+  markPendingUsed,
   applySkincareSettings,
   initialSkincareSettings,
   makeDayLog,
@@ -27,6 +28,8 @@ const PHOTO_PREFIX = SKINCARE_PHOTO_PREFIX;
 const BLOB_PREFIX = SKINCARE_BLOB_PREFIX;
 const REVISION_KEY = SKINCARE_REVISION_KEY;
 export const MAX_SKINCARE_PHOTO_BYTES = 5 * 1024 * 1024;
+/** A camera original is resized and re-encoded below the stored limit above. */
+export const MAX_SKINCARE_SOURCE_BYTES = 25 * 1024 * 1024;
 const imageTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export type ProductInput = Omit<Product, "id" | "createdAt" | "archived"> & {
@@ -63,6 +66,7 @@ export type SkincareMutation =
       status: CheckStatus;
       reason?: string;
     }
+  | { type: "check-pending"; day: string; period: Period }
   | { type: "photo-add"; photo: SkincarePhoto; blob: Blob }
   | { type: "photo-remove"; id: string };
 
@@ -284,7 +288,10 @@ export async function mutateSkincare(
   return new Promise((resolve, reject) => {
     const transaction = begin(database, "readwrite");
     const store = transaction.objectStore("records");
-    const day = command.type === "check" ? command.day : skincareDay(now);
+    const day =
+      command.type === "check" || command.type === "check-pending"
+        ? command.day
+        : skincareDay(now);
     const settingsRequest = store.get(SKINCARE_SETTINGS_KEY);
     const dayRequest = store.get(SKINCARE_DAY_PREFIX + day);
     const photoRequest =
@@ -339,6 +346,9 @@ export async function mutateSkincare(
               command.reason ?? "",
               now,
             );
+            break;
+          case "check-pending":
+            log = markPendingUsed(log, command.period, now);
             break;
           case "photo-add": {
             requireDate(command.photo.day, now);

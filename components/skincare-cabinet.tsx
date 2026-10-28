@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   Check,
+  CheckCheck,
   ChevronRight,
   Clock3,
   DoorOpen,
@@ -123,6 +124,12 @@ export function SkincareCabinet({
   const list = useRef<HTMLOListElement>(null);
   const active = productsForPeriod(skin.settings, skin.period);
   const busy = !skin.hydrated || skin.busy;
+  const periodMetrics = routineMetrics(skin.today, skin.period);
+  const nextProductId = skin.today.plans[skin.period].find(
+    (product) =>
+      (skin.today.entries[skin.period][product.id]?.status ?? "pending") ===
+      "pending",
+  )?.id;
   const selectProduct = (id: string) => {
     setHighlight(id);
     const row = Array.from(
@@ -372,6 +379,16 @@ export function SkincareCabinet({
                 <Plus size={18} />
               </button>
             </div>
+            {periodMetrics.pending > 1 && (
+              <button
+                className="secondary-button sk-use-all"
+                disabled={busy}
+                onClick={() => void skin.markPendingUsed(skin.period)}
+              >
+                <CheckCheck size={16} />
+                Marcar {periodMetrics.pending} pendentes como usados
+              </button>
+            )}
             {skin.today.plans[skin.period].length ? (
               <ol className="sk-routine-list" ref={list}>
                 {skin.today.plans[skin.period].map((product, index) => (
@@ -381,6 +398,7 @@ export function SkincareCabinet({
                     product={product}
                     index={index}
                     highlighted={highlight === product.id}
+                    next={nextProductId === product.id}
                   />
                 ))}
               </ol>
@@ -450,8 +468,9 @@ export function SkincareCabinet({
       )}
       {view === "photos" && <SkincarePhotos skin={skin} />}
       <p className="sk-local-note">
-        Produtos, checks e fotos ficam neste navegador, separados do backup
-        geral. O histórico de skincare não é apagado ao virar o dia.
+        Produtos, checks e fotos ficam neste navegador. O backup de Meu espaço
+        leva o armário e, se você quiser, as fotos. O histórico de skincare não
+        é apagado ao virar o dia.
       </p>
     </section>
   );
@@ -462,11 +481,13 @@ function RoutineStep({
   product,
   index,
   highlighted,
+  next,
 }: {
   skin: Skin;
   product: ProductSnapshot;
   index: number;
   highlighted: boolean;
+  next: boolean;
 }) {
   const entry = skin.today.entries[skin.period][product.id];
   const status = entry?.status ?? "pending";
@@ -487,7 +508,7 @@ function RoutineStep({
   return (
     <li
       data-product-id={product.id}
-      className={`sk-step ${highlighted ? "is-highlighted" : ""} sk-step-${status}`}
+      className={`sk-step ${highlighted ? "is-highlighted" : ""} ${next ? "is-next" : ""} sk-step-${status}`}
     >
       <div className="sk-step-heading">
         <span className="sk-step-number">
@@ -505,7 +526,9 @@ function RoutineStep({
             ? "Usado"
             : status === "skipped"
               ? "Não usado"
-              : "Pendente"}
+              : next
+                ? "Próximo"
+                : "Pendente"}
         </span>
       </div>
       <div className="sk-step-actions">

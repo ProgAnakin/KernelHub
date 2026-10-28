@@ -8,6 +8,7 @@ import {
   initialSkincareSettings,
   isSkincareDay,
   makeDayLog,
+  markPendingUsed,
   nextSkincareBoundary,
   parseSkincareDay,
   parseSkincareSettings,
@@ -502,4 +503,40 @@ test("invalid IDs, products, status changes and unknown commands fail without mu
   assert.equal(state.products[0].archived, false);
   assert.equal(isSkincareDay("2024-02-29"), true);
   assert.equal(isSkincareDay("2026-02-29"), false);
+});
+
+test("marking pending products as used keeps skipped decisions and never invents a period", () => {
+  const state = settings(
+    product("a"),
+    product("b"),
+    product("c"),
+    product("pm-only", ["pm"]),
+  );
+  let log = makeDayLog(state, at);
+  log = applySkincareCheck(log, "b", "am", "skipped", "Pele sensível", at);
+  const later = new Date(at.getTime() + 60_000);
+  const marked = markPendingUsed(log, "am", later);
+  assert.deepEqual(
+    ["a", "b", "c"].map((id) => marked.entries.am[id].status),
+    ["used", "skipped", "used"],
+  );
+  assert.equal(marked.entries.am.b.reason, "Pele sensível");
+  assert.equal(marked.entries.am.a.updatedAt, later.toISOString());
+  assert.equal(marked.entries.am.a.reason, "");
+  // The other period and the input are untouched.
+  assert.deepEqual(marked.entries.pm, {});
+  assert.deepEqual(log.entries.am.a, undefined);
+  assert.deepEqual(routineMetrics(marked, "am"), {
+    planned: 3,
+    used: 2,
+    skipped: 1,
+    pending: 0,
+    percent: 67,
+    complete: false,
+  });
+  // Running it again changes nothing, and an empty period stays empty.
+  assert.deepEqual(markPendingUsed(marked, "am", later), marked);
+  const empty = makeDayLog(initialSkincareSettings(), at);
+  assert.deepEqual(markPendingUsed(empty, "pm", later), empty);
+  assert.throws(() => markPendingUsed(log, "noon" as "am", later));
 });
