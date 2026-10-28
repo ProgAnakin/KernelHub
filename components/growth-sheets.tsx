@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
   Check,
   Clock3,
   Minus,
@@ -17,14 +15,11 @@ import type {
   PersonalTargets,
   Rating,
 } from "@/types/kernel";
-import {
-  checkinSchema,
-  parseStoredState,
-  targetsSchema,
-  MAX_BACKUP_BYTES,
-} from "@/lib/state";
+import { checkinSchema, targetsSchema } from "@/lib/state";
 import { summarizeDay } from "@/lib/metrics";
 import { readRecovery } from "@/lib/storage";
+import { saveBlob } from "@/lib/download";
+import { BackupPanel, type BackupBridge } from "./backup-panel";
 import { useDraftGuard } from "./ui";
 
 interface Props {
@@ -32,6 +27,9 @@ interface Props {
   act: (action: KernelAction) => void;
   onClose: () => void;
   onToast: (text: string) => void;
+}
+interface WorkspaceProps extends Props {
+  backup: BackupBridge;
 }
 const RATING_LABELS = {
   energy: ["Muito baixa", "Baixa", "Regular", "Boa", "Muito boa"],
@@ -333,17 +331,6 @@ export function FocusSheet({ state, act, onToast }: Props) {
   );
 }
 
-function downloadJson(value: string, name: string) {
-  const url = URL.createObjectURL(
-    new Blob([value], { type: "application/json" }),
-  );
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 const TARGET_FIELDS = [
   "waterMl",
   "focusMinutes",
@@ -376,17 +363,20 @@ const targetsFromDraft = (draft: TargetDraft): PersonalTargets => ({
   },
 });
 
-export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
+export function WorkspaceSheet({
+  state,
+  act,
+  onToast,
+  onClose,
+  backup,
+}: WorkspaceProps) {
   const [tab, setTab] = useState<"targets" | "data">("targets"),
     [draft, setDraft] = useState<TargetDraft>(() => targetDraft(state.targets)),
     [savedDraft, setSavedDraft] = useState<TargetDraft>(() =>
       targetDraft(state.targets),
     ),
-    [pending, setPending] = useState<KernelState | null>(null),
     [error, setError] = useState(""),
     [confirmPersonal, setConfirmPersonal] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const importRequest = useRef(0);
   const [recovery, setRecovery] = useState(false);
   useEffect(() => {
     let active = true;
@@ -419,35 +409,6 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
     setError("");
     onToast("Metas atualizadas para o seu ritmo.");
   };
-  const importFile = async (file?: File) => {
-    if (!file) return;
-    const request = ++importRequest.current;
-    setPending(null);
-    setError("");
-    if (file.size > MAX_BACKUP_BYTES) {
-      setError("Use um backup JSON de até 2 MB.");
-      return;
-    }
-    let contents: string;
-    try {
-      contents = await file.text();
-    } catch {
-      if (request !== importRequest.current) return;
-      setError(
-        "Não foi possível ler este arquivo. Seus registros foram mantidos.",
-      );
-      return;
-    }
-    if (request !== importRequest.current) return;
-    const result = parseStoredState(contents);
-    if (!result) {
-      setError(
-        "Este arquivo não é um backup válido do KernelHub. Seus dados atuais foram mantidos.",
-      );
-      return;
-    }
-    setPending(result);
-  };
   return (
     <div>
       <div
@@ -458,14 +419,20 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
         <button
           aria-pressed={tab === "targets"}
           className={tab === "targets" ? "selected" : ""}
-          onClick={() => setTab("targets")}
+          onClick={() => {
+            setTab("targets");
+            setError("");
+          }}
         >
           Minhas metas
         </button>
         <button
           aria-pressed={tab === "data"}
           className={tab === "data" ? "selected" : ""}
-          onClick={() => setTab("data")}
+          onClick={() => {
+            setTab("data");
+            setError("");
+          }}
         >
           Dados & privacidade
         </button>
@@ -574,35 +541,23 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
               </p>
             </div>
           </div>
-          <div className="backup-actions">
-            <button
-              className="secondary-button"
-              onClick={() => {
-                downloadJson(
-                  JSON.stringify(state, null, 2),
-                  `kernelhub-${state.day}.json`,
-                );
-                onToast("Backup preparado para download.");
-              }}
-            >
-              <ArrowDownToLine size={17} />
-              Exportar backup
-            </button>
-            <button
-              className="secondary-button"
-              onClick={() => fileRef.current?.click()}
-            >
-              <ArrowUpFromLine size={17} />
-              Importar backup
-            </button>
-          </div>
+          <BackupPanel
+            state={state}
+            bridge={backup}
+            onToast={onToast}
+            onClose={onClose}
+          />
           {recovery && (
             <button
               className="secondary-button full-width"
               onClick={async () => {
                 try {
                   const raw = await readRecovery();
-                  if (raw) downloadJson(raw, "kernelhub-recuperacao.json");
+                  if (raw)
+                    saveBlob(
+                      new Blob([raw], { type: "application/json" }),
+                      "kernelhub-recuperacao.json",
+                    );
                 } catch {
                   onToast("O navegador bloqueou o arquivo de recuperação.");
                 }
@@ -610,45 +565,6 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
             >
               Exportar arquivo de recuperação
             </button>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="sr-only"
-            aria-label="Arquivo de backup"
-            onChange={(event) => {
-              void importFile(event.target.files?.[0]);
-              event.target.value = "";
-            }}
-          />
-          {pending && (
-            <div className="inline-confirm" role="alert">
-              <strong>Restaurar este backup?</strong>
-              <p>
-                Ele substituirá os registros deste dispositivo. Exporte os dados
-                atuais antes, se quiser preservá-los.
-              </p>
-              <div>
-                <button
-                  className="secondary-button"
-                  onClick={() => setPending(null)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="primary-button"
-                  onClick={() => {
-                    act({ type: "restore", state: pending });
-                    setPending(null);
-                    onToast("Backup restaurado neste dispositivo.");
-                    onClose();
-                  }}
-                >
-                  Restaurar registros
-                </button>
-              </div>
-            </div>
           )}
           <div className="settings-install">
             <Smartphone size={22} />

@@ -348,7 +348,11 @@ export function BottomSheet({
               if (
                 !desktop &&
                 event.target instanceof HTMLElement &&
-                event.target.matches("input, textarea, select")
+                // Only controls that open a keyboard or picker need the room.
+                // Expanding on a checkbox would move it out from under the tap.
+                event.target.matches(
+                  'input:not([type="checkbox"], [type="radio"], [type="file"], [type="button"], [type="submit"], [type="range"]), textarea, select',
+                )
               )
                 setExpanded(true);
             }}

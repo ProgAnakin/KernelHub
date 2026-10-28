@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { announceRestore, restoreFromPlan } from "./backup-storage";
+import type { RestorePlan } from "./backup";
 import { createInitialState, localDay } from "./mock-engine";
 import { kernelReducer, reconcileDay, STORAGE_KEY } from "./state";
 import { PendingDayConflictError, transactStoredState } from "./storage";
@@ -119,5 +121,37 @@ export function useKernel() {
     [transact],
   );
 
-  return { state, act, hydrated, storageError, dayConflict, recoveryAvailable };
+  /**
+   * Replaces the workspace (and any scopes in the file) in one transaction.
+   * Pending session actions belong to the replaced workspace, so they go too.
+   */
+  const restore = useCallback(
+    async (plan: RestorePlan): Promise<void> => {
+      let failure: unknown = null;
+      const task = queue.current.then(async () => {
+        try {
+          await restoreFromPlan(plan);
+          pending.current = [];
+        } catch (error) {
+          failure = error;
+        }
+      });
+      queue.current = task.catch(() => {});
+      await task;
+      if (failure) throw failure;
+      announceRestore(plan);
+      await transact();
+    },
+    [transact],
+  );
+
+  return {
+    state,
+    act,
+    restore,
+    hydrated,
+    storageError,
+    dayConflict,
+    recoveryAvailable,
+  };
 }

@@ -34,6 +34,7 @@ import { CircleCheck, ListAction, Progress, useDraftGuard } from "./ui";
 import { CheckinSheet, FocusSheet, WorkspaceSheet } from "./growth-sheets";
 import { nextStep } from "@/lib/metrics";
 import { SkincareCabinet } from "./skincare-cabinet";
+import type { BackupBridge } from "./backup-panel";
 
 export const SHEET_INFO: Record<
   NonNullable<Sheet>,
@@ -84,6 +85,7 @@ interface Props {
   open: (sheet: Sheet) => void;
   onClose: () => void;
   onToast: (text: string) => void;
+  backup: BackupBridge;
 }
 
 export function SheetContents(props: Props) {

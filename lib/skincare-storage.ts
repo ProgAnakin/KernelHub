@@ -20,16 +20,19 @@ import {
 export const SKINCARE_SETTINGS_KEY = "kernelhub:skincare:settings:v1";
 export const SKINCARE_DAY_PREFIX = "kernelhub:skincare:day:";
 export const SKINCARE_CHANNEL = "kernelhub:skincare";
-const PHOTO_PREFIX = "kernelhub:skincare:photo-meta:";
-const BLOB_PREFIX = "kernelhub:skincare:photo-blob:";
-const REVISION_KEY = "kernelhub:skincare:revision";
+export const SKINCARE_PHOTO_PREFIX = "kernelhub:skincare:photo-meta:";
+export const SKINCARE_BLOB_PREFIX = "kernelhub:skincare:photo-blob:";
+export const SKINCARE_REVISION_KEY = "kernelhub:skincare:revision";
+const PHOTO_PREFIX = SKINCARE_PHOTO_PREFIX;
+const BLOB_PREFIX = SKINCARE_BLOB_PREFIX;
+const REVISION_KEY = SKINCARE_REVISION_KEY;
 export const MAX_SKINCARE_PHOTO_BYTES = 5 * 1024 * 1024;
 const imageTypes = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export type ProductInput = Omit<Product, "id" | "createdAt" | "archived"> & {
   id?: string;
 };
-const photoSchema = z
+export const photoSchema = z
   .object({
     id: z.string().min(1).max(80),
     day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -159,7 +162,7 @@ function photoFrom(raw: unknown): SkincarePhoto {
     "Uma foto salva tem informações incompatíveis. O arquivo original foi preservado.",
   );
 }
-function prefixRange(prefix: string) {
+export function prefixRange(prefix: string) {
   return IDBKeyRange.bound(prefix, `${prefix}\uffff`);
 }
 

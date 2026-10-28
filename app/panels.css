@@ -350,3 +350,52 @@
   flex-wrap: wrap;
   gap: 9px;
 }
+
+/* Backup and restore */
+.backup-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid #ffffff12;
+  border-radius: 14px;
+  background: #ffffff05;
+  font-size: 13px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.backup-option input {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 1px;
+  accent-color: #c8f06a;
+}
+.backup-option small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: #a8b79b;
+}
+.backup-scope {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.backup-scope svg {
+  flex: none;
+  margin-top: 2px;
+}
+.backup-plan {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d3dcc6;
+}
+.backup-panel .inline-confirm > div {
+  flex-wrap: wrap;
+}

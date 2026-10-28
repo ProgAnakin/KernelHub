@@ -93,7 +93,8 @@ test("an already archived day preserves both snapshots until explicit backup sel
   const path = await download.path();
   expect(path).not.toBeNull();
   const contents = await readFile(path!, "utf8");
-  const session = JSON.parse(contents);
+  // The envelope carries the in-memory session, not the newer stored state.
+  const session = JSON.parse(contents).core;
   expect(session.waterMl).toBe(250);
   expect(
     session.history.find((day: { day: string }) => day.day === "2026-10-22")

@@ -498,8 +498,15 @@ function LiveClock() {
 }
 
 export function Dashboard() {
-  const { state, act, hydrated, storageError, dayConflict, recoveryAvailable } =
-    useKernel();
+  const {
+    state,
+    act,
+    restore,
+    hydrated,
+    storageError,
+    dayConflict,
+    recoveryAvailable,
+  } = useKernel();
   const github = useGithub();
   const health = useHealth();
   const [section, setSection] = useState<Section>("today");
@@ -934,6 +941,11 @@ export function Dashboard() {
                 open={open}
                 onClose={close}
                 onToast={setToast}
+                backup={{
+                  githubUsername: github.username,
+                  restore,
+                  connectGithub: github.connect,
+                }}
               />
               {sheet === "quick" && (
                 <button
