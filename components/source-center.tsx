@@ -3,9 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import {
   Activity,
-  ArrowDownToLine,
   ArrowUpRight,
-  Check,
   ChevronRight,
   Database,
   GitBranch,

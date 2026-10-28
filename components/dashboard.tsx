@@ -28,7 +28,7 @@ import {
   Timer,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState, type ComponentProps } from "react";
+import { useEffect, useState } from "react";
 import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
 import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { useKernel } from "@/lib/use-kernel";
@@ -497,11 +497,6 @@ function LiveClock() {
   return <span className="live-clock">{time}</span>;
 }
 
-function LiveSheetContents(props: ComponentProps<typeof SheetContents>) {
-  const now = useVisibleNow(props.sheet === "telemetry", 12000);
-  return <SheetContents {...props} now={now ?? props.now} />;
-}
-
 export function Dashboard() {
   const { state, act, hydrated, storageError, dayConflict, recoveryAvailable } =
     useKernel();
@@ -552,14 +547,6 @@ export function Dashboard() {
     setOverlay(null);
   };
   const open = (value: Sheet) => {
-    if (value === "telemetry") {
-      openOverlay("sources");
-      return;
-    }
-    if (value === "engineering" && github.snapshot) {
-      openOverlay("activity");
-      return;
-    }
     setOverlay(null);
     setSheet(value);
   };
@@ -569,7 +556,7 @@ export function Dashboard() {
     if (action.type === "water")
       setToast(
         action.amount > 0
-          ? "+250 ml. Hidratação registrada."
+          ? `+${action.amount} ml. Hidratação registrada.`
           : "Registro de água ajustado.",
       );
     if (action.type === "meal") setToast("Refeição registrada.");
@@ -940,12 +927,11 @@ export function Dashboard() {
             />
           ) : (
             <>
-              <LiveSheetContents
+              <SheetContents
                 sheet={sheet}
                 state={state}
                 act={notifyAct}
                 open={open}
-                now={now}
                 onClose={close}
                 onToast={setToast}
               />

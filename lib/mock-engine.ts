@@ -1,8 +1,6 @@
 import type {
   Course,
   Exercise,
-  GarminTelemetry,
-  GitEvent,
   Habit,
   KernelState,
   Nutrition,
@@ -122,56 +120,6 @@ export const WISHLIST: WishlistItem[] = [
   },
 ];
 
-// Demonstration events are fixtures, never inferred from local Git state.
-export const GIT_EVENTS: GitEvent[] = [
-  {
-    id: "d2",
-    kind: "deploy",
-    title: "KernelHub · produção",
-    repository: "kernelhub",
-    time: "14:32",
-  },
-  {
-    id: "pr1",
-    kind: "pull-request",
-    title: "feat: dashboard de evolução",
-    repository: "kernelhub",
-    time: "14:28",
-    hash: "#24",
-  },
-  {
-    id: "c3",
-    kind: "commit",
-    title: "feat: anel de energia e telemetria",
-    repository: "kernelhub",
-    time: "14:12",
-    hash: "a82f3c1",
-  },
-  {
-    id: "c2",
-    kind: "commit",
-    title: "fix: safe areas no modo standalone",
-    repository: "kernelhub",
-    time: "11:46",
-    hash: "b91e4d2",
-  },
-  {
-    id: "d1",
-    kind: "deploy",
-    title: "Portfolio · produção",
-    repository: "portfolio",
-    time: "10:18",
-  },
-  {
-    id: "c1",
-    kind: "commit",
-    title: "refactor: componentes de navegação",
-    repository: "portfolio",
-    time: "09:54",
-    hash: "c72d8a3",
-  },
-];
-
 export const MACRO_TARGETS: Nutrition = { protein: 160, carbs: 260, fat: 70 };
 export const WATER_TARGET = 2500;
 export const RUN_TARGET = 5;
@@ -194,35 +142,6 @@ export function localDay(date = new Date()): string {
 export function calories(nutrition: Nutrition): number {
   return Math.round(
     nutrition.protein * 4 + nutrition.carbs * 4 + nutrition.fat * 9,
-  );
-}
-
-export function mockTelemetry(date = new Date()): GarminTelemetry {
-  const seed = [...localDay(date)].reduce(
-    (sum, char) => sum + char.charCodeAt(0),
-    0,
-  );
-  return {
-    source: "demo",
-    bodyBattery: 76,
-    heartRate:
-      60 + Math.round(Math.sin(Math.floor(date.getTime() / 12000) + seed) * 3),
-    sleepMinutes: 462,
-    sleepScore: 84,
-    restingHeartRate: 54,
-    samples: Array.from({ length: 24 }, (_, i) =>
-      Math.round(
-        38 + 38 * Math.sin((i / 23) * Math.PI) + Math.sin(i * 1.8 + seed) * 4,
-      ),
-    ),
-  };
-}
-
-export function mockContributions(date = new Date()): number[] {
-  const seed = date.getDay() + 3;
-  return Array.from(
-    { length: 91 },
-    (_, i) => ((i * 13 + seed * 7 + Math.floor(i / 7) * 3) % 11) % 5,
   );
 }
 

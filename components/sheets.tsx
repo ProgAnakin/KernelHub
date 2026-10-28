@@ -3,17 +3,13 @@
 import { useState, type FormEvent } from "react";
 import {
   ArrowRight,
-  BatteryMedium,
   BookOpen,
   Check,
   ChevronRight,
   Droplets,
   Dumbbell,
   Footprints,
-  GitCommitHorizontal,
-  GitPullRequest,
   Heart,
-  Info,
   Layers3,
   Leaf,
   Minus,
@@ -32,14 +28,7 @@ import type {
   Sheet,
   WishlistItem,
 } from "@/types/kernel";
-import {
-  COURSES,
-  EXERCISES,
-  GIT_EVENTS,
-  HABITS,
-  calories,
-  mockTelemetry,
-} from "@/lib/mock-engine";
+import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { money } from "@/lib/format";
 import { CircleCheck, ListAction, Progress } from "./ui";
 import { CheckinSheet, FocusSheet, WorkspaceSheet } from "./growth-sheets";
@@ -50,10 +39,6 @@ export const SHEET_INFO: Record<
   NonNullable<Sheet>,
   { title: string; subtitle: string }
 > = {
-  telemetry: {
-    title: "Seu corpo, em perspectiva.",
-    subtitle: "Telemetria Garmin simulada · não conectado",
-  },
   workout: {
     title: "Um passo mais forte.",
     subtitle: "Sua sessão de movimento de hoje",
@@ -65,10 +50,6 @@ export const SHEET_INFO: Record<
   routine: {
     title: "O cuidado está nos detalhes.",
     subtitle: "Uma rotina simples, feita com intenção",
-  },
-  engineering: {
-    title: "Do código ao mundo.",
-    subtitle: "Atividade GitHub demonstrativa · não conectado",
   },
   learning: {
     title: "Aprender é construir.",
@@ -101,23 +82,18 @@ interface Props {
   state: KernelState;
   act: (action: KernelAction) => void;
   open: (sheet: Sheet) => void;
-  now: Date | null;
   onClose: () => void;
   onToast: (text: string) => void;
 }
 
 export function SheetContents(props: Props) {
   switch (props.sheet) {
-    case "telemetry":
-      return <TelemetrySheet now={props.now} />;
     case "workout":
       return <WorkoutSheet {...props} />;
     case "nutrition":
       return <NutritionSheet {...props} />;
     case "routine":
       return <RoutineSheet {...props} />;
-    case "engineering":
-      return <EngineeringSheet state={props.state} />;
     case "learning":
       return <LearningSheet {...props} />;
     case "wishlist":
@@ -205,104 +181,6 @@ export function SheetContents(props: Props) {
     default:
       return null;
   }
-}
-
-function TelemetrySheet({ now }: { now: Date | null }) {
-  const data = mockTelemetry(now ?? new Date("2026-10-22T12:00:00Z"));
-  const points = data.samples
-    .map((value, i) => `${(i * 300) / 23},${100 - value}`)
-    .join(" ");
-  return (
-    <div className="telemetry-details">
-      <div className="sheet-info">
-        <Info size={16} />
-        <p>
-          Simulação para explorar a experiência. Nenhum relógio ou serviço
-          Garmin está conectado.
-        </p>
-      </div>
-      <div className="telemetry-detail-grid">
-        <div>
-          <BatteryMedium size={19} />
-          <strong>
-            {data.bodyBattery}
-            <small>%</small>
-          </strong>
-          <span>Body Battery</span>
-        </div>
-        <div>
-          <Heart size={19} />
-          <strong>
-            {data.heartRate}
-            <small>bpm</small>
-          </strong>
-          <span>Frequência simulada</span>
-        </div>
-        <div>
-          <Moon size={19} />
-          <strong>
-            7<small>h</small>42<small>m</small>
-          </strong>
-          <span>Sono · score 84</span>
-        </div>
-      </div>
-      <div className="chart-title">
-        <strong>Energia ao longo do dia</strong>
-        <span>EXEMPLO</span>
-      </div>
-      <div className="energy-chart">
-        <svg
-          viewBox="0 0 300 110"
-          role="img"
-          aria-label="Curva demonstrativa de energia ao longo de 24 horas"
-        >
-          <defs>
-            <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop stopColor="#30D158" stopOpacity=".2" />
-              <stop offset="1" stopColor="#30D158" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {[25, 50, 75].map((y) => (
-            <line
-              key={y}
-              x1="0"
-              x2="300"
-              y1={y}
-              y2={y}
-              stroke="#ffffff"
-              strokeOpacity=".06"
-              strokeDasharray="3 5"
-            />
-          ))}
-          <polygon points={`0,110 ${points} 300,110`} fill="url(#chart-fill)" />
-          <polyline
-            points={points}
-            fill="none"
-            stroke="#65df7d"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <div>
-          <span>00h</span>
-          <span>06h</span>
-          <span>12h</span>
-          <span>18h</span>
-          <span>24h</span>
-        </div>
-      </div>
-      <div className="detail-note">
-        <Leaf size={18} />
-        <span>
-          <strong>Observe seu próprio ritmo.</strong>
-          <p>
-            Compare sono, energia e movimento ao longo do tempo. Estes dados de
-            exemplo não orientam sua saúde.
-          </p>
-        </span>
-      </div>
-    </div>
-  );
 }
 
 function WorkoutSheet({ state, act, onToast }: Props) {
@@ -621,7 +499,7 @@ function NutritionSheet({ state, act, onClose, onToast }: Props) {
               inputMode="decimal"
               min="0"
               max="500"
-              step="1"
+              step="0.1"
               value={protein}
               onChange={(event) => setProtein(event.target.value)}
               placeholder="0"
@@ -637,7 +515,7 @@ function NutritionSheet({ state, act, onClose, onToast }: Props) {
               inputMode="decimal"
               min="0"
               max="500"
-              step="1"
+              step="0.1"
               value={carbs}
               onChange={(event) => setCarbs(event.target.value)}
               placeholder="0"
@@ -653,7 +531,7 @@ function NutritionSheet({ state, act, onClose, onToast }: Props) {
               inputMode="decimal"
               min="0"
               max="500"
-              step="1"
+              step="0.1"
               value={fat}
               onChange={(event) => setFat(event.target.value)}
               placeholder="0"
@@ -952,76 +830,6 @@ function RoutineSheet({ state, act }: Props) {
           </p>
         </span>
       </div>
-    </div>
-  );
-}
-
-function EngineeringSheet({ state }: { state: KernelState }) {
-  const [filter, setFilter] = useState("all");
-  const filtered = (state.mode === "demo" ? GIT_EVENTS : []).filter(
-    (event) => filter === "all" || event.kind === filter,
-  );
-  return (
-    <div>
-      <div className="sheet-info">
-        <Info size={16} />
-        <p>
-          {state.mode === "demo"
-            ? "Eventos fictícios de demonstração."
-            : "Nenhuma conta GitHub está conectada."}{" "}
-          Commits, PRs e deploys têm origens distintas.
-        </p>
-      </div>
-      <div className="filter-pills" role="group" aria-label="Filtrar atividade">
-        {[
-          { id: "all", label: "Tudo" },
-          { id: "commit", label: "Commits" },
-          { id: "pull-request", label: "PRs" },
-          { id: "deploy", label: "Deploys" },
-        ].map((item) => (
-          <button
-            key={item.id}
-            aria-pressed={filter === item.id}
-            className={filter === item.id ? "selected" : ""}
-            onClick={() => setFilter(item.id)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-      {filtered.length === 0 && (
-        <div className="empty-state">
-          <GitCommitHorizontal size={26} />
-          <h3>Aguardando uma fonte real.</h3>
-          <p>Conectar o GitHub requer uma integração no servidor.</p>
-        </div>
-      )}
-      <div className="git-feed">
-        {filtered.map((event) => (
-          <div key={event.id}>
-            <span className={`git-event-icon ${event.kind}`}>
-              {event.kind === "deploy" ? (
-                <Rocket size={18} />
-              ) : event.kind === "pull-request" ? (
-                <GitPullRequest size={18} />
-              ) : (
-                <GitCommitHorizontal size={18} />
-              )}
-            </span>
-            <span>
-              <strong>{event.title}</strong>
-              <small>
-                {event.repository} {event.hash && <code>{event.hash}</code>}
-              </small>
-            </span>
-            <time>{event.time}</time>
-          </div>
-        ))}
-      </div>
-      <p className="fine-print">
-        A integração real exigirá autorização GitHub no backend. Nenhum token é
-        solicitado neste protótipo.
-      </p>
     </div>
   );
 }

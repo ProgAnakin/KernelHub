@@ -216,6 +216,46 @@ test("macros calculate calories correctly and invalid meals are rejected", () =>
   );
 });
 
+test("decimal macros stay clean to a tenth, survive a round trip and remove exactly", () => {
+  let state = createInitialState(new Date(), "personal");
+  const add = (protein: number, carbs: number, fat: number) => {
+    state = kernelReducer(state, {
+      type: "meal",
+      name: "Lanche",
+      macros: { protein, carbs, fat },
+    });
+  };
+  add(7.5, 0.1, 2.25);
+  add(0.2, 0.2, 0.3);
+  add(12.34, 0, 0);
+  // 0.1 + 0.2 style sums must not leak floating-point noise into totals.
+  assert.deepEqual(state.nutrition, { protein: 20, carbs: 0.3, fat: 2.6 });
+  assert.deepEqual(
+    state.meals.map((meal) => meal.macros),
+    [
+      { protein: 7.5, carbs: 0.1, fat: 2.3 },
+      { protein: 0.2, carbs: 0.2, fat: 0.3 },
+      { protein: 12.3, carbs: 0, fat: 0 },
+    ],
+  );
+  const restored = parseStoredState(JSON.stringify(state));
+  assert.ok(restored, "a decimal day must remain a valid backup");
+  assert.deepEqual(restored.nutrition, state.nutrition);
+  for (const meal of [...state.meals])
+    state = kernelReducer(state, { type: "meal-remove", id: meal.id });
+  assert.deepEqual(state.nutrition, { protein: 0, carbs: 0, fat: 0 });
+  // A value that rounds to nothing is not a meal.
+  const before = state;
+  assert.equal(
+    kernelReducer(before, {
+      type: "meal",
+      name: "Nada",
+      macros: { protein: 0.04, carbs: 0, fat: 0 },
+    }),
+    before,
+  );
+});
+
 test("wishlist purchase is reversible and custom items persist across days", () => {
   let state = createInitialState();
   state = kernelReducer(state, {

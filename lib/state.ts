@@ -26,6 +26,11 @@ const mealMacrosSchema = z
     fat: nonNegative.max(500),
   })
   .refine((value) => value.protein + value.carbs + value.fat > 0);
+// Macro totals are kept to a tenth of a gram so decimal labels (e.g. 7.5 g)
+// never accumulate floating-point noise or break the meals <= totals invariant.
+// A total rounded to a tenth may sit just below the exact sum of older meals.
+const MEAL_TOLERANCE = 0.051;
+const tenth = (value: number) => Math.round(value * 10) / 10;
 const uniqueIds = (items: { id: string }[]) =>
   new Set(items.map((item) => item.id)).size === items.length;
 const rating = z.union([
@@ -223,7 +228,7 @@ export function parseStoredState(
       (["protein", "carbs", "fat"] as const).some(
         (macro) =>
           data.meals.reduce((sum, meal) => sum + meal.macros[macro], 0) >
-          data.nutrition[macro] + 0.000001,
+          data.nutrition[macro] + MEAL_TOLERANCE,
       ) ||
       data.acquired.some((id) => !ids.has(id)) ||
       data.insights.some(
@@ -414,13 +419,18 @@ export function kernelReducer(
       break;
     }
     case "meal": {
-      const macros = mealMacrosSchema.safeParse(action.macros);
+      const parsed = mealMacrosSchema.safeParse(action.macros);
+      if (!action.name.trim() || !parsed.success) return state;
+      const macros = {
+        protein: tenth(parsed.data.protein),
+        carbs: tenth(parsed.data.carbs),
+        fat: tenth(parsed.data.fat),
+      };
       if (
-        !action.name.trim() ||
-        !macros.success ||
+        macros.protein + macros.carbs + macros.fat <= 0 ||
         state.meals.length >= 100 ||
         (["protein", "carbs", "fat"] as const).some(
-          (macro) => state.nutrition[macro] + action.macros[macro] > 10000,
+          (macro) => state.nutrition[macro] + macros[macro] > 10000,
         )
       )
         return state;
@@ -431,17 +441,14 @@ export function kernelReducer(
           {
             id: eventId(),
             name: action.name.trim().slice(0, 80),
-            macros: macros.data,
+            macros,
             createdAt: eventTime(),
           },
         ],
         nutrition: {
-          protein: Math.min(
-            10000,
-            state.nutrition.protein + action.macros.protein,
-          ),
-          carbs: Math.min(10000, state.nutrition.carbs + action.macros.carbs),
-          fat: Math.min(10000, state.nutrition.fat + action.macros.fat),
+          protein: tenth(state.nutrition.protein + macros.protein),
+          carbs: tenth(state.nutrition.carbs + macros.carbs),
+          fat: tenth(state.nutrition.fat + macros.fat),
         },
       };
       title = action.name.trim().slice(0, 80);
@@ -455,9 +462,12 @@ export function kernelReducer(
         ...state,
         meals: state.meals.filter((item) => item.id !== action.id),
         nutrition: {
-          protein: Math.max(0, state.nutrition.protein - meal.macros.protein),
-          carbs: Math.max(0, state.nutrition.carbs - meal.macros.carbs),
-          fat: Math.max(0, state.nutrition.fat - meal.macros.fat),
+          protein: Math.max(
+            0,
+            tenth(state.nutrition.protein - meal.macros.protein),
+          ),
+          carbs: Math.max(0, tenth(state.nutrition.carbs - meal.macros.carbs)),
+          fat: Math.max(0, tenth(state.nutrition.fat - meal.macros.fat)),
         },
       };
       title = meal.name;

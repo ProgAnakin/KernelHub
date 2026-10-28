@@ -613,8 +613,9 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
             <div className="personal-start">
               <strong>Pronto para começar o seu espaço?</strong>
               <p>
-                Comece com registros vazios. As integrações continuam sem
-                conexão até uma versão futura.
+                Comece com os registros do KernelHub vazios. Armário de
+                skincare, fotos, GitHub e importação de saúde têm armazenamento
+                próprio e não são apagados.
               </p>
               {confirmPersonal ? (
                 <div className="inline-confirm" role="alert">
@@ -655,8 +656,8 @@ export function WorkspaceSheet({ state, act, onToast, onClose }: Props) {
             </div>
           )}
           <p className="fine-print">
-            Garmin e GitHub não estão conectados. Apagar os dados do navegador
-            remove seus registros; guarde um backup fora do dispositivo.
+            Apagar os dados do navegador remove seus registros; guarde um backup
+            fora do dispositivo.
           </p>
         </div>
       )}

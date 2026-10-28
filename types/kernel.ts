@@ -1,10 +1,8 @@
 export type Section = "today" | "body" | "build" | "learn" | "wishlist";
 export type Sheet =
-  | "telemetry"
   | "workout"
   | "nutrition"
   | "routine"
-  | "engineering"
   | "learning"
   | "wishlist"
   | "quick"
@@ -15,18 +13,6 @@ export type Sheet =
 export type HabitId =
   "skincare-am" | "sunscreen" | "supplements" | "grooming" | "skincare-pm";
 export type Macro = "protein" | "carbs" | "fat";
-export type DataSource = "demo" | "garmin" | "github" | "manual";
-
-export interface GarminTelemetry {
-  source: DataSource;
-  bodyBattery: number;
-  heartRate: number;
-  sleepMinutes: number;
-  sleepScore: number;
-  restingHeartRate: number;
-  samples: number[];
-}
-
 export interface Habit {
   id: HabitId;
   title: string;
@@ -62,15 +48,6 @@ export interface Course {
   lessons: number;
   duration: string;
   color: "blue" | "green";
-}
-
-export interface GitEvent {
-  id: string;
-  kind: "commit" | "pull-request" | "deploy";
-  title: string;
-  repository: string;
-  time: string;
-  hash?: string;
 }
 
 export interface WishlistItem {

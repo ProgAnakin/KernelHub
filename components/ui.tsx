@@ -19,35 +19,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export const SPRING = { type: "spring" as const, stiffness: 400, damping: 30 };
 
-export function Brand({ small = false }: { small?: boolean }) {
-  return (
-    <div className={`brand ${small ? "brand-small" : ""}`}>
-      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <rect
-          x=".5"
-          y=".5"
-          width="39"
-          height="39"
-          rx="12"
-          fill="#111b12"
-          stroke="#2b422c"
-        />
-        <path
-          d="M13 11v18m15-18L17 20l11 9"
-          stroke="#83e890"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span>
-        Kernel<span className="brand-light">Hub</span>
-        <span className="brand-dot">.</span>
-      </span>
-    </div>
-  );
-}
-
 export function Card({
   children,
   className = "",

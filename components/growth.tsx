@@ -3,7 +3,6 @@
 import {
   BatteryMedium,
   Brain,
-  Check,
   Clock3,
   Heart,
   Moon,
@@ -12,34 +11,13 @@ import {
   TrendingUp,
 } from "lucide-react";
 import type { KernelState, Sheet } from "@/types/kernel";
-import { nextStep, summarizeDay, weekOf } from "@/lib/metrics";
+import { summarizeDay, weekOf } from "@/lib/metrics";
 import { Card, CardHeading, CardLink, Progress } from "./ui";
 
 interface Props {
   state: KernelState;
   open: (sheet: Sheet) => void;
 }
-export function TodayBrief({ state }: { state: KernelState }) {
-  const step = nextStep(state),
-    summary = summarizeDay(state);
-  return (
-    <div className="today-brief" aria-label="Direção para hoje">
-      <div className="brief-symbol">
-        <Sparkles size={18} strokeWidth={1.5} />
-      </div>
-      <div>
-        <span>UM PRÓXIMO PASSO</span>
-        <strong>{step.title}</strong>
-        <p>{step.detail}</p>
-      </div>
-      <span className="brief-count">
-        <Check size={12} />
-        {summary.habitCount}/5 cuidados
-      </span>
-    </div>
-  );
-}
-
 export function CheckinCard({ state, open }: Props) {
   const checkin = state.checkin;
   return (
