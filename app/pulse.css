@@ -1615,9 +1615,19 @@
     background 0.2s,
     color 0.2s;
 }
+.kp-overview .kr-tracks button {
+  position: relative;
+  isolation: isolate;
+}
 .kp-overview .kr-tracks button[aria-pressed="true"] {
-  background: #c8f06a;
   color: #17200b;
+}
+.kr-track-pill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  background: #c8f06a;
   box-shadow: var(--kp-glow-lime);
 }
 .kr-grid {
@@ -1779,5 +1789,37 @@
   }
   .kp-primary-button:active {
     transform: none;
+  }
+}
+
+/* Technical numerals: digits keep their width as values change. */
+.kp-overview
+  :is(
+    strong,
+    .kp-metric-number,
+    .kp-sleep-value,
+    .kp-code-stats strong,
+    .kp-focus-total strong,
+    .kp-nutrition-value strong
+  ) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cards lift a little under a mouse; touch screens and Reduce Motion skip it. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .kp-grid > .kp-card,
+  .kr-card,
+  .kp-next {
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+      box-shadow 0.35s;
+  }
+  .kp-grid > .kp-card:hover,
+  .kr-card:hover,
+  .kp-next:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px #ffffff1c,
+      0 22px 48px -28px #000;
   }
 }

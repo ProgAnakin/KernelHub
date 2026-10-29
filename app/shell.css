@@ -1167,3 +1167,20 @@
     display: none;
   }
 }
+
+/* Active tab: a soft light that glides between tabs (layoutId). */
+.kh-bottom-nav button {
+  position: relative;
+}
+.kh-tab-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 22px;
+  height: 3px;
+  margin-left: -11px;
+  border-radius: 999px;
+  background: #c8f06a;
+  box-shadow: 0 0 12px #c8f06a99;
+  pointer-events: none;
+}

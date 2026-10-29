@@ -58,6 +58,13 @@ type StateProps = {
   act: (action: KernelAction) => void;
 };
 const formatter = new Intl.NumberFormat("pt-BR");
+const SECTION_HASH: Record<Section, string> = {
+  today: "",
+  body: "corpo",
+  build: "evoluir",
+  learn: "conhecimento",
+  wishlist: "colecao",
+};
 const NAV: { id: Section; label: string; icon: LucideIcon }[] = [
   { id: "today", label: "Visão geral", icon: House },
   { id: "body", label: "Corpo & rotina", icon: Activity },
@@ -570,10 +577,28 @@ export function Dashboard() {
     if (action.type === "meal") setToast("Refeição registrada.");
     if (action.type === "insight") setToast("Insight salvo no seu espaço.");
   };
+  // Sections live in the URL hash: back/forward and shared links work, and a
+  // static export needs no server routes.
   const navigate = (id: Section) => {
+    if (id !== section) {
+      const hash = SECTION_HASH[id];
+      window.history.pushState(null, "", hash ? `#${hash}` : location.pathname);
+    }
     setSection(id);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
+  useEffect(() => {
+    const fromHash = () => {
+      const hash = location.hash.replace(/^#/, "");
+      const match = (Object.keys(SECTION_HASH) as Section[]).find(
+        (key) => SECTION_HASH[key] === hash,
+      );
+      setSection(match ?? "today");
+    };
+    fromHash();
+    window.addEventListener("popstate", fromHash);
+    return () => window.removeEventListener("popstate", fromHash);
+  }, []);
   const props: StateProps = { state, open, act: notifyAct };
   const sourceCount =
     Number(Boolean(github.snapshot)) + Number(Boolean(health.snapshot));
@@ -660,7 +685,13 @@ export function Dashboard() {
               >
                 <Icon size={19} strokeWidth={1.5} />
                 <span>{label}</span>
-                {section === id && <span className="kh-nav-indicator" />}
+                {section === id && (
+                  <motion.span
+                    layoutId="kh-nav-indicator"
+                    className="kh-nav-indicator"
+                    transition={SPRING}
+                  />
+                )}
               </button>
             ))}
           </nav>
@@ -872,6 +903,13 @@ export function Dashboard() {
           >
             <House size={22} strokeWidth={1.5} />
             <span>Hoje</span>
+            {section === "today" && (
+              <motion.span
+                layoutId="kh-tab-glow"
+                className="kh-tab-glow"
+                transition={SPRING}
+              />
+            )}
           </button>
           <button
             className={section === "body" ? "is-active" : ""}
@@ -880,6 +918,13 @@ export function Dashboard() {
           >
             <Activity size={22} strokeWidth={1.5} />
             <span>Corpo</span>
+            {section === "body" && (
+              <motion.span
+                layoutId="kh-tab-glow"
+                className="kh-tab-glow"
+                transition={SPRING}
+              />
+            )}
           </button>
           <button
             className="kh-quick-button"
@@ -899,6 +944,13 @@ export function Dashboard() {
           >
             <Code2 size={22} strokeWidth={1.5} />
             <span>Evoluir</span>
+            {(section === "build" || section === "learn") && (
+              <motion.span
+                layoutId="kh-tab-glow"
+                className="kh-tab-glow"
+                transition={SPRING}
+              />
+            )}
           </button>
           <button onClick={() => openOverlay("sources")}>
             <Radio size={22} strokeWidth={1.5} />

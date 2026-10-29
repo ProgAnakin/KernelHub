@@ -4348,3 +4348,40 @@ h1 > span {
 .nutrition-sheet-summary + .water-adjust {
   margin: 0 0 24px;
 }
+
+/* Before local records load, the static HTML holds placeholder values. Show
+   shimmering shapes instead, so a demo number never flashes as if it were
+   the person's own. */
+@keyframes kh-shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.app-background[aria-busy="true"] :is(.kp-card, .glass-card) {
+  position: relative;
+}
+.app-background[aria-busy="true"] :is(.kp-card, .glass-card)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  background:
+    linear-gradient(100deg, transparent 30%, #ffffff0b 50%, transparent 70%) 0
+      0 / 200% 100%,
+    #0d100d;
+  animation: kh-shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-background[aria-busy="true"] :is(.kp-card, .glass-card)::after {
+    animation: none;
+  }
+}
+/* The static HTML carries a fixed build date and demo sources; hide them too. */
+.app-background[aria-busy="true"]
+  :is(.kp-page-date, .kp-status-strip > span, .kh-top-date) {
+  visibility: hidden;
+}

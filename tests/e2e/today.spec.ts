@@ -132,3 +132,23 @@ test("the rhythm widget shows today's rings and a 13-week grid that keeps gaps e
     /^Água: \d+ dias com meta alcançada em 7 dias/,
   );
 });
+
+test("sections live in the URL: reload keeps them and Back returns", async ({
+  page,
+}) => {
+  const heading = page.getByRole("heading", { level: 1 });
+  await page
+    .getByRole("button", { name: /^(Corpo|Corpo & rotina)$/ })
+    .first()
+    .click();
+  await expect(heading).toContainText("Sua melhor base.");
+  expect(new URL(page.url()).hash).toBe("#corpo");
+  await page.reload();
+  await waitForReady(page);
+  await expect(heading).toContainText("Sua melhor base.");
+  await page.goBack();
+  await expect(heading).toHaveText("Seu ritmo,em perspectiva.");
+  await page.goto("/#colecao");
+  await waitForReady(page);
+  await expect(heading).toContainText("Escolhas com direção.");
+});

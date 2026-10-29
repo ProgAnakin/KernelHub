@@ -183,7 +183,14 @@ export function RhythmCard({ state }: { state: KernelState }) {
                 aria-pressed={track === item.id}
                 onClick={() => setTrack(item.id)}
               >
-                {item.label}
+                {track === item.id && (
+                  <motion.span
+                    layoutId="kr-track-pill"
+                    className="kr-track-pill"
+                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  />
+                )}
+                <span>{item.label}</span>
               </button>
             ))}
           </div>
