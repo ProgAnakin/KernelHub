@@ -1,5 +1,16 @@
 # Evolução do KernelHub
 
+## 0.5.0 · 29 de outubro de 2026
+
+- **Backup completo e versionado.** Além do espaço pessoal, o arquivo leva o armário de skincare (cadastro, todos os dias de histórico, motivos) e as fotos, mais o perfil GitHub conectado. A restauração substitui espaço e skincare em uma única transação IndexedDB (tudo ou nada), lista antes o que será substituído e oferece exportar os dados atuais primeiro. Backups antigos continuam sendo aceitos; arquivos adulterados, com fotos inconsistentes ou de versão desconhecida são recusados sem alterar nada.
+- **Rascunhos protegidos.** Fechar um painel por botão, Escape, fundo ou gesto com informação digitada pergunta antes de descartar; o cadastro de produto sobrevive à troca de aba; campos de metas deixam de voltar a 0 ao serem apagados.
+- **Hoje com ação na primeira tela.** Cartão "Próximo passo" com o botão principal e atalhos (+250 ml, refeição, foco, skincare).
+- **Check-in com leituras importadas.** Sono, peso e passos do arquivo do Apple Saúde são oferecidos como sugestão (origem e data visíveis); nada é salvo sem confirmação e leituras antigas ou parciais não são oferecidas.
+- **Skincare mais rápido.** "Marcar N pendentes como usados" (preserva não usos e motivos), destaque do próximo produto, confirmação de remoção junto à foto, fotos de até 25 MB (reduzidas para 1600 px antes de salvar) e rótulos de frascos em duas linhas.
+- **Macros decimais.** Os campos aceitavam só gramas inteiras; agora aceitam décimos, com totais exatos a 0,1 g.
+- **Legibilidade.** Mais da metade do texto de Hoje renderizava abaixo de 11 px (mínimo de 6 px, inclusive a procedência "prévia ilustrativa"). Piso de 11 px em todo o CSS.
+- **Correções.** Painéis móveis não se expandem mais ao focar caixas de seleção (o controle fugia do toque); textos que afirmavam "GitHub não conectado" e "Garmin simulada" foram removidos junto com as telas inalcançáveis que os continham; `noUnusedLocals` ativado; publicação no Pages passa a rodar tipos e testes de domínio antes de publicar.
+
 ## 0.4.0 · 23 de outubro de 2026
 
 - Novo panorama “Hoje” e shell móvel com hierarquia de saúde, contexto, atividade técnica, foco e ações frequentes.

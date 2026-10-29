@@ -4,7 +4,7 @@ O aplicativo não possui servidor próprio de contas, login ou armazenamento rem
 
 ## Proteções implementadas
 
-- Validação estrutural e semântica de backups com limite de 2 MiB, IDs únicos, referências e limites de registros.
+- Validação estrutural e semântica de backups: espaço com limite de 2 MiB, arquivo completo com até 64 MB, IDs e dias únicos, assinatura e tamanho de cada foto, chaves desconhecidas recusadas e restauração atômica.
 - Transações atômicas para ações em múltiplas abas; falhas de gravação preservam a sessão e exibem aviso.
 - Renderização de texto pelo React, sem HTML fornecido pelo usuário.
 - Cache limitado à origem/caminho do app e fora das APIs; variantes de consulta dos assets usam chave canônica.
@@ -21,7 +21,7 @@ Os dados e backups não são criptografados pelo app. Outras páginas da mesma o
 
 Os headers de `next.config.ts` não são aplicados no export estático pelo GitHub Pages. Uma hospedagem/proxy deve configurá-los. CSP estrita da página, autenticação, rate limiting, OAuth e testes de brute force precisam ser tratados quando existir backend; atualmente não há endpoints desse tipo.
 
-Após atualizar da versão 0.2, recarregue as abas antigas antes de continuar. Limpar os dados do navegador remove os bancos locais. O backup JSON inclui os registros do KernelHub; snapshots de GitHub/Saúde e o cronômetro em andamento são separados e não entram nele. Durante uma falha de gravação, ações ainda não confirmadas podem se perder se o app for fechado; exporte a sessão antes de sair.
+Após atualizar da versão 0.2, recarregue as abas antigas antes de continuar. Limpar os dados do navegador remove os bancos locais. O backup JSON inclui os registros do KernelHub, o armário de skincare (com fotos, se escolhido) e o usuário GitHub conectado; snapshots de Saúde e o cronômetro em andamento não entram nele. O arquivo não é criptografado: contém fotos e registros pessoais em texto legível. Durante uma falha de gravação, ações ainda não confirmadas podem se perder se o app for fechado; exporte a sessão antes de sair.
 
 ## Verificação
 

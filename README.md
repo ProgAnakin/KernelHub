@@ -2,7 +2,7 @@
 
 **Seu ritmo, em perspectiva.**
 
-Versão 0.4 · um panorama diário para reunir dados de corpo, rotina, aprendizado e trabalho técnico, entender o contexto e agir com menos preenchimento.
+Versão 0.5 · um panorama diário para reunir dados de corpo, rotina, aprendizado e trabalho técnico, entender o contexto e agir com menos preenchimento.
 
 **[Abrir o KernelHub](https://proganakin.github.io/KernelHub/)** · PWA pensada primeiro para iPhone.
 
@@ -25,18 +25,18 @@ A versão 0.4 reorganiza “Hoje” como um panorama: estado das fontes, séries
 
 ## O que funciona
 
-| Área                        | Comportamento atual                                                                                                                                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Panorama diário**         | Saúde, atividade técnica, foco, nutrição e cuidados no mesmo contexto. Gráficos preservam lacunas e distinguem prévia, importação, conexão e registros locais.                                         |
-| **Leitura do dia**          | Compara o sono recebido com a meta pessoal; compara FC em repouso com até sete registros anteriores quando há ao menos três válidos; mostra o foco concluído. Sem diagnóstico ou score geral de saúde. |
-| **GitHub público**          | Conexão por nome de usuário, busca real de perfil e até 100 eventos públicos, atualização automática limitada e último resultado disponível localmente.                                                |
-| **Apple Saúde por arquivo** | Importação local em lote de XML compatível, com oito métricas opcionais, janela de 14 dias e processamento em Web Worker. Não é conexão contínua com HealthKit.                                        |
-| **Foco**                    | Iniciar, pausar, retomar, recuperar após recarga e concluir. Os minutos completos medidos entram nos registros em uma transação que também encerra o cronômetro.                                       |
-| **Corpo e rotina**          | Check-in manual de bem-estar/medidas, séries corrigíveis e corrida decimal. Ficha e cinco cuidados iniciais ainda são modelos predefinidos.                                                            |
-| **Alimentação**             | Refeições removíveis, correção confirmada de totais, calorias derivadas dos macros, água reversível e metas editáveis.                                                                                 |
-| **Aprendizado**             | Aulas, correção de progresso, insights paginados e remoção confirmada. As duas trilhas ainda são exemplos predefinidos.                                                                                |
-| **Planos e evolução**       | Wishlist com objetivo, prioridade, custo e aquisição reversível; panorama de foco e resumos diários.                                                                                                   |
-| **Dados do espaço**         | Persistência IndexedDB entre abas, backup JSON validado, recuperação de registros incompatíveis e proteção de ações pendentes na virada do dia.                                                        |
+| Área                        | Comportamento atual                                                                                                                                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Panorama diário**         | Saúde, atividade técnica, foco, nutrição e cuidados no mesmo contexto. Gráficos preservam lacunas e distinguem prévia, importação, conexão e registros locais.                                                       |
+| **Leitura do dia**          | Compara o sono recebido com a meta pessoal; compara FC em repouso com até sete registros anteriores quando há ao menos três válidos; mostra o foco concluído. Sem diagnóstico ou score geral de saúde.               |
+| **GitHub público**          | Conexão por nome de usuário, busca real de perfil e até 100 eventos públicos, atualização automática limitada e último resultado disponível localmente.                                                              |
+| **Apple Saúde por arquivo** | Importação local em lote de XML compatível, com oito métricas opcionais, janela de 14 dias e processamento em Web Worker. Não é conexão contínua com HealthKit.                                                      |
+| **Foco**                    | Iniciar, pausar, retomar, recuperar após recarga e concluir. Os minutos completos medidos entram nos registros em uma transação que também encerra o cronômetro.                                                     |
+| **Corpo e rotina**          | Check-in de bem-estar/medidas (sono, peso e passos importados aparecem como sugestão), séries corrigíveis e corrida decimal. Armário de skincare AM/PM com histórico e fotos; a ficha de treino ainda é predefinida. |
+| **Alimentação**             | Refeições removíveis, correção confirmada de totais, calorias derivadas dos macros, água reversível e metas editáveis.                                                                                               |
+| **Aprendizado**             | Aulas, correção de progresso, insights paginados e remoção confirmada. As duas trilhas ainda são exemplos predefinidos.                                                                                              |
+| **Planos e evolução**       | Wishlist com objetivo, prioridade, custo e aquisição reversível; panorama de foco e resumos diários.                                                                                                                 |
+| **Dados do espaço**         | Persistência IndexedDB entre abas, backup JSON validado, recuperação de registros incompatíveis e proteção de ações pendentes na virada do dia.                                                                      |
 
 ### Conectar atividade técnica
 
@@ -150,7 +150,7 @@ Emulação não substitui Safari físico. Instalação, teclado, safe areas, Voi
 
 Os registros ficam em **IndexedDB**, sem sincronização remota ou backup automático. O app não criptografa esse armazenamento. Páginas da mesma origem compartilham acesso: caminhos diferentes de GitHub Pages não isolam dados pessoais. Prefira origem dedicada para uso real. Limpar os dados do navegador remove as bases locais.
 
-O **backup JSON de Meu espaço cobre os registros do KernelHub**, inclusive blocos de foco já concluídos; **não inclui snapshots das fontes, conexão GitHub ou cronômetro ativo**. Reconecte o usuário público e reimporte o XML após trocar de navegador/dispositivo. Conclua um bloco antes de contar com ele no backup. Os registros do espaço mantêm até 90 resumos diários, 200 eventos recentes e 500 insights; a restauração aceita JSON validado de até 2 MiB com confirmação de substituição.
+O **backup de Meu espaço (0.5)** é um arquivo JSON versionado com os registros do KernelHub, o **armário de skincare** (cadastro, histórico de todos os dias e motivos), as **fotos** (opcionais, para manter o arquivo menor) e o usuário GitHub conectado. Restaurar substitui espaço e skincare em uma transação única, mostra antes o que será substituído e aceita também os backups antigos (somente espaço). **Não incluem** snapshots de Saúde (reimporte o `export.xml`) nem o cronômetro ativo (conclua o bloco antes). O arquivo não é criptografado. Os registros do espaço mantêm até 90 resumos diários, 200 eventos recentes e 500 insights; o espaço aceita até 2 MiB e o arquivo completo até 64 MB.
 
 GitHub envia requisições públicas a `api.github.com`; o XML de saúde não é enviado. Snapshot antigo não é medição ao vivo. O cache do service worker guarda arquivos públicos, não é a base dos dados pessoais.
 

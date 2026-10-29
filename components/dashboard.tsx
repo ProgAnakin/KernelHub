@@ -685,7 +685,7 @@ export function Dashboard() {
               <Settings2 size={17} />
               Seu espaço
             </button>
-            <span className="kh-version">KERNELHUB / 0.4 · LOCAL FIRST</span>
+            <span className="kh-version">KERNELHUB / 0.5 · LOCAL FIRST</span>
           </div>
         </aside>
         <div className="kh-workspace">

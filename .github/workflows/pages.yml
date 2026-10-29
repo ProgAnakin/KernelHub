@@ -28,6 +28,10 @@ jobs:
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         id: pages
       - run: npm ci
+      # A push to main publishes immediately; do not ship what the quality
+      # suite would reject.
+      - run: npm run typecheck
+      - run: npm run test:unit
       - run: npm run build:pages
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}

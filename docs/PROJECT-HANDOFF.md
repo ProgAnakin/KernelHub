@@ -8,6 +8,8 @@ Revisão de **28 de outubro de 2026**. Base do aplicativo: commit **`0f054d75a21
 - [Publicação da base examinada](https://github.com/ProgAnakin/KernelHub/actions/runs/40125704646): concluída com sucesso.
 - A consulta ao GitHub confirmou esse commit em `main`; o site respondeu HTTP 200 nesta revisão. A publicação do aplicativo e a publicação das configurações do ambiente cloud são operações independentes.
 
+> **Atualização de 29 de outubro de 2026 (0.5.0).** Uma revisão técnica posterior leu o código inteiro e corrigiu parte dos achados abaixo. Resolvidos: backup incompleto (§6), textos de integração contraditórios (§6), perda de rascunho ao fechar (§6) e distância entre abertura e ação (§6/§9). O que mudou, o que a revisão encontrou além deste relatório e o que continua em aberto está na [seção 12](#12-revisão-técnica-de-29-de-outubro-de-2026-050). As demais seções descrevem o estado de 28/10 e foram mantidas para referência.
+
 ## 1. O que é o produto e por que ele existe
 
 KernelHub é um sistema pessoal diário para reunir corpo, recuperação, treino, alimentação, aparência, hábitos, aprendizado, engenharia de software e recursos futuros. A intenção é acompanhar a evolução da pessoa e devolver contexto útil para agir com menos esforço.
@@ -55,24 +57,24 @@ O número 0.4.0 não foi incrementado nas duas últimas funcionalidades. README,
 
 ## 4. Inventário funcional: o que existe e o que falta
 
-| Área               | Implementado no código                                                                                                           | Limite e evolução necessária                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Hoje               | Panorama de saúde, fontes, contexto, atividade técnica, foco, nutrição e cuidados; gráficos com lacunas e prévias identificadas. | A abertura continua extensa. Falta priorização pessoal de módulos e próximos passos com maior valor entre domínios.                   |
-| Saúde              | Importação local do XML compatível do Apple Saúde, normalização de oito métricas, procedência, datas e séries.                   | Importação pontual, não sincronização contínua. Sem HealthKit direto, Garmin, Fitbit ou WHOOP conectados.                             |
-| Contexto corporal  | Sono comparado à meta; FC em repouso comparada a registros anteriores quando há base suficiente.                                 | Não é avaliação clínica; falta evolução contextual mais ampla, validada e baseada em cobertura adequada.                              |
-| Check-in           | Energia, humor e estresse em escalas subjetivas; sono, peso e passos manuais conforme os campos.                                 | O sono manual e o sono importado alimentam visões diferentes; falta uma política unificada de precedência e apresentação.             |
-| Musculação         | Marcação/correção de séries de uma ficha predefinida.                                                                            | Exercícios, cargas e repetições ainda vêm de catálogo fixo. Sem rotina livre, progressão, descanso medido ou integração de execução.  |
-| Corrida            | Distância decimal, correção de total e meta pessoal.                                                                             | Sem GPS, duração/ritmo de uma atividade, zonas, esforço ou histórico detalhado de sessões importadas.                                 |
-| Água e alimentação | Água reversível; refeições com macros; remoção; correção confirmada de totais; calorias por 4/4/9; metas configuráveis.          | Predominantemente manual. Sem catálogo alimentar, código de barras, importação ou planejamento alimentar.                             |
-| Skincare           | Armário de três prateleiras, portas, AM/PM, produtos próprios, sequência independente, checks, métricas, histórico e fotos.      | Sem backup/restauração do módulo. HEIC não suportado. Constância usa dias planejados armazenados, não todos os dias do calendário.    |
-| Outros cuidados    | Suplementação e grooming como checks diários.                                                                                    | Sem criação de hábitos, frequência configurável ou protocolo estruturado de suplementos.                                              |
-| GitHub             | Perfil e até 100 eventos públicos, atualização limitada enquanto visível, snapshot local, filtros e totais derivados.            | Sem repositórios privados, OAuth, histórico completo ou garantia de atualização em segundo plano.                                     |
-| Foco               | Início, pausa, retomada, recarga e conclusão com minutos medidos; também há registro manual corrigível.                          | Sem vínculo estruturado com projeto/curso e sem comprovação de resultado do trabalho apenas pelo tempo.                               |
-| Aprendizado        | Dois cursos de exemplo, avanço/correção de aulas, insights paginados e exclusão.                                                 | Sem cadastro livre, módulos próprios, vínculo com foco, revisão espaçada ou evidências estruturadas de aplicação.                     |
-| Carreira           | Eventos GitHub, blocos de projeto e anotações.                                                                                   | Sem entidades próprias de projeto, objetivos de habilidade ou revisão de resultados de carreira.                                      |
-| Aquisições         | Inclusão de item, categoria, objetivo, preço, prioridade, aquisição reversível e exclusão confirmada.                            | Sem orçamento, reposição, estoque ou ciclo de consumo. Essas extensões só se justificam com uso real.                                 |
-| Dados              | IndexedDB, concorrência, recuperação e backup JSON do estado principal.                                                          | Sem conta, nuvem, sincronização, criptografia do app ou backup completo de todos os módulos.                                          |
-| PWA                | Manifesto, metadados iOS, safe areas, instalação e shell offline após visita online.                                             | Safari/iPhone físico ainda não validado. Não existe acesso web direto ao HealthKit nem execução contínua garantida com a PWA fechada. |
+| Área               | Implementado no código                                                                                                           | Limite e evolução necessária                                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hoje               | Panorama de saúde, fontes, contexto, atividade técnica, foco, nutrição e cuidados; gráficos com lacunas e prévias identificadas. | A abertura continua extensa. Falta priorização pessoal de módulos e próximos passos com maior valor entre domínios.                                       |
+| Saúde              | Importação local do XML compatível do Apple Saúde, normalização de oito métricas, procedência, datas e séries.                   | Importação pontual, não sincronização contínua. Sem HealthKit direto, Garmin, Fitbit ou WHOOP conectados.                                                 |
+| Contexto corporal  | Sono comparado à meta; FC em repouso comparada a registros anteriores quando há base suficiente.                                 | Não é avaliação clínica; falta evolução contextual mais ampla, validada e baseada em cobertura adequada.                                                  |
+| Check-in           | Energia, humor e estresse em escalas subjetivas; sono, peso e passos manuais conforme os campos.                                 | O sono manual e o sono importado alimentam visões diferentes; falta uma política unificada de precedência e apresentação.                                 |
+| Musculação         | Marcação/correção de séries de uma ficha predefinida.                                                                            | Exercícios, cargas e repetições ainda vêm de catálogo fixo. Sem rotina livre, progressão, descanso medido ou integração de execução.                      |
+| Corrida            | Distância decimal, correção de total e meta pessoal.                                                                             | Sem GPS, duração/ritmo de uma atividade, zonas, esforço ou histórico detalhado de sessões importadas.                                                     |
+| Água e alimentação | Água reversível; refeições com macros; remoção; correção confirmada de totais; calorias por 4/4/9; metas configuráveis.          | Predominantemente manual. Sem catálogo alimentar, código de barras, importação ou planejamento alimentar.                                                 |
+| Skincare           | Armário de três prateleiras, portas, AM/PM, produtos próprios, sequência independente, checks, métricas, histórico e fotos.      | ~~Sem backup/restauração do módulo~~ (resolvido na 0.5). HEIC não suportado. Constância usa dias planejados armazenados, não todos os dias do calendário. |
+| Outros cuidados    | Suplementação e grooming como checks diários.                                                                                    | Sem criação de hábitos, frequência configurável ou protocolo estruturado de suplementos.                                                                  |
+| GitHub             | Perfil e até 100 eventos públicos, atualização limitada enquanto visível, snapshot local, filtros e totais derivados.            | Sem repositórios privados, OAuth, histórico completo ou garantia de atualização em segundo plano.                                                         |
+| Foco               | Início, pausa, retomada, recarga e conclusão com minutos medidos; também há registro manual corrigível.                          | Sem vínculo estruturado com projeto/curso e sem comprovação de resultado do trabalho apenas pelo tempo.                                                   |
+| Aprendizado        | Dois cursos de exemplo, avanço/correção de aulas, insights paginados e exclusão.                                                 | Sem cadastro livre, módulos próprios, vínculo com foco, revisão espaçada ou evidências estruturadas de aplicação.                                         |
+| Carreira           | Eventos GitHub, blocos de projeto e anotações.                                                                                   | Sem entidades próprias de projeto, objetivos de habilidade ou revisão de resultados de carreira.                                                          |
+| Aquisições         | Inclusão de item, categoria, objetivo, preço, prioridade, aquisição reversível e exclusão confirmada.                            | Sem orçamento, reposição, estoque ou ciclo de consumo. Essas extensões só se justificam com uso real.                                                     |
+| Dados              | IndexedDB, concorrência, recuperação e backup JSON do estado principal.                                                          | Sem conta, nuvem, sincronização, criptografia do app ou backup completo de todos os módulos.                                                              |
+| PWA                | Manifesto, metadados iOS, safe areas, instalação e shell offline após visita online.                                             | Safari/iPhone físico ainda não validado. Não existe acesso web direto ao HealthKit nem execução contínua garantida com a PWA fechada.                     |
 
 ### Saúde: contrato real e limites do importador
 
@@ -325,3 +327,38 @@ O service worker usa manifesto de precache com revisão por build e inclui chunk
 - O produto continuará pessoal/local ou terá contas e múltiplos usuários? Essa decisão altera backend, privacidade, suporte e custo.
 
 Essas decisões pedem observação e escolha de produto; não justificam adiar textos corretos, proteção contra perda de dados ou os testes físicos necessários.
+
+## 12. Revisão técnica de 29 de outubro de 2026 (0.5.0)
+
+Base: este documento + leitura integral do código (≈10 mil linhas de TypeScript, 9 mil de CSS), execução dos testes e inspeção das telas em Chromium a 320, 390 e 1440 px. Não houve teste em Safari/iPhone físico.
+
+### O que foi entregue
+
+| Tema             | Mudança                                                                                                                                                     | Onde                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Portabilidade    | Backup versionado (`kernelhub-backup` v2) com espaço, skincare, fotos opcionais e usuário GitHub; restauração atômica, aceita backups antigos               | `lib/backup.ts`, `lib/backup-storage.ts`, `components/backup-panel.tsx`, `lib/use-kernel.ts`         |
+| Perda de dados   | Confirmação ao descartar entrada não salva; rascunho de produto elevado acima das abas; metas com rascunho em texto                                         | `useDraftGuard` e `BottomSheet` em `components/ui.tsx`, `components/skincare-cabinet.tsx`            |
+| Utilidade diária | Cartão "Próximo passo" + atalhos em Hoje; sugestões de check-in a partir do Saúde importado; "marcar pendentes como usados" e destaque do próximo produto   | `components/pulse-overview.tsx`, `lib/metrics.ts`, `components/growth-sheets.tsx`, `lib/skincare.ts` |
+| Dados            | Macros decimais (décimos de grama, totais exatos)                                                                                                           | `lib/state.ts`                                                                                       |
+| Legibilidade     | Piso de 11 px; rótulos de frasco e títulos de evento em duas linhas                                                                                         | `app/*.css`                                                                                          |
+| Higiene          | Telas inalcançáveis removidas (`TelemetrySheet`, `EngineeringSheet`, fixtures Garmin/Git), `noUnusedLocals`, deploy do Pages roda tipos e testes de domínio | `types/kernel.ts`, `tsconfig.json`, `.github/workflows/pages.yml`                                    |
+
+### Achados desta revisão que o relatório de 28/10 não trazia
+
+1. **O importador de saúde não funciona com um export real.** O limite de 12 MiB/150 mil registros é uma exceção, não o caso típico: um `export.xml` do Apple Saúde costuma ter centenas de MB (e o ZIP, dezenas). O parser percorre uma string inteira (`file.text()`), então a única saída é um parser em streaming que retém só a janela de 14 dias. Foi a maior lacuna de utilidade encontrada e **não foi implementada** (ver abaixo).
+2. **Tipografia ilegível.** Medido em 390 px: 51% dos caracteres de Hoje renderizavam abaixo de 11 px (mínimo 6 px), inclusive a procedência "prévia ilustrativa", que é justamente o que o produto promete tornar visível. A verificação de acessibilidade automatizada (axe) não detecta isso.
+3. **Código morto com texto falso.** `TelemetrySheet`, `EngineeringSheet`, `TodayBrief`, `Brand` e as fixtures não eram alcançados por nenhum caminho, mas continham frases como "Garmin simulada" e "conectar o GitHub requer um servidor".
+4. **Defeito de toque.** Focar uma caixa de seleção expandia o painel móvel e deslocava o controle debaixo do dedo; só aparecia ao testar o fluxo no projeto iPhone.
+5. **Entrada de macros.** Teclado decimal com `step="1"`: gramas fracionadas eram rejeitadas pelo navegador.
+6. **Confirmação de remoção de foto** aparecia no fim da lista, fora da tela quando havia várias fotos.
+7. **Ambiente de testes.** Com `@playwright/test` 1.64.1 o Chromium baixado pode não existir; use `PLAYWRIGHT_CHROMIUM_PATH=<caminho do chromium>`.
+8. **O iPhone converte HEIC para JPEG** ao escolher da Fototeca quando `accept` não lista HEIC (comportamento esperado do Safari, a confirmar em aparelho); HEIC só chega via app Arquivos.
+
+### Continua em aberto, em ordem sugerida
+
+1. **Importador de saúde em streaming** (`File.stream()` + decodificação incremental no worker, janela de 14 dias, progresso, tempo limite por inatividade) e, opcionalmente, leitura direta do `export.zip` (`DecompressionStream`). Mantém o parser atual como API de strings para os testes adversariais.
+2. **CSP por `<meta>`** no export estático, com hashes dos scripts em linha gerados no build, para limitar `connect-src`, `img-src` e origens de script; a afirmação de que o Pages "não permite CSP" vale só para cabeçalhos HTTP.
+3. **Validação em iPhone físico:** exportação do backup em PWA instalada (`<a download>` com Blob é frágil no Safari standalone; considerar `navigator.share` com arquivo), teclado e `visualViewport`, memória com fotos grandes e com o XML real.
+4. Origem dedicada (domínio próprio) antes de dados reais; criptografia opcional do backup.
+5. Cursos livres e hábitos configuráveis (§9, P1), após a validação física.
+6. Pesquisa do tamanho de fonte pelo usuário: o piso de 11 px resolveu o pior caso, mas os tamanhos continuam em `px` fixo (sem Dynamic Type).
