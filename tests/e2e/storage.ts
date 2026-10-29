@@ -72,3 +72,25 @@ export async function stored(page: Page): Promise<KernelState> {
     throw new Error("KernelHub record is missing after hydration");
   return JSON.parse(raw) as KernelState;
 }
+
+/** Opens a page of the app the way a shared link does: through the URL hash. */
+export async function goSection(
+  page: Page,
+  section: "" | "corpo" | "foco" | "evolucao" | "colecao",
+): Promise<void> {
+  await page.evaluate((hash) => {
+    location.hash = hash;
+  }, section);
+  await page
+    .getByRole("heading", { level: 1 })
+    .filter({
+      hasText: {
+        "": "Hoje",
+        corpo: "Corpo",
+        foco: "Foco",
+        evolucao: "Evolução",
+        colecao: "Coleção",
+      }[section],
+    })
+    .waitFor();
+}

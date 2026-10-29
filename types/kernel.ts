@@ -1,4 +1,4 @@
-export type Section = "today" | "body" | "build" | "learn" | "wishlist";
+export type Section = "today" | "body" | "focus" | "trends" | "wishlist";
 export type Sheet =
   | "workout"
   | "nutrition"

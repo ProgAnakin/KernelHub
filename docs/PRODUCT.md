@@ -20,7 +20,7 @@ A [revisão de qualidade](QUALITY-REVIEW.md) documenta verificações e limites.
 
 ## Experiência diária
 
-O núcleo evolui para **receber → normalizar → contextualizar → permitir agir**. “Hoje” oferece uma leitura do dia; “Corpo” reúne rotina e recuperação; “Evoluir” aproxima construção e aprendizado; “Fontes” explicita conexão, importação e cobertura. Planos de aquisição permanecem acessíveis sem dominar o acompanhamento. O botão central abre registros rápidos.
+O núcleo evolui para **receber → normalizar → contextualizar → permitir agir**. cada página responde a uma pergunta: “Hoje” (o que fazer agora e o que falta no dia), “Corpo” (como estou e o que o corpo recebeu), “Foco” (meu tempo de projeto, estudo e código), “Evolução” (o que se repete ao longo das semanas) e “Coleção” (o que quero adquirir). “Fontes” explicita conexão, importação e cobertura e é acessível pelo cabeçalho de toda página. O botão central abre registros rápidos.
 
 - Priorizar poucos sinais e próximos passos relevantes em “Hoje”. Detalhes, histórico e ajustes abrem sob demanda; módulos podem ser ativados conforme a rotina da pessoa.
 - Preservar ações diretas, correção e desfazer. Um hábito não pode exigir o mesmo formulário de uma refeição ou de um protocolo de treino.

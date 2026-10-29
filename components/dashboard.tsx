@@ -1,36 +1,31 @@
 "use client";
 
-import { SkincareSummary } from "./skincare-summary";
-
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import {
   Activity,
+  ArrowUpRight,
   BookOpen,
   Check,
   ChevronRight,
-  Code2,
-  Droplets,
   Dumbbell,
   Footprints,
   House,
   Layers3,
   Leaf,
-  Moon,
   Plus,
+  Radio,
   Settings2,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
-  Sun,
-  WifiOff,
-  Radio,
-  ArrowUpRight,
+  Target,
   Timer,
+  TrendingUp,
+  WifiOff,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
-import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
+import { COURSES, EXERCISES } from "@/lib/mock-engine";
 import { useKernel } from "@/lib/use-kernel";
 import { money } from "@/lib/format";
 import { checkinSuggestions } from "@/lib/metrics";
@@ -39,39 +34,79 @@ import {
   Card,
   CardHeading,
   CardLink,
-  CircleCheck,
   Progress,
   SPRING,
 } from "./ui";
 import { SheetContents, SHEET_INFO } from "./sheets";
-import { CheckinCard, FocusCard, WeeklyCard } from "./growth";
+import { CheckinCard, WeeklyCard } from "./growth";
 import { assetPath } from "@/lib/paths";
 import { useGithub } from "@/lib/use-github";
 import { useHealth } from "@/lib/use-health";
 import { SourceCenter, GithubActivity } from "./source-center";
 import { FocusTracker } from "./focus-tracker";
-import { PulseOverview } from "./pulse-overview";
+import {
+  ContextCard,
+  EngineeringCard,
+  FocusCard,
+  HealthCard,
+  NutritionCard,
+  PageHeading,
+  PulseOverview,
+  RoutineCard,
+} from "./pulse-overview";
+import { RhythmCard } from "./rhythm";
 
 type StateProps = {
   state: KernelState;
   open: (sheet: Sheet) => void;
   act: (action: KernelAction) => void;
 };
-const formatter = new Intl.NumberFormat("pt-BR");
+// One page per question the user asks of the app: what now, my body, my work,
+// how am I doing over time, what do I want next.
 const SECTION_HASH: Record<Section, string> = {
   today: "",
   body: "corpo",
-  build: "evoluir",
-  learn: "conhecimento",
+  focus: "foco",
+  trends: "evolucao",
   wishlist: "colecao",
 };
+// Links saved before the reorganisation keep working.
+const LEGACY_HASH: Record<string, Section> = {
+  evoluir: "focus",
+  conhecimento: "focus",
+};
 const NAV: { id: Section; label: string; icon: LucideIcon }[] = [
-  { id: "today", label: "Visão geral", icon: House },
-  { id: "body", label: "Corpo & rotina", icon: Activity },
-  { id: "build", label: "Engenharia", icon: Code2 },
-  { id: "learn", label: "Conhecimento", icon: BookOpen },
-  { id: "wishlist", label: "Wishlist", icon: ShoppingBag },
+  { id: "today", label: "Hoje", icon: House },
+  { id: "body", label: "Corpo", icon: Activity },
+  { id: "focus", label: "Foco", icon: Target },
+  { id: "trends", label: "Evolução", icon: TrendingUp },
+  { id: "wishlist", label: "Coleção", icon: ShoppingBag },
 ];
+const PAGES: Record<
+  Exclude<Section, "today">,
+  { eyebrow: string; title: string; detail: string }
+> = {
+  body: {
+    eyebrow: "Saúde · alimentação · cuidados",
+    title: "Corpo",
+    detail: "Como você está e o que o corpo recebeu hoje.",
+  },
+  focus: {
+    eyebrow: "Projetos · estudo · código",
+    title: "Foco",
+    detail: "Meça o tempo, veja o que avançou e retome o que está em curso.",
+  },
+  trends: {
+    eyebrow: "Semanas · constância · padrões",
+    title: "Evolução",
+    detail: "O que se repete ao longo do tempo, sem preencher lacunas.",
+  },
+  wishlist: {
+    eyebrow: "Aquisições planejadas",
+    title: "Coleção",
+    detail: "O que vale entrar na sua rotina, por prioridade.",
+  },
+};
 
 function WorkoutCard({ state, open }: StateProps) {
   const done = EXERCISES.reduce(
@@ -172,135 +207,6 @@ function WorkoutCard({ state, open }: StateProps) {
             ? "Continuar meu treino"
             : "Começar meu treino"}
       </CardLink>
-    </Card>
-  );
-}
-
-function NutritionCard({ state, open, act }: StateProps) {
-  const kcal = calories(state.nutrition),
-    target = calories(state.targets.macros);
-  return (
-    <Card className="nutrition-card" label="Nutrição e hidratação">
-      <CardHeading
-        icon={Leaf}
-        label="Nutrição"
-        color="amber"
-        right={<span className="quiet-label">HOJE</span>}
-      />
-      <div className="calorie-total">
-        <strong>{formatter.format(kcal)}</strong>
-        <span> / {formatter.format(target)} kcal</span>
-      </div>
-      <p className="card-description">Energia para a sua evolução.</p>
-      <div
-        className="macro-bar"
-        role="img"
-        aria-label={`${kcal} de ${target} quilocalorias`}
-      >
-        <span
-          style={{ flex: state.nutrition.protein * 4 }}
-          className="protein"
-        />
-        <span style={{ flex: state.nutrition.carbs * 4 }} className="carbs" />
-        <span style={{ flex: state.nutrition.fat * 9 }} className="fat" />
-        <span
-          style={{ flex: Math.max(0, target - kcal) }}
-          className="remaining"
-        />
-      </div>
-      <div className="macro-legend">
-        {(
-          [
-            { key: "protein", label: "Proteína", color: "green" },
-            { key: "carbs", label: "Carbo", color: "blue" },
-            { key: "fat", label: "Gordura", color: "amber" },
-          ] as const
-        ).map((macro) => (
-          <div key={macro.key}>
-            <span>
-              <i className={macro.color} />
-              {macro.label}
-            </span>
-            <strong>
-              {state.nutrition[macro.key]}
-              <small> / {state.targets.macros[macro.key]}g</small>
-            </strong>
-          </div>
-        ))}
-      </div>
-      <div className="hydration">
-        <Droplets size={19} strokeWidth={1.5} />
-        <div>
-          <span>Hidratação</span>
-          <strong>
-            {(state.waterMl / 1000).toLocaleString("pt-BR")}{" "}
-            <small>
-              / {(state.targets.waterMl / 1000).toLocaleString("pt-BR")} L
-            </small>
-          </strong>
-        </div>
-        <button
-          aria-label="Adicionar 250 ml de água"
-          onClick={() => act({ type: "water", amount: 250 })}
-          disabled={state.waterMl >= 10000}
-        >
-          <Plus size={17} />
-          250 ml
-        </button>
-      </div>
-      <CardLink onClick={() => open("nutrition")}>Registrar refeição</CardLink>
-    </Card>
-  );
-}
-
-function RoutineCard({ state, open, act }: StateProps) {
-  const careHabits = HABITS.filter(
-    (habit) => habit.id === "supplements" || habit.id === "grooming",
-  );
-  const done = careHabits.filter((habit) => state.habits[habit.id]).length;
-  return (
-    <Card className="routine-card" label="Rotina de cuidado">
-      <CardHeading
-        icon={Sparkles}
-        label="Pequenos cuidados"
-        right={
-          <span className="count-label">
-            {done}
-            <span>/{careHabits.length}</span>
-          </span>
-        }
-      />
-      <p className="card-description routine-intro">
-        O básico bem feito, todos os dias.
-      </p>
-      <SkincareSummary onOpen={() => open("routine")} />
-      <div className="habit-list">
-        {careHabits.map((habit) => (
-          <div
-            className={`habit-row ${state.habits[habit.id] ? "is-done" : ""}`}
-            key={habit.id}
-          >
-            <span className="habit-symbol">
-              {habit.period === "morning" ? (
-                <Sun size={17} />
-              ) : habit.period === "evening" ? (
-                <Moon size={17} />
-              ) : habit.id === "supplements" ? (
-                <Layers3 size={17} />
-              ) : (
-                <Sparkles size={17} />
-              )}
-            </span>
-            <span>{habit.title}</span>
-            <CircleCheck
-              checked={state.habits[habit.id]}
-              label={habit.title}
-              onClick={() => act({ type: "habit", id: habit.id })}
-            />
-          </div>
-        ))}
-      </div>
-      <CardLink onClick={() => open("routine")}>Minha rotina completa</CardLink>
     </Card>
   );
 }
@@ -505,6 +411,32 @@ function LiveClock() {
   return <span className="live-clock">{time}</span>;
 }
 
+function Page({
+  section,
+  connected,
+  onSources,
+  children,
+}: {
+  section: Exclude<Section, "today">;
+  connected: number;
+  onSources: () => void;
+  children: ReactNode;
+}) {
+  const page = PAGES[section];
+  return (
+    <div className="kp-overview">
+      <PageHeading
+        eyebrow={page.eyebrow}
+        title={page.title}
+        detail={page.detail}
+        connected={connected}
+        onSources={onSources}
+      />
+      <div className={`kp-page kp-page-${section}`}>{children}</div>
+    </div>
+  );
+}
+
 export function Dashboard() {
   const {
     state,
@@ -593,7 +525,7 @@ export function Dashboard() {
       const match = (Object.keys(SECTION_HASH) as Section[]).find(
         (key) => SECTION_HASH[key] === hash,
       );
-      setSection(match ?? "today");
+      setSection(match ?? LEGACY_HASH[hash] ?? "today");
     };
     fromHash();
     window.addEventListener("popstate", fromHash);
@@ -602,37 +534,7 @@ export function Dashboard() {
   const props: StateProps = { state, open, act: notifyAct };
   const sourceCount =
     Number(Boolean(github.snapshot)) + Number(Boolean(health.snapshot));
-  const titles: Record<
-    Section,
-    { label: string; title: string; detail: string }
-  > = {
-    today: {
-      label: "OVERVIEW",
-      title: "Hoje",
-      detail: "Sinais, contexto e próximos passos.",
-    },
-    body: {
-      label: "BODY / DAILY",
-      title: "Sua melhor base.",
-      detail: "Corpo, movimento e cuidados em um só ritmo.",
-    },
-    build: {
-      label: "BUILD / LEARN",
-      title: "Faça o tempo contar.",
-      detail: "Trabalho, aprendizado e o que avançou de verdade.",
-    },
-    learn: {
-      label: "KNOWLEDGE",
-      title: "Conhecimento em prática.",
-      detail: "Retome, entenda, aplique.",
-    },
-    wishlist: {
-      label: "COLLECTION",
-      title: "Escolhas com direção.",
-      detail: "O que vale entrar na sua rotina.",
-    },
-  };
-  const info = titles[section];
+  const title = section === "today" ? "Hoje" : PAGES[section].title;
   const date = now
     ?.toLocaleDateString("pt-BR", {
       weekday: "short",
@@ -655,6 +557,13 @@ export function Dashboard() {
             title: "Seu trabalho em movimento.",
             subtitle: "Atividade pública do GitHub",
           };
+  const pulse = {
+    ...props,
+    health,
+    github,
+    onSources: () => openOverlay("sources"),
+    onTimer: () => openOverlay("timer"),
+  };
 
   return (
     <MotionConfig reducedMotion="user">
@@ -674,7 +583,6 @@ export function Dashboard() {
             </span>
             KernelHub<span className="kh-brand-dot">.</span>
           </button>
-          <span className="kh-nav-label">PERSONAL OPERATING SYSTEM</span>
           <nav aria-label="Navegação principal">
             {NAV.map(({ id, label, icon: Icon }) => (
               <button
@@ -732,7 +640,7 @@ export function Dashboard() {
             <div className="kh-breadcrumb">
               <span>Meu espaço</span>
               <ChevronRight size={13} />
-              {info.title}
+              {title}
             </div>
             <div className="kh-top-context">
               <LiveClock />
@@ -768,119 +676,39 @@ export function Dashboard() {
                   : "O navegador bloqueou o armazenamento. Os registros desta sessão podem se perder."}
               </div>
             )}
-            {section === "today" ? (
-              <PulseOverview
-                {...props}
-                health={health}
-                github={github}
-                onSources={() => openOverlay("sources")}
-                onTimer={() => openOverlay("timer")}
-              />
-            ) : (
-              <>
-                <div className="kh-page-heading">
-                  <div>
-                    <span className="kh-eyebrow">{info.label}</span>
-                    <h1>{info.title}</h1>
-                    <p>{info.detail}</p>
-                  </div>
-                  <button
-                    className="kh-round-action"
-                    aria-label="Abrir central de fontes"
-                    onClick={() => openOverlay("sources")}
-                  >
-                    <Radio size={19} />
-                  </button>
-                </div>
-                <div
-                  className="kh-section-tabs"
-                  role="group"
-                  aria-label="Áreas do sistema"
-                >
-                  {[
-                    { id: "body", label: "Corpo" },
-                    { id: "build", label: "Evoluir" },
-                    { id: "wishlist", label: "Coleção" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => navigate(item.id as Section)}
-                      aria-pressed={section === item.id}
-                      className={section === item.id ? "is-active" : ""}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-                <div className={`dashboard-grid kh-detail view-${section}`}>
-                  {section === "body" && (
-                    <>
-                      <div className="kh-body-source glass-card">
-                        <div className="kh-section-label">
-                          <span>SAÚDE / DISPONIBILIDADE</span>
-                          <Radio size={17} />
-                        </div>
-                        <h2>
-                          {health.snapshot
-                            ? `${Object.values(health.snapshot.metrics).filter((item) => item.value !== null).length} métricas recebidas.`
-                            : "Cada fonte, seus sinais."}
-                        </h2>
-                        <p>
-                          {health.snapshot
-                            ? `Leituras de ${health.snapshot.sources.join(", ")}. Valores sem amostra permanecem vazios.`
-                            : "Sono, frequência, passos e energia são preenchidos a partir do que sua fonte entregar."}
-                        </p>
-                        <button
-                          className="kh-text-button"
-                          onClick={() => openOverlay("sources")}
-                        >
-                          Ver fontes e leituras <ArrowUpRight size={15} />
-                        </button>
-                      </div>
-                      <CheckinCard state={state} open={open} />
-                      <WorkoutCard {...props} />
-                      <NutritionCard {...props} />
-                      <RoutineCard {...props} />
-                      <WeeklyCard state={state} />
-                    </>
-                  )}
-                  {(section === "build" || section === "learn") && (
-                    <>
-                      <div className="glass-card kh-github-detail">
-                        <GithubActivity
-                          github={github}
-                          onSources={() => openOverlay("sources")}
-                        />
-                      </div>
-                      <div className="glass-card kh-start-focus">
-                        <span className="kh-eyebrow">TEMPO EM MOVIMENTO</span>
-                        <Timer size={30} />
-                        <h2>Um bloco. Uma direção.</h2>
-                        <p>
-                          Inicie o cronômetro. O tempo continua sendo medido
-                          enquanto você trabalha ou estuda fora do app.
-                        </p>
-                        <button
-                          className="primary-button"
-                          onClick={() => openOverlay("timer")}
-                        >
-                          Iniciar foco <ArrowUpRight size={16} />
-                        </button>
-                      </div>
-                      <FocusCard state={state} open={open} />
-                      <KnowledgeCard {...props} />
-                      <WeeklyCard state={state} />
-                      <ActivityJournal state={state} />
-                    </>
-                  )}
-                  {section === "wishlist" && (
-                    <>
-                      <WishlistCard {...props} />
-                      <ActivityJournal state={state} />
-                    </>
-                  )}
-                </div>
-              </>
+            {section === "today" && <PulseOverview {...pulse} go={navigate} />}
+            {section !== "today" && (
+              <Page
+                section={section}
+                connected={sourceCount}
+                onSources={pulse.onSources}
+              >
+                {section === "body" && (
+                  <>
+                    <HealthCard {...pulse} />
+                    <CheckinCard state={state} open={open} />
+                    <WorkoutCard {...props} />
+                    <NutritionCard {...pulse} />
+                    <RoutineCard {...pulse} />
+                  </>
+                )}
+                {section === "focus" && (
+                  <>
+                    <FocusCard {...pulse} />
+                    <KnowledgeCard {...props} />
+                    <EngineeringCard {...pulse} />
+                  </>
+                )}
+                {section === "trends" && (
+                  <>
+                    <RhythmCard state={state} variant="history" />
+                    <WeeklyCard state={state} />
+                    <ContextCard {...pulse} />
+                    <ActivityJournal state={state} />
+                  </>
+                )}
+                {section === "wishlist" && <WishlistCard {...props} />}
+              </Page>
             )}
             <footer className="kh-footer">
               <span>
@@ -888,7 +716,7 @@ export function Dashboard() {
                 Dados locais. Seu ritmo.
               </span>
               <div>
-                <button onClick={() => open("wishlist")}>Coleção</button>
+                <button onClick={() => navigate("wishlist")}>Coleção</button>
                 <button onClick={() => openOverlay("sources")}>Fontes</button>
                 <button onClick={() => open("settings")}>Meu espaço</button>
               </div>
@@ -896,36 +724,15 @@ export function Dashboard() {
           </main>
         </div>
         <nav className="kh-bottom-nav" aria-label="Navegação do iPhone">
-          <button
-            className={section === "today" ? "is-active" : ""}
-            onClick={() => navigate("today")}
-            aria-current={section === "today" ? "page" : undefined}
-          >
-            <House size={22} strokeWidth={1.5} />
-            <span>Hoje</span>
-            {section === "today" && (
-              <motion.span
-                layoutId="kh-tab-glow"
-                className="kh-tab-glow"
-                transition={SPRING}
-              />
-            )}
-          </button>
-          <button
-            className={section === "body" ? "is-active" : ""}
-            onClick={() => navigate("body")}
-            aria-current={section === "body" ? "page" : undefined}
-          >
-            <Activity size={22} strokeWidth={1.5} />
-            <span>Corpo</span>
-            {section === "body" && (
-              <motion.span
-                layoutId="kh-tab-glow"
-                className="kh-tab-glow"
-                transition={SPRING}
-              />
-            )}
-          </button>
+          {NAV.slice(0, 2).map(({ id, label, icon: Icon }) => (
+            <TabButton
+              key={id}
+              active={section === id}
+              label={label}
+              icon={Icon}
+              onClick={() => navigate(id)}
+            />
+          ))}
           <button
             className="kh-quick-button"
             aria-label="Registro rápido"
@@ -933,29 +740,15 @@ export function Dashboard() {
           >
             <Plus size={28} strokeWidth={1.5} />
           </button>
-          <button
-            className={
-              section === "build" || section === "learn" ? "is-active" : ""
-            }
-            onClick={() => navigate("build")}
-            aria-current={
-              section === "build" || section === "learn" ? "page" : undefined
-            }
-          >
-            <Code2 size={22} strokeWidth={1.5} />
-            <span>Evoluir</span>
-            {(section === "build" || section === "learn") && (
-              <motion.span
-                layoutId="kh-tab-glow"
-                className="kh-tab-glow"
-                transition={SPRING}
-              />
-            )}
-          </button>
-          <button onClick={() => openOverlay("sources")}>
-            <Radio size={22} strokeWidth={1.5} />
-            <span>Fontes</span>
-          </button>
+          {NAV.slice(2, 4).map(({ id, label, icon: Icon }) => (
+            <TabButton
+              key={id}
+              active={section === id}
+              label={label}
+              icon={Icon}
+              onClick={() => navigate(id)}
+            />
+          ))}
         </nav>
       </div>
       <BottomSheet
@@ -1032,5 +825,35 @@ export function Dashboard() {
         )}
       </AnimatePresence>
     </MotionConfig>
+  );
+}
+
+function TabButton({
+  active,
+  label,
+  icon: Icon,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={active ? "is-active" : ""}
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+    >
+      <Icon size={22} strokeWidth={1.5} />
+      <span>{label}</span>
+      {active && (
+        <motion.span
+          layoutId="kh-tab-glow"
+          className="kh-tab-glow"
+          transition={SPRING}
+        />
+      )}
+    </button>
   );
 }

@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import type { GitHubSnapshot } from "../../lib/github";
 import type { HealthSnapshot } from "../../lib/health";
 import type { FocusTimerRecord } from "../../lib/focus-timer";
-import { stored, waitForReady } from "./storage";
+import { goSection, stored, waitForReady } from "./storage";
 
 const TEST_TIME = new Date("2026-10-23T12:00:00Z");
 const HEALTH_RECORD_START = new Date(Date.now() - 2 * 3600_000).toISOString();
@@ -169,6 +169,7 @@ test("GitHub connects public events without inventing commit or deploy counts an
     .getByRole("button", { name: "Fechar painel", exact: true })
     .click();
   await page.getByRole("dialog").waitFor({ state: "detached" });
+  await goSection(page, "foco");
   const engineering = page.getByRole("region", {
     name: "Atividade de engenharia",
   });

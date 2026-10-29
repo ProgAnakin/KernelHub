@@ -168,7 +168,7 @@ Saúde, GitHub, foco e skincare têm contratos próprios. O tipo unificado `Obse
 
 OLED `#000000`, superfícies translúcidas e bordas discretas permanecem. A versão 0.4 acrescentou verde-lima `#C8F06A` e azul `#55AAFF` aos acentos originais verde `#30D158`, azul `#0A84FF` e âmbar `#FF9F0A`. Fontes de sistema priorizam a família Apple quando disponível; SF Pro não é distribuída no repositório.
 
-A barra inferior oferece Hoje, Corpo, registro rápido, Evoluir e Fontes; Coleção e Meu espaço também têm acessos na interface. O layout amplo usa navegação lateral. A interface tem estados demonstrativo e pessoal; prévias devem continuar identificadas.
+A barra inferior oferece Hoje, Corpo, registro rápido, Foco e Evolução; Coleção, Fontes e Meu espaço têm acessos no rodapé e nos cabeçalhos. Cada seção tem URL (`#corpo`, `#foco`, `#evolucao`, `#colecao`). O layout amplo usa navegação lateral. A interface tem estados demonstrativo e pessoal; prévias devem continuar identificadas.
 
 Todos os editores compartilham `BottomSheet`:
 

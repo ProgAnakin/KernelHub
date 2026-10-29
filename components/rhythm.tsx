@@ -74,7 +74,13 @@ function levelLabel(level: number | null) {
  * constancy. Rings show the share of personal targets; the grid keeps days
  * without a record visibly empty instead of drawing them as failures.
  */
-export function RhythmCard({ state }: { state: KernelState }) {
+export function RhythmCard({
+  state,
+  variant = "full",
+}: {
+  state: KernelState;
+  variant?: "full" | "today" | "history";
+}) {
   const [track, setTrack] = useState<RhythmTrack>("focus");
   const today = summarizeDay(state);
   const rings = [
@@ -114,120 +120,130 @@ export function RhythmCard({ state }: { state: KernelState }) {
   return (
     <section
       className="kp-card kr-card"
-      aria-label="Ritmo de hoje e constância"
+      aria-label={
+        variant === "history" ? "Constância" : "Ritmo de hoje e constância"
+      }
     >
-      <div className="kr-today">
-        <div className="kp-card-title">
-          <span>
-            <Activity size={17} strokeWidth={1.5} />
-            Ritmo de hoje
-          </span>
-          <div className="kp-card-meta">{calories(state.nutrition)} kcal</div>
+      {variant !== "history" && (
+        <div className="kr-today">
+          <div className="kp-card-title">
+            <span>
+              <Activity size={17} strokeWidth={1.5} />
+              Ritmo de hoje
+            </span>
+            <div className="kp-card-meta">{calories(state.nutrition)} kcal</div>
+          </div>
+          <div className="kr-rings-row">
+            <svg
+              viewBox="0 0 120 120"
+              className="kr-rings"
+              role="img"
+              aria-label={rings
+                .map(
+                  (ring) =>
+                    `${ring.label}: ${Math.round(Math.min(ring.share, 9.99) * 100)}% da meta`,
+                )
+                .join("; ")}
+            >
+              {rings.map((ring, index) => (
+                <Ring
+                  key={ring.key}
+                  value={ring.share}
+                  radius={52 - index * 15}
+                  tone={ring.tone}
+                />
+              ))}
+            </svg>
+            <ul className="kr-legend">
+              {rings.map((ring) => (
+                <li key={ring.key} className={`kr-${ring.tone}`}>
+                  <i aria-hidden="true" />
+                  <span>{ring.label}</span>
+                  <strong>{ring.text}</strong>
+                  <small>{Math.round(Math.max(0, ring.share) * 100)}%</small>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <div className="kr-rings-row">
-          <svg
-            viewBox="0 0 120 120"
-            className="kr-rings"
-            role="img"
-            aria-label={rings
-              .map(
-                (ring) =>
-                  `${ring.label}: ${Math.round(Math.min(ring.share, 9.99) * 100)}% da meta`,
-              )
-              .join("; ")}
-          >
-            {rings.map((ring, index) => (
-              <Ring
-                key={ring.key}
-                value={ring.share}
-                radius={52 - index * 15}
-                tone={ring.tone}
-              />
-            ))}
-          </svg>
-          <ul className="kr-legend">
-            {rings.map((ring) => (
-              <li key={ring.key} className={`kr-${ring.tone}`}>
-                <i aria-hidden="true" />
-                <span>{ring.label}</span>
-                <strong>{ring.text}</strong>
-                <small>{Math.round(Math.max(0, ring.share) * 100)}%</small>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      <div className="kr-history">
-        <div className="kr-history-head">
-          <div>
-            <span className="kp-overline">CONSTÂNCIA · 13 SEMANAS</span>
-            <p>
-              <Flame size={14} strokeWidth={1.5} aria-hidden="true" />
-              {streak
-                ? `${streak} ${streak === 1 ? "dia" : "dias"} seguidos na meta`
-                : "Sem sequência ativa"}
-              <small>
-                {" "}
-                · {reached} de {recorded.length} dias registrados
-              </small>
-            </p>
+      )}
+      {variant !== "today" && (
+        <div className="kr-history">
+          <div className="kr-history-head">
+            <div>
+              <span className="kp-overline">CONSTÂNCIA · 13 SEMANAS</span>
+              <p>
+                <Flame size={14} strokeWidth={1.5} aria-hidden="true" />
+                {streak
+                  ? `${streak} ${streak === 1 ? "dia" : "dias"} seguidos na meta`
+                  : "Sem sequência ativa"}
+                <small>
+                  {" "}
+                  · {reached} de {recorded.length} dias registrados
+                </small>
+              </p>
+            </div>
+            <div
+              className="kr-tracks"
+              role="group"
+              aria-label="Escolher o que acompanhar"
+            >
+              {RHYTHM_TRACKS.map((item) => (
+                <button
+                  key={item.id}
+                  aria-pressed={track === item.id}
+                  onClick={() => setTrack(item.id)}
+                >
+                  {track === item.id && (
+                    <motion.span
+                      layoutId="kr-track-pill"
+                      className="kr-track-pill"
+                      transition={{
+                        type: "spring",
+                        stiffness: 420,
+                        damping: 32,
+                      }}
+                    />
+                  )}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <div
-            className="kr-tracks"
-            role="group"
-            aria-label="Escolher o que acompanhar"
+            className={`kr-grid kr-grid-${track}`}
+            role="img"
+            aria-label={`${label}: ${reached} dias com meta alcançada em ${recorded.length} dias com registro nas últimas 13 semanas. Dias sem registro ficam vazios.`}
           >
-            {RHYTHM_TRACKS.map((item) => (
-              <button
-                key={item.id}
-                aria-pressed={track === item.id}
-                onClick={() => setTrack(item.id)}
-              >
-                {track === item.id && (
-                  <motion.span
-                    layoutId="kr-track-pill"
-                    className="kr-track-pill"
-                    transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                  />
-                )}
-                <span>{item.label}</span>
-              </button>
-            ))}
+            {padded.map((cell, index) =>
+              cell ? (
+                <i
+                  key={cell.day}
+                  data-level={cell.level ?? "none"}
+                  title={`${cell.day.split("-").reverse().join("/")} · ${levelLabel(cell.level)}`}
+                />
+              ) : (
+                <i key={`pad-${index}`} data-level="pad" />
+              ),
+            )}
           </div>
-        </div>
-        <div
-          className={`kr-grid kr-grid-${track}`}
-          role="img"
-          aria-label={`${label}: ${reached} dias com meta alcançada em ${recorded.length} dias com registro nas últimas 13 semanas. Dias sem registro ficam vazios.`}
-        >
-          {padded.map((cell, index) =>
-            cell ? (
-              <i
-                key={cell.day}
-                data-level={cell.level ?? "none"}
-                title={`${cell.day.split("-").reverse().join("/")} · ${levelLabel(cell.level)}`}
-              />
-            ) : (
-              <i key={`pad-${index}`} data-level="pad" />
-            ),
+          <div className="kr-scale" aria-hidden="true">
+            <span>Sem registro</span>
+            <i data-level="none" />
+            <i data-level="0" />
+            <i data-level="1" />
+            <i data-level="2" />
+            <i data-level="3" />
+            <i data-level="4" />
+            <span>Meta</span>
+          </div>
+          {state.mode === "demo" && (
+            <p className="kr-note">
+              Demonstração: só os últimos dias têm histórico de exemplo.
+            </p>
           )}
         </div>
-        <div className="kr-scale" aria-hidden="true">
-          <span>Sem registro</span>
-          <i data-level="none" />
-          <i data-level="0" />
-          <i data-level="1" />
-          <i data-level="2" />
-          <i data-level="3" />
-          <i data-level="4" />
-          <span>Meta</span>
-        </div>
-        {state.mode === "demo" && (
-          <p className="kr-note">
-            Demonstração: só os últimos dias têm histórico de exemplo.
-          </p>
-        )}
-      </div>
+      )}
     </section>
   );
 }

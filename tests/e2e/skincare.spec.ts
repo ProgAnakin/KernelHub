@@ -36,7 +36,7 @@ const mode = (page: Page, period: "am" | "pm") =>
 
 async function openSkincare(page: Page) {
   await page
-    .getByRole("button", { name: "Abrir meus cuidados", exact: true })
+    .getByRole("button", { name: "Abrir armário de skincare", exact: true })
     .click();
   await expect(
     page.locator('.skincare-module[aria-busy="false"]'),

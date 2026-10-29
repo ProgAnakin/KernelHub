@@ -6,9 +6,7 @@ import { RhythmCard } from "./rhythm";
 import { useId, type ReactNode } from "react";
 import {
   Activity,
-  ArrowRight,
   ArrowUpRight,
-  BookOpen,
   Check,
   ChevronRight,
   Droplets,
@@ -27,13 +25,13 @@ import {
   Waves,
   type LucideIcon,
 } from "lucide-react";
-import type { KernelAction, KernelState, Sheet } from "@/types/kernel";
+import type { KernelAction, KernelState, Section, Sheet } from "@/types/kernel";
 import type { HealthMetric, HealthSnapshot } from "@/lib/health";
 import type { useHealth } from "@/lib/use-health";
 import { useFocusTimer } from "@/lib/use-focus-timer";
 import type { useGithub } from "@/lib/use-github";
 import { summarizeGithubEvents } from "@/lib/github";
-import { COURSES, EXERCISES, HABITS, calories } from "@/lib/mock-engine";
+import { EXERCISES, HABITS, calories } from "@/lib/mock-engine";
 import { nextStep, summarizeDay, weekOf } from "@/lib/metrics";
 
 export interface PulseOverviewProps {
@@ -44,6 +42,7 @@ export interface PulseOverviewProps {
   github: ReturnType<typeof useGithub>;
   onSources: () => void;
   onTimer: () => void;
+  go: (section: Section) => void;
 }
 
 const NUMBER = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
@@ -317,7 +316,7 @@ function NextStepCard({
     </section>
   );
 }
-function HealthCard({
+export function HealthCard({
   state,
   health,
   onSources,
@@ -459,7 +458,7 @@ function HealthCard({
     </section>
   );
 }
-function ContextCard({
+export function ContextCard({
   state,
   health,
   github,
@@ -589,7 +588,7 @@ function ContextCard({
     </section>
   );
 }
-function EngineeringCard({
+export function EngineeringCard({
   state,
   github,
   onSources,
@@ -762,7 +761,7 @@ function EngineeringCard({
     </section>
   );
 }
-function FocusCard({
+export function FocusCard({
   state,
   onTimer,
   open,
@@ -854,7 +853,7 @@ function FocusCard({
     </section>
   );
 }
-function NutritionCard({
+export function NutritionCard({
   state,
   act,
   open,
@@ -952,7 +951,7 @@ function NutritionCard({
     </section>
   );
 }
-function RoutineCard({
+export function RoutineCard({
   state,
   act,
   open,
@@ -1001,95 +1000,324 @@ function RoutineCard({
     </section>
   );
 }
-function DailyActionsCard({
+function SourcesButton({
+  connected,
+  onSources,
+}: {
+  connected: number;
+  onSources: () => void;
+}) {
+  return (
+    <button
+      className="kp-sources-button"
+      onClick={onSources}
+      aria-label="Fontes e conexões"
+    >
+      <Radio size={17} strokeWidth={1.5} />
+      <span>
+        Fontes & conexões
+        <small>
+          {connected
+            ? `${connected} fonte${connected === 1 ? "" : "s"} com dados`
+            : "Reúna os sinais do seu dia"}
+        </small>
+      </span>
+      <ArrowUpRight size={16} />
+    </button>
+  );
+}
+
+/** Same large title on every page, like the Apple apps: where am I, what is this for. */
+export function PageHeading({
+  eyebrow,
+  title,
+  detail,
+  connected,
+  onSources,
+}: {
+  eyebrow: string;
+  title: string;
+  detail?: string;
+  connected: number;
+  onSources: () => void;
+}) {
+  return (
+    <header className="kp-page-heading">
+      <div>
+        <p className="kp-page-date">{eyebrow}</p>
+        <h1>{title}</h1>
+        {detail && <p className="kp-page-detail">{detail}</p>}
+      </div>
+      <SourcesButton connected={connected} onSources={onSources} />
+    </header>
+  );
+}
+
+function ChecklistRow({
+  done,
+  title,
+  detail,
+  label,
+  onClick,
+  trailing,
+  icon: Icon,
+}: {
+  done: boolean;
+  title: string;
+  detail: string;
+  label: string;
+  onClick: () => void;
+  trailing?: ReactNode;
+  icon: LucideIcon;
+}) {
+  return (
+    <li className={`kp-row ${done ? "is-done" : ""}`}>
+      <button className="kp-row-main" onClick={onClick} aria-label={label}>
+        <span className="kp-row-dot" aria-hidden="true">
+          {done ? (
+            <Check size={14} strokeWidth={2.4} />
+          ) : (
+            <Icon size={15} strokeWidth={1.6} />
+          )}
+        </span>
+        <span className="kp-row-text">
+          <strong>{title}</strong>
+          <small>{detail}</small>
+        </span>
+        {!trailing && <ChevronRight size={16} aria-hidden="true" />}
+      </button>
+      {trailing}
+    </li>
+  );
+}
+
+/** Everything that still needs a decision today, in one list, in the order of a day. */
+function TodayChecklist({
   state,
+  act,
   open,
-}: Pick<PulseOverviewProps, "state" | "open">) {
+  onTimer,
+}: Pick<PulseOverviewProps, "state" | "act" | "open" | "onTimer">) {
+  const timer = useFocusTimer({ targetMinutes: state.targets.focusMinutes });
+  const summary = summarizeDay(state);
   const sets = EXERCISES.reduce(
     (sum, exercise) => sum + (state.exercises[exercise.id] ?? 0),
     0,
   );
-  const total = EXERCISES.reduce((sum, exercise) => sum + exercise.sets, 0);
+  const totalSets = EXERCISES.reduce((sum, exercise) => sum + exercise.sets, 0);
+  const kcal = calories(state.nutrition);
+  const kcalTarget = calories(state.targets.macros);
+  const habits = HABITS.filter(
+    (habit) => habit.id === "supplements" || habit.id === "grooming",
+  );
+  const timerActive = timer.status !== "idle";
+  const doneCount =
+    Number(Boolean(state.checkin)) +
+    Number(state.waterMl >= state.targets.waterMl) +
+    Number(kcal >= kcalTarget * 0.9) +
+    Number(sets === totalSets) +
+    Number(summary.focusMinutes >= state.targets.focusMinutes) +
+    habits.filter((habit) => state.habits[habit.id]).length;
+  const total = 5 + habits.length;
   return (
-    <section
-      className="kp-card kp-actions-card"
-      aria-label="Movimento e conhecimento"
-    >
-      <CardTitle icon={ArrowRight} meta="SEU PRÓXIMO PASSO">
-        Continue de onde parou
+    <section className="kp-card kp-checklist" aria-label="Checklist de hoje">
+      <CardTitle icon={Check} meta={`${doneCount}/${total}`}>
+        Para hoje
       </CardTitle>
-      <div className="kp-movement">
-        <div className="kp-shortcut-heading">
-          <span className="kp-shortcut-icon">
-            <Dumbbell size={19} strokeWidth={1.5} />
-          </span>
-          <span>
-            <strong>Movimento</strong>
-            <small>
-              {sets}/{total} séries · {NUMBER.format(state.runKm)} km
-            </small>
-          </span>
-        </div>
-        <div className="kp-sets-art" aria-hidden="true">
-          {EXERCISES.map((exercise) => (
-            <div key={exercise.id}>
-              {Array.from({ length: exercise.sets }, (_, index) => (
-                <i
-                  key={index}
-                  className={
-                    index < (state.exercises[exercise.id] ?? 0)
-                      ? "kp-set-complete"
-                      : "kp-set-empty"
-                  }
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <TextAction onClick={() => open("workout")}>
-          {sets === total ? "Revisar meu treino" : "Continuar meu treino"}
-        </TextAction>
-      </div>
-      <div className="kp-learning">
-        <div className="kp-shortcut-heading">
-          <span className="kp-shortcut-icon kp-shortcut-blue">
-            <BookOpen size={19} strokeWidth={1.5} />
-          </span>
-          <span>
-            <strong>Conhecimento</strong>
-            <small>Trilhas de exemplo · progresso local</small>
-          </span>
-        </div>
-        {COURSES.map((course) => (
-          <div className="kp-course" key={course.id}>
-            <div>
-              <span>{course.title}</span>
-              <small>
-                {state.courseProgress[course.id] ?? 0}/{course.lessons}
-              </small>
-            </div>
-            <div
-              className="kp-course-track"
-              role="progressbar"
-              aria-label={`Progresso de ${course.title}`}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(
-                ((state.courseProgress[course.id] ?? 0) / course.lessons) * 100,
-              )}
+      <ul className="kp-rows">
+        <ChecklistRow
+          icon={Heart}
+          done={Boolean(state.checkin)}
+          title="Check-in"
+          detail={
+            state.checkin
+              ? `Energia ${state.checkin.energy}/5 · humor ${state.checkin.mood}/5`
+              : "Energia, humor e descanso"
+          }
+          label={state.checkin ? "Revisar meu check-in" : "Fazer meu check-in"}
+          onClick={() => open("checkin")}
+        />
+        <ChecklistRow
+          icon={Droplets}
+          done={state.waterMl >= state.targets.waterMl}
+          title="Água"
+          detail={`${(state.waterMl / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} / ${(state.targets.waterMl / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} L`}
+          label="Hidratação"
+          onClick={() => open("nutrition")}
+          trailing={
+            <button
+              className="kp-row-action"
+              onClick={() => act({ type: "water", amount: 250 })}
+              disabled={state.waterMl >= 10000}
+              aria-label="Adicionar 250 ml de água"
             >
-              <i
-                style={{
-                  width: `${((state.courseProgress[course.id] ?? 0) / course.lessons) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
+              <Plus size={15} />
+              250 ml
+            </button>
+          }
+        />
+        <ChecklistRow
+          icon={Flame}
+          done={kcal >= kcalTarget * 0.9}
+          title="Alimentação"
+          detail={`${NUMBER.format(kcal)} / ${NUMBER.format(kcalTarget)} kcal`}
+          label="Registrar refeição"
+          onClick={() => open("nutrition")}
+        />
+        <ChecklistRow
+          icon={Dumbbell}
+          done={sets === totalSets}
+          title="Treino"
+          detail={`${sets}/${totalSets} séries · ${NUMBER.format(state.runKm)} km`}
+          label={
+            sets === totalSets ? "Revisar meu treino" : "Continuar meu treino"
+          }
+          onClick={() => open("workout")}
+        />
+        <li className="kp-row kp-row-skincare">
+          <SkincareSummary onOpen={() => open("routine")} />
+        </li>
+        {habits.map((habit) => (
+          <li
+            key={habit.id}
+            className={`kp-row ${state.habits[habit.id] ? "is-done" : ""}`}
+          >
+            <button
+              className="kp-row-main"
+              role="checkbox"
+              aria-checked={state.habits[habit.id]}
+              aria-label={habit.title}
+              onClick={() => act({ type: "habit", id: habit.id })}
+            >
+              <span className="kp-row-dot" aria-hidden="true">
+                {state.habits[habit.id] ? (
+                  <Check size={14} strokeWidth={2.4} />
+                ) : (
+                  <Layers3 size={15} strokeWidth={1.6} />
+                )}
+              </span>
+              <span className="kp-row-text">
+                <strong>{habit.title}</strong>
+                <small>
+                  {habit.period === "morning"
+                    ? "Manhã"
+                    : habit.period === "evening"
+                      ? "Noite"
+                      : "Ao longo do dia"}
+                </small>
+              </span>
+            </button>
+          </li>
         ))}
-        <TextAction onClick={() => open("learning")}>
-          Continuar aprendendo
-        </TextAction>
-      </div>
+        <ChecklistRow
+          icon={Timer}
+          done={summary.focusMinutes >= state.targets.focusMinutes}
+          title="Foco"
+          detail={
+            timerActive
+              ? `Bloco ${timer.status === "paused" ? "em pausa" : "em andamento"}`
+              : `${summary.focusMinutes}/${state.targets.focusMinutes} min`
+          }
+          label="Registrar bloco de foco"
+          onClick={() => open("focus")}
+          trailing={
+            <button
+              className="kp-row-action kp-row-action-primary"
+              onClick={onTimer}
+            >
+              <Timer size={15} />
+              {timerActive ? "Abrir meu cronômetro" : "Iniciar foco"}
+            </button>
+          }
+        />
+      </ul>
+    </section>
+  );
+}
+
+/** One glance at what the sources know, with a way into the page that explains it. */
+function SignalsCard({
+  state,
+  health,
+  github,
+  go,
+  onSources,
+}: Pick<
+  PulseOverviewProps,
+  "state" | "health" | "github" | "go" | "onSources"
+>) {
+  const snapshot = health.snapshot;
+  const preview = !snapshot && state.mode === "demo";
+  const sleep =
+    snapshot?.metrics.sleepHours.value ??
+    (preview ? PREVIEW.sleepHours.value : null);
+  const resting =
+    snapshot?.metrics.restingHeartRate.value ??
+    (preview ? PREVIEW.restingHeartRate.value : null);
+  const pushes = github.snapshot
+    ? summarizeGithubEvents(github.snapshot.events, dayDate(state.day))
+        .statisticsToday.pushes
+    : null;
+  return (
+    <section className="kp-card kp-signals" aria-label="Sinais de hoje">
+      <CardTitle
+        icon={Activity}
+        meta={
+          preview ? (
+            <span className="kp-preview-tag">Prévia ilustrativa</span>
+          ) : undefined
+        }
+      >
+        Sinais
+      </CardTitle>
+      <ul className="kp-rows">
+        <li className="kp-row">
+          <button
+            className="kp-row-main"
+            onClick={() => (snapshot || preview ? go("body") : onSources())}
+          >
+            <span className="kp-row-dot kp-dot-blue" aria-hidden="true">
+              <Moon size={15} strokeWidth={1.6} />
+            </span>
+            <span className="kp-row-text">
+              <strong>
+                {sleep === null
+                  ? "Sem dados de saúde"
+                  : `${duration(sleep)} de descanso`}
+              </strong>
+              <small>
+                {resting !== null
+                  ? `FC em repouso ${Math.round(resting)} bpm`
+                  : "Importe o Apple Saúde para ver sono e frequência"}
+              </small>
+            </span>
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </li>
+        <li className="kp-row">
+          <button
+            className="kp-row-main"
+            onClick={() => (github.snapshot ? go("focus") : onSources())}
+          >
+            <span className="kp-row-dot kp-dot-lime" aria-hidden="true">
+              <GitBranch size={15} strokeWidth={1.6} />
+            </span>
+            <span className="kp-row-text">
+              <strong>
+                {pushes === null
+                  ? "GitHub não conectado"
+                  : `${pushes} ${pushes === 1 ? "push" : "pushes"} hoje`}
+              </strong>
+              <small>
+                {github.snapshot
+                  ? `@${github.snapshot.username} · atividade pública`
+                  : "Conecte um perfil público"}
+              </small>
+            </span>
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </li>
+      </ul>
     </section>
   );
 }
@@ -1101,77 +1329,23 @@ export function PulseOverview(props: PulseOverviewProps) {
     Number(Boolean(health.snapshot)) + Number(Boolean(github.snapshot));
   return (
     <div className="kp-overview">
-      <header className="kp-page-heading">
-        <div>
-          <p className="kp-page-date">
-            {date
-              .toLocaleDateString("pt-BR", {
-                weekday: "long",
-                day: "2-digit",
-                month: "short",
-              })
-              .replaceAll(".", "")}
-          </p>
-          <h1>
-            Seu ritmo,
-            <br />
-            <span>em perspectiva.</span>
-          </h1>
-        </div>
-        <button
-          className="kp-sources-button"
-          onClick={onSources}
-          aria-label="Fontes e conexões"
-        >
-          <Radio size={17} strokeWidth={1.5} />
-          <span>
-            Fontes & conexões
-            <small>
-              {connected
-                ? `${connected} fonte${connected === 1 ? "" : "s"} com dados`
-                : "Reúna os sinais do seu dia"}
-            </small>
-          </span>
-          <ArrowUpRight size={16} />
-        </button>
-      </header>
-      <div className="kp-status-strip">
-        <span>
-          <i
-            className={
-              health.snapshot ? "kp-status-dot kp-status-blue" : "kp-status-dot"
-            }
-          />
-          {health.snapshot
-            ? "Saúde · arquivo importado"
-            : state.mode === "demo"
-              ? "Saúde · prévia ilustrativa"
-              : "Saúde · sem dados"}
-        </span>
-        <span>
-          <i
-            className={
-              github.snapshot ? "kp-status-dot kp-status-lime" : "kp-status-dot"
-            }
-          />
-          {github.snapshot
-            ? "GitHub · dados públicos"
-            : "GitHub · não conectado"}
-        </span>
-        <span className="kp-status-private">
-          Dados pessoais neste dispositivo
-        </span>
-      </div>
+      <PageHeading
+        eyebrow={date
+          .toLocaleDateString("pt-BR", {
+            weekday: "long",
+            day: "2-digit",
+            month: "short",
+          })
+          .replaceAll(".", "")}
+        title="Hoje"
+        connected={connected}
+        onSources={onSources}
+      />
       <NextStepCard {...props} />
-      <RhythmCard state={state} />
-      <div className="kp-grid">
-        <HealthCard {...props} />
-        <ContextCard {...props} />
-        <EngineeringCard {...props} />
-        <FocusCard {...props} />
-        <NutritionCard {...props} />
-        <RoutineCard {...props} />
-        <DailyActionsCard {...props} />
+      <div className="kp-today-grid">
+        <RhythmCard state={state} variant="today" />
+        <TodayChecklist {...props} />
+        <SignalsCard {...props} />
       </div>
       <footer className="kp-overview-footer">
         <span>

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { stored, waitForReady } from "./storage";
+import { goSection, stored, waitForReady } from "./storage";
 
 test.use({ timezoneId: "UTC", reducedMotion: "reduce" });
 test.beforeEach(async ({ page }) => {
@@ -108,17 +108,21 @@ test("an imported file offers sleep, weight and steps for the check-in without s
     .toMatchObject({ sleepHours: 7.7, weightKg: 76.4, steps: 8421 });
 });
 
-test("the rhythm widget shows today's rings and a 13-week grid that keeps gaps empty", async ({
+test("today shows the rings; evolution keeps a 13-week grid that keeps gaps empty", async ({
   page,
 }) => {
-  const card = page.getByRole("region", {
+  const rings = page.getByRole("region", {
     name: "Ritmo de hoje e constância",
   });
-  await expect(card).toBeVisible();
-  await expect(card.getByRole("img").first()).toHaveAttribute(
+  await expect(rings).toBeVisible();
+  await expect(rings.getByRole("img").first()).toHaveAttribute(
     "aria-label",
     /Foco: \d+% da meta; Água: 60% da meta/,
   );
+  await expect(page.locator(".kr-grid")).toHaveCount(0);
+  await goSection(page, "evolucao");
+  const card = page.getByRole("region", { name: "Constância" });
+  await expect(card).toBeVisible();
   const grid = card.locator(".kr-grid i:not([data-level='pad'])");
   await expect(grid).toHaveCount(91);
   // Demo history covers only the last days; earlier days are "no record".
@@ -138,17 +142,20 @@ test("sections live in the URL: reload keeps them and Back returns", async ({
 }) => {
   const heading = page.getByRole("heading", { level: 1 });
   await page
-    .getByRole("button", { name: /^(Corpo|Corpo & rotina)$/ })
+    .getByRole("button", { name: "Corpo", exact: true })
     .first()
     .click();
-  await expect(heading).toContainText("Sua melhor base.");
+  await expect(heading).toHaveText("Corpo");
   expect(new URL(page.url()).hash).toBe("#corpo");
   await page.reload();
   await waitForReady(page);
-  await expect(heading).toContainText("Sua melhor base.");
+  await expect(heading).toHaveText("Corpo");
   await page.goBack();
-  await expect(heading).toHaveText("Seu ritmo,em perspectiva.");
+  await expect(heading).toHaveText("Hoje");
   await page.goto("/#colecao");
   await waitForReady(page);
-  await expect(heading).toContainText("Escolhas com direção.");
+  await expect(heading).toHaveText("Coleção");
+  await page.goto("/#evoluir");
+  await waitForReady(page);
+  await expect(heading).toHaveText("Foco");
 });

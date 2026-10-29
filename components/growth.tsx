@@ -3,16 +3,14 @@
 import {
   BatteryMedium,
   Brain,
-  Clock3,
   Heart,
   Moon,
   Sparkles,
-  Target,
   TrendingUp,
 } from "lucide-react";
 import type { KernelState, Sheet } from "@/types/kernel";
-import { summarizeDay, weekOf } from "@/lib/metrics";
-import { Card, CardHeading, CardLink, Progress } from "./ui";
+import { weekOf } from "@/lib/metrics";
+import { Card, CardHeading, CardLink } from "./ui";
 
 interface Props {
   state: KernelState;
@@ -96,52 +94,6 @@ export function CheckinCard({ state, open }: Props) {
       <CardLink onClick={() => open("checkin")}>
         {checkin ? "Revisar meu check-in" : "Fazer meu check-in"}
       </CardLink>
-    </Card>
-  );
-}
-
-export function FocusCard({ state, open }: Props) {
-  const summary = summarizeDay(state),
-    last = state.focusSessions.at(-1);
-  return (
-    <Card className="focus-card" label="Foco e carreira">
-      <CardHeading
-        icon={Target}
-        label="Foco & direção"
-        color="blue"
-        right={<span className="quiet-label">PROJETOS + ESTUDO</span>}
-      />
-      <div className="focus-value">
-        <strong>{summary.focusMinutes}</strong>
-        <span>/ {state.targets.focusMinutes} min</span>
-        <Clock3 size={22} strokeWidth={1.5} />
-      </div>
-      <p className="card-description">Tempo para o que você quer construir.</p>
-      <div className="focus-breakdown">
-        <span>
-          <i />
-          {summary.focusMinutes - summary.studyMinutes} min de projeto
-        </span>
-        <span>
-          <i />
-          {summary.studyMinutes} min de estudo
-        </span>
-      </div>
-      <Progress
-        value={(summary.focusMinutes / state.targets.focusMinutes) * 100}
-        label="Meta pessoal de foco"
-        color="blue"
-      />
-      <div className="focus-outcome">
-        <span>ÚLTIMO AVANÇO</span>
-        <p>
-          {last?.outcome ||
-            (last
-              ? "Um bloco de atenção concluído."
-              : "Qual pequeno resultado você quer criar hoje?")}
-        </p>
-      </div>
-      <CardLink onClick={() => open("focus")}>Registrar bloco de foco</CardLink>
     </Card>
   );
 }

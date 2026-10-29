@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import {
+  goSection,
   readRecord,
   stored,
   STORAGE_KEY,
@@ -16,9 +17,7 @@ test.beforeEach(async ({ page }) => {
 test("dashboard is usable, explicitly simulated and fits narrow screens", async ({
   page,
 }) => {
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Seu ritmo,em perspectiva.",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hoje");
   await expect(
     page.getByText("Você está explorando a demonstração."),
   ).toBeVisible();
@@ -30,7 +29,7 @@ test("dashboard is usable, explicitly simulated and fits narrow screens", async 
       ),
     ).toBe(true);
     const sizes = await page
-      .locator(".kp-grid > .kp-card")
+      .locator(".kp-today-grid > .kp-card")
       .evaluateAll((elements) =>
         elements.map((element) => element.getBoundingClientRect().width),
       );
@@ -38,13 +37,12 @@ test("dashboard is usable, explicitly simulated and fits narrow screens", async 
   }
   const nav = page.getByRole("navigation", { name: "Navegação do iPhone" });
   await nav.getByRole("button", { name: "Corpo", exact: true }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Sua melhor base.",
-  );
-  await nav.getByRole("button", { name: "Hoje", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Corpo");
   await expect(
     page.getByRole("region", { name: "Panorama de saúde ilustrativo" }),
   ).toBeVisible();
+  await nav.getByRole("button", { name: "Hoje", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hoje");
 });
 
 test("check-in saves perceived wellbeing and optional body measurements", async ({
@@ -112,6 +110,7 @@ test("personal targets drive the visible nutrition and water goals", async ({
     .poll(async () => (await stored(page)).targets.waterMl)
     .toBe(3000);
   await page.getByRole("button", { name: "Fechar painel" }).click();
+  await goSection(page, "corpo");
   await expect(
     page.getByRole("region", { name: "Nutrição e hidratação" }),
   ).toContainText("3 L");
@@ -169,12 +168,13 @@ test("personal space requires confirmation and stops displaying fictional integr
   expect((await stored(page)).mode).toBe("demo");
   await page.getByRole("button", { name: "Começar sem exemplos" }).click();
   await expect.poll(async () => (await stored(page)).mode).toBe("personal");
+  await goSection(page, "corpo");
   await expect(
     page.getByRole("region", { name: "Panorama de saúde", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".kp-preview-tag")).toHaveCount(0);
   await expect(
-    page.getByText("Saúde · sem dados", { exact: true }),
+    page.getByText("Aguardando uma fonte", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".kp-metric-number")).toHaveText([
     "—",
@@ -257,12 +257,14 @@ test("meal logging updates individual macros and calories", async ({
   await expect
     .poll(async () => (await stored(page)).nutrition)
     .toEqual({ protein: 144, carbs: 226, fat: 58 });
+  await goSection(page, "corpo");
   await expect(
     page.getByRole("region", { name: "Nutrição e hidratação" }),
   ).toContainText("2.002");
 });
 
 test("learning records lessons and preserves an insight", async ({ page }) => {
+  await goSection(page, "foco");
   await page.getByRole("button", { name: "Continuar aprendendo" }).click();
   await page
     .getByRole("button", { name: "Concluir aula", exact: true })
@@ -290,7 +292,8 @@ test("learning records lessons and preserves an insight", async ({ page }) => {
 test("wishlist supports creating, acquiring and reverting a planned item", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Coleção", exact: true }).click();
+  await goSection(page, "colecao");
+  await page.getByRole("button", { name: "Organizar minha wishlist" }).click();
   await page
     .getByRole("button", { name: "Adicionar item", exact: true })
     .click();
@@ -316,6 +319,7 @@ test("wishlist supports creating, acquiring and reverting a planned item", async
 test("unconnected engineering offers a source instead of fabricated live events", async ({
   page,
 }) => {
+  await goSection(page, "foco");
   await page
     .getByRole("button", { name: "Conectar GitHub", exact: true })
     .click();

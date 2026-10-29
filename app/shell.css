@@ -220,87 +220,11 @@
   align-items: center;
   gap: 10px;
 }
-.kh-page-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 30px 0;
-}
-.kh-page-heading h1 {
-  font-size: clamp(32px, 3.4vw, 49px);
-  letter-spacing: -0.05em;
-  font-weight: 600;
-  margin: 14px 0 10px;
-  color: #f4f6ee;
-}
-.kh-page-heading p {
-  color: #9da58f;
-  font-size: 12px;
-  line-height: 1.6;
-}
-.kh-round-action {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  background: #c8f06a12;
-  border: 1px solid #c8f06a28;
-  color: #c8f06a;
-  border-radius: 50%;
-}
-.kh-section-tabs {
-  display: flex;
-  gap: 4px;
-  width: max-content;
-  padding: 4px;
-  background: #11160f;
-  border: 1px solid #ffffff0c;
-  border-radius: 12px;
-  margin: 0 0 26px;
-}
-.kh-section-tabs button {
-  min-height: 44px;
-  padding: 0 22px;
-  border-radius: 8px;
-  color: #8d987e;
-  font-size: 11px;
-}
-.kh-section-tabs .is-active {
-  background: #c8f06a;
-  color: #19200f;
-  font-weight: 600;
-}
-.kh .kh-detail {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-.kh .kh-detail > * {
-  grid-column: auto;
-  min-width: 0;
-}
 .kh .glass-card {
   background: #0d100d;
   border-color: #ffffff10;
   border-radius: 22px;
   box-shadow: none;
-}
-.kh .kh-body-source {
-  grid-column: 1 / -1;
-  padding: 25px;
-}
-.kh-body-source h2 {
-  font-size: 26px;
-  font-weight: 500;
-  letter-spacing: -0.04em;
-  margin: 18px 0 8px;
-}
-.kh-body-source p,
-.kh-start-focus p {
-  font-size: 12px;
-  line-height: 1.7;
-  color: #9ba58e;
-  max-width: 650px;
 }
 .kh-text-button {
   min-height: 44px;
@@ -310,25 +234,6 @@
   color: #c8f06a;
   font-size: 11px;
   text-align: left;
-}
-.kh .kh-github-detail {
-  grid-column: span 2;
-  padding: 24px;
-}
-.kh-start-focus {
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-.kh-start-focus > svg {
-  color: #c8f06a;
-}
-.kh-start-focus h2 {
-  font-size: 30px;
-  letter-spacing: -0.045em;
-  line-height: 1.1;
 }
 .kh .primary-button,
 .kh-sheet .primary-button {
@@ -1023,33 +928,6 @@
   }
   .kh-main {
     padding: 14px 18px 100px;
-  }
-  .kh .kh-detail {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .kh .kh-detail > * {
-    grid-column: auto;
-  }
-  .kh-page-heading {
-    padding: 23px 0;
-    gap: 15px;
-  }
-  .kh-page-heading h1 {
-    font-size: 35px;
-    max-width: 275px;
-  }
-  .kh-page-heading p {
-    font-size: 11px;
-  }
-  .kh-round-action {
-    flex-shrink: 0;
-  }
-  .kh-section-tabs {
-    width: 100%;
-  }
-  .kh-section-tabs button {
-    flex: 1;
-    padding: 0 16px;
   }
   .kh-footer {
     align-items: flex-start;

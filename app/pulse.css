@@ -1840,3 +1840,221 @@
   min-height: 32px;
   align-items: center;
 }
+
+/* ---------- Pages: one question per page, same grammar everywhere ---------- */
+.kp-page-detail {
+  margin-top: 10px;
+  max-width: 52ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a9b19c;
+}
+.kp-page-heading {
+  padding-bottom: 22px;
+}
+.kp-page-heading .kp-page-date {
+  margin-bottom: 12px;
+}
+.kp-page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+  align-items: stretch;
+}
+.kp-page > * {
+  min-width: 0;
+  grid-column: auto;
+  grid-row: auto;
+  margin: 0;
+}
+.kp-page > .kp-wide,
+.kp-page > .kr-card,
+.kp-page > .kp-health-card,
+.kp-page > .kp-engineering-card,
+.kp-page > .journal-card,
+.kp-page > .wishlist-card {
+  grid-column: 1 / -1;
+}
+.kp-page > .glass-card {
+  background: #0d100d;
+  border: 1px solid #ffffff10;
+  border-radius: 22px;
+  box-shadow: none;
+  padding: 23px;
+}
+.kp-page > .wishlist-card {
+  max-width: 760px;
+}
+
+/* Hoje: the glance (rings) and the list sit side by side, never stacked deep. */
+.kp-today-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  grid-template-areas:
+    "rhythm list"
+    "signals list";
+  gap: 17px;
+  align-items: stretch;
+}
+.kp-today-grid > * {
+  min-width: 0;
+  margin: 0;
+}
+.kp-today-grid > .kr-card {
+  grid-area: rhythm;
+  grid-template-columns: minmax(0, 1fr);
+}
+.kp-today-grid > .kp-checklist {
+  grid-area: list;
+}
+.kp-today-grid > .kp-signals {
+  grid-area: signals;
+}
+.kp-next {
+  margin-bottom: 17px;
+}
+
+/* Rows: the Apple list. A leading mark, a title, one quiet line, a chevron. */
+.kp-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.kp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #ffffff0d;
+}
+.kp-row:first-child {
+  border-top: 0;
+}
+.kp-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 60px;
+  padding: 8px 2px;
+  text-align: left;
+  color: inherit;
+}
+.kp-row-main > svg:last-child {
+  color: #6d7463;
+  flex: none;
+}
+.kp-row-dot {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff22;
+  color: #aab29c;
+}
+.kp-dot-blue {
+  border-color: #55aaff44;
+  color: var(--kp-blue);
+  background: #55aaff12;
+}
+.kp-dot-lime {
+  border-color: #c8f06a44;
+  color: var(--kp-lime);
+  background: #c8f06a10;
+}
+.kp-row-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.kp-row-text strong {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: #eef3e6;
+}
+.kp-row-text small {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #9aa28d;
+  overflow-wrap: anywhere;
+}
+.kp-row.is-done .kp-row-dot {
+  background: var(--kp-lime);
+  border-color: var(--kp-lime);
+  color: #172008;
+}
+.kp-row.is-done .kp-row-text strong {
+  color: #a9b19c;
+}
+.kp-row-action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #55aaff3a;
+  background: #55aaff12;
+  color: #9fd0ff;
+  font-size: 12px;
+}
+.kp-row-action-primary {
+  border-color: #c8f06a40;
+  background: #c8f06a14;
+  color: var(--kp-lime);
+}
+.kp-row-skincare .sk-summary {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  margin: 0;
+  padding: 8px 2px;
+  min-height: 60px;
+}
+.kp-row-skincare {
+  display: block;
+}
+
+@media (max-width: 1099px) {
+  .kp-today-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "rhythm" "list" "signals";
+  }
+}
+@media (max-width: 767px) {
+  .kp-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .kp-page > * {
+    grid-column: 1 / -1;
+  }
+  .kp-page > .glass-card {
+    border-radius: 20px;
+    padding: 20px;
+  }
+  .kp-page-detail {
+    font-size: 13px;
+  }
+  .kp-today-grid {
+    gap: 14px;
+  }
+  .kp-row-action {
+    padding: 0 12px;
+  }
+}
+.kr-card:has(> .kr-history:only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.kh-logo {
+  margin-bottom: 18px;
+}
+.kr-card:has(> .kr-history:only-child) .kr-history {
+  max-width: 760px;
+}
