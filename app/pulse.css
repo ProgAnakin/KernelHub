@@ -1464,3 +1464,320 @@
     font-size: 19px;
   }
 }
+
+/* ---------- Ritmo: rings for today, a constancy grid for 13 weeks ---------- */
+.kp-overview {
+  --kp-coral: #ff7a6b;
+  --kp-glow-lime: 0 0 18px #c8f06a40;
+}
+.kr-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.6fr);
+  gap: 28px;
+  margin-bottom: 17px;
+  /* A hairline that fades instead of a hard border. */
+  border-color: transparent;
+  background:
+    linear-gradient(#0d100d, #0d100d) padding-box,
+    linear-gradient(135deg, #c8f06a38, #ffffff0a 40%, #55aaff2e) border-box;
+}
+.kr-today .kp-card-title {
+  margin-bottom: 18px;
+}
+.kr-rings-row {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.kr-rings {
+  width: 132px;
+  height: 132px;
+  flex: none;
+}
+.kr-track,
+.kr-value {
+  fill: none;
+  stroke-width: 11;
+  stroke-linecap: round;
+}
+.kr-track {
+  stroke: #ffffff0d;
+}
+.kr-lime {
+  --kr-a: #a6e04a;
+  --kr-b: #e2ff8f;
+  --kr-color: #c8f06a;
+}
+.kr-blue {
+  --kr-a: #3b8cff;
+  --kr-b: #7fd3ff;
+  --kr-color: #55aaff;
+}
+.kr-coral {
+  --kr-a: #ff5f6d;
+  --kr-b: #ffab8a;
+  --kr-color: #ff7a6b;
+}
+.kr-stop-a {
+  stop-color: var(--kr-a);
+}
+.kr-stop-b {
+  stop-color: var(--kr-b);
+}
+.kr-value {
+  filter: drop-shadow(
+    0 0 4px color-mix(in srgb, var(--kr-color) 55%, transparent)
+  );
+}
+.kr-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.kr-legend li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  grid-template-areas: "dot label pct" "dot value value";
+  column-gap: 9px;
+  align-items: center;
+}
+.kr-legend i {
+  grid-area: dot;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kr-color);
+  box-shadow: 0 0 8px var(--kr-color);
+}
+.kr-legend span {
+  grid-area: label;
+  font-size: 12px;
+  color: #b9c2ad;
+}
+.kr-legend small {
+  grid-area: pct;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--kr-color);
+}
+.kr-legend strong {
+  grid-area: value;
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #eef3e6;
+}
+.kr-history {
+  min-width: 0;
+}
+.kr-history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.kr-history-head p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #e4ebd8;
+}
+.kr-history-head p svg {
+  color: #ffb547;
+}
+.kr-history-head small {
+  font-size: 12px;
+  color: var(--kp-muted);
+}
+.kr-tracks {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #ffffff08;
+  border: 1px solid #ffffff0d;
+}
+.kp-overview .kr-tracks button {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #a9b29c;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.kp-overview .kr-tracks button[aria-pressed="true"] {
+  background: #c8f06a;
+  color: #17200b;
+  box-shadow: var(--kp-glow-lime);
+}
+.kr-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 17px);
+  justify-content: end;
+  gap: 4px;
+  --kr-cell: 200, 240, 106;
+}
+.kr-grid-water {
+  --kr-cell: 85, 170, 255;
+}
+.kr-grid-movement {
+  --kr-cell: 255, 122, 107;
+}
+.kr-grid-checkin {
+  --kr-cell: 182, 160, 255;
+}
+.kr-grid i,
+.kr-scale i {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: rgba(var(--kr-cell, 200, 240, 106), 0.12);
+}
+.kr-grid i[data-level="pad"] {
+  visibility: hidden;
+}
+/* No record: a dotted outline, so "not tracked" never reads as "failed". */
+.kr-grid i[data-level="none"],
+.kr-scale i[data-level="none"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #ffffff12;
+}
+.kr-grid i[data-level="0"],
+.kr-scale i[data-level="0"] {
+  background: #ffffff0f;
+}
+.kr-grid i[data-level="1"],
+.kr-scale i[data-level="1"] {
+  background: rgba(var(--kr-cell, 200, 240, 106), 0.3);
+}
+.kr-grid i[data-level="2"],
+.kr-scale i[data-level="2"] {
+  background: rgba(var(--kr-cell, 200, 240, 106), 0.55);
+}
+.kr-grid i[data-level="3"],
+.kr-scale i[data-level="3"] {
+  background: rgba(var(--kr-cell, 200, 240, 106), 0.8);
+}
+.kr-grid i[data-level="4"],
+.kr-scale i[data-level="4"] {
+  background: rgb(var(--kr-cell, 200, 240, 106));
+  box-shadow: 0 0 6px rgba(var(--kr-cell, 200, 240, 106), 0.45);
+}
+.kr-scale {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--kp-muted);
+}
+.kr-scale i {
+  width: 11px;
+}
+.kr-scale span:first-child {
+  margin-right: 4px;
+}
+.kr-scale span:last-child {
+  margin-left: 4px;
+}
+.kr-note {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--kp-muted);
+}
+
+/* Hydration as glasses: one segment per 250 ml of the target. */
+.kp-water {
+  flex-wrap: wrap;
+}
+.kp-water > .kp-water-pills {
+  order: 10;
+  flex: 0 0 100%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
+.kp-water-pills i {
+  height: 18px;
+  border-radius: 6px;
+  background: #55aaff12;
+  border: 1px solid #55aaff1c;
+  transition: background 0.3s;
+}
+.kp-water-pills i.is-full {
+  background: linear-gradient(#7fd3ff, #3b8cff);
+  border-color: transparent;
+  box-shadow: 0 0 8px #55aaff40;
+}
+
+/* A completed habit "pops" instead of just changing colour. */
+@keyframes kp-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.kp-habit-done .kp-habit-check {
+  animation: kp-pop 0.32s ease-out;
+  box-shadow: var(--kp-glow-lime);
+}
+.kp-primary-button {
+  box-shadow: 0 0 0 #c8f06a00;
+  transition:
+    box-shadow 0.25s,
+    transform 0.15s;
+}
+.kp-primary-button:hover {
+  box-shadow: 0 0 22px #c8f06a45;
+}
+.kp-primary-button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 1099px) {
+  .kr-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+}
+@media (max-width: 767px) {
+  .kr-card {
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .kr-rings {
+    width: 112px;
+    height: 112px;
+  }
+  .kr-grid {
+    gap: 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-habit-done .kp-habit-check {
+    animation: none;
+  }
+  .kp-primary-button:active {
+    transform: none;
+  }
+}

@@ -107,3 +107,28 @@ test("an imported file offers sleep, weight and steps for the check-in without s
     .poll(async () => (await stored(page)).checkin)
     .toMatchObject({ sleepHours: 7.7, weightKg: 76.4, steps: 8421 });
 });
+
+test("the rhythm widget shows today's rings and a 13-week grid that keeps gaps empty", async ({
+  page,
+}) => {
+  const card = page.getByRole("region", {
+    name: "Ritmo de hoje e constância",
+  });
+  await expect(card).toBeVisible();
+  await expect(card.getByRole("img").first()).toHaveAttribute(
+    "aria-label",
+    /Foco: \d+% da meta; Água: 60% da meta/,
+  );
+  const grid = card.locator(".kr-grid i:not([data-level='pad'])");
+  await expect(grid).toHaveCount(91);
+  // Demo history covers only the last days; earlier days are "no record".
+  expect(await card.locator(".kr-grid i[data-level='none']").count()).toBe(84);
+  await card.getByRole("button", { name: "Água", exact: true }).click();
+  await expect(
+    card.getByRole("button", { name: "Água", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(card.locator(".kr-grid")).toHaveAttribute(
+    "aria-label",
+    /^Água: \d+ dias com meta alcançada em 7 dias/,
+  );
+});

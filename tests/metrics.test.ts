@@ -119,3 +119,37 @@ test("the next step follows what is still missing today", () => {
   });
   assert.equal(nextStep(state).sheet, "routine");
 });
+
+test("the constancy grid keeps unrecorded days empty and counts a streak only on met targets", async () => {
+  const { rhythmGrid, rhythmStreak } = await import("../lib/metrics.ts");
+  const base = createInitialState(new Date(2026, 9, 23, 12), "personal");
+  const summary = (day: string, focusMinutes: number) => ({
+    day,
+    waterMl: 0,
+    habitCount: 0,
+    workoutSets: 0,
+    runKm: 0,
+    nutritionCalories: 0,
+    focusMinutes,
+    studyMinutes: 0,
+    checkin: null,
+  });
+  base.history = [
+    summary("2026-10-19", 90),
+    summary("2026-10-20", 45),
+    summary("2026-10-21", 90),
+    summary("2026-10-22", 120),
+  ];
+  const cells = rhythmGrid(base, "focus");
+  assert.equal(cells.length, 91);
+  assert.equal(cells.at(-1)?.day, "2026-10-23");
+  // Today has nothing yet: level 0, not missing, and it does not break the streak.
+  assert.equal(cells.at(-1)?.level, 0);
+  assert.deepEqual(
+    cells.slice(-5, -1).map((cell) => cell.level),
+    [4, 2, 4, 4],
+  );
+  assert.equal(cells.at(-6)?.level, null);
+  assert.equal(rhythmStreak(cells), 2);
+  assert.equal(cells.filter((cell) => cell.level !== null).length, 5);
+});

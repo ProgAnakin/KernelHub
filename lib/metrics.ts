@@ -125,3 +125,75 @@ export function checkinSuggestions(
     },
   };
 }
+
+export type RhythmTrack = "focus" | "water" | "checkin" | "movement";
+export interface RhythmCell {
+  day: string;
+  /** null: no record for that day; 0–4: share of the personal target reached. */
+  level: number | null;
+  value: number;
+}
+export const RHYTHM_TRACKS: { id: RhythmTrack; label: string }[] = [
+  { id: "focus", label: "Foco" },
+  { id: "water", label: "Água" },
+  { id: "movement", label: "Movimento" },
+  { id: "checkin", label: "Check-in" },
+];
+
+function trackValue(day: DaySummary, track: RhythmTrack, state: KernelState) {
+  switch (track) {
+    case "focus":
+      return {
+        value: day.focusMinutes,
+        share: day.focusMinutes / state.targets.focusMinutes,
+      };
+    case "water":
+      return { value: day.waterMl, share: day.waterMl / state.targets.waterMl };
+    case "movement": {
+      const value = day.workoutSets + day.runKm;
+      return {
+        value,
+        share: day.workoutSets / 15 + day.runKm / state.targets.runKm,
+      };
+    }
+    case "checkin":
+      return { value: day.checkin ? 1 : 0, share: day.checkin ? 1 : 0 };
+  }
+}
+
+/**
+ * A contribution-style grid, oldest first, ending today. Days the app has no
+ * summary for stay null: an absence is not a zero.
+ */
+export function rhythmGrid(
+  state: KernelState,
+  track: RhythmTrack,
+  days = 91,
+): RhythmCell[] {
+  const known = new Map(state.history.map((day) => [day.day, day]));
+  known.set(state.day, summarizeDay(state));
+  const [year, month, date] = state.day.split("-").map(Number);
+  return Array.from({ length: days }, (_, index) => {
+    const key = localDay(
+      new Date(year, month - 1, date - (days - 1 - index), 12),
+    );
+    const summary = known.get(key);
+    if (!summary) return { day: key, level: null, value: 0 };
+    const { value, share } = trackValue(summary, track, state);
+    const level =
+      share <= 0 ? 0 : share < 0.34 ? 1 : share < 0.67 ? 2 : share < 1 ? 3 : 4;
+    return { day: key, level, value };
+  });
+}
+
+/** Consecutive days, ending today or yesterday, that reached the target. */
+export function rhythmStreak(cells: RhythmCell[]): number {
+  let streak = 0;
+  for (let index = cells.length - 1; index >= 0; index--) {
+    if (cells[index].level === 4) streak++;
+    // Today may still be in progress; it does not break a streak.
+    else if (index === cells.length - 1) continue;
+    else break;
+  }
+  return streak;
+}

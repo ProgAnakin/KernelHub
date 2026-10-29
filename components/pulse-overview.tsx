@@ -1,6 +1,7 @@
 "use client";
 
 import { SkincareSummary } from "./skincare-summary";
+import { RhythmCard } from "./rhythm";
 
 import { useId, type ReactNode } from "react";
 import {
@@ -919,6 +920,23 @@ function NutritionCard({
             </small>
           </strong>
         </div>
+        <div className="kp-water-pills" aria-hidden="true">
+          {Array.from(
+            { length: Math.min(16, Math.ceil(state.targets.waterMl / 250)) },
+            (_, index) => (
+              <i
+                key={index}
+                className={
+                  state.waterMl >=
+                  ((index + 1) * state.targets.waterMl) /
+                    Math.min(16, Math.ceil(state.targets.waterMl / 250))
+                    ? "is-full"
+                    : ""
+                }
+              />
+            ),
+          )}
+        </div>
         <button
           onClick={() => act({ type: "water", amount: 250 })}
           disabled={state.waterMl >= 10000}
@@ -1145,6 +1163,7 @@ export function PulseOverview(props: PulseOverviewProps) {
         </span>
       </div>
       <NextStepCard {...props} />
+      <RhythmCard state={state} />
       <div className="kp-grid">
         <HealthCard {...props} />
         <ContextCard {...props} />
