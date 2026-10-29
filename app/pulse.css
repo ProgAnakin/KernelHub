@@ -32,7 +32,7 @@
 }
 .kp-page-date {
   color: #a8ae9f;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -63,7 +63,7 @@
 }
 .kp-sources-button small {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: #989f8a;
   margin-top: 5px;
@@ -77,7 +77,7 @@
   margin-bottom: 10px;
   border-top: 1px solid var(--kp-line);
   color: #9ca292;
-  font-size: 10px;
+  font-size: 11px;
 }
 .kp-status-strip > span {
   display: inline-flex;
@@ -146,7 +146,7 @@
   color: var(--kp-lime);
 }
 .kp-card-meta {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 500;
   color: #919b83;
   letter-spacing: 0.07em;
@@ -162,7 +162,7 @@
   background: #ffffff03;
   border-radius: 6px;
   padding: 5px 7px;
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.3;
 }
 .kp-source-tag {
@@ -183,7 +183,7 @@
 }
 .kp-overline {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #98a18c;
   letter-spacing: 0.12em;
 }
@@ -288,10 +288,10 @@
   gap: 12px;
   margin-top: 12px;
   color: #939e86;
-  font-size: 9px;
+  font-size: 11px;
 }
 .kp-chart-caption > span:last-child {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0.04em;
 }
 .kp-metrics-grid {
@@ -322,7 +322,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 9px;
+  font-size: 11px;
   color: #a8b09d;
 }
 .kp-metric-label > svg:first-child {
@@ -343,7 +343,7 @@
 }
 .kp-metric-number small {
   color: #a2ad95;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 400;
   margin-left: 4px;
   letter-spacing: 0;
@@ -355,7 +355,7 @@
   text-overflow: ellipsis;
   margin-top: 8px;
   color: #929c85;
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.4;
 }
 .kp-text-action {
@@ -399,7 +399,7 @@
 }
 .kp-note-index {
   flex-shrink: 0;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   padding-top: 3px;
   opacity: 0.8;
@@ -419,7 +419,7 @@
 .kp-context-note small {
   display: block;
   color: #839475;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.7;
   margin-top: 10px;
 }
@@ -434,7 +434,7 @@
   gap: 8px;
   width: 100%;
   border-top: 1px solid var(--kp-line);
-  font-size: 10px;
+  font-size: 11px;
   text-align: left;
   color: #c8d2b9;
   padding: 12px 0;
@@ -466,7 +466,7 @@
 .kp-code-stats > div > span {
   display: block;
   color: #95a086;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 8px;
 }
 .kp-code-source {
@@ -475,7 +475,7 @@
   max-width: 115px;
 }
 .kp-code-source > span:last-child {
-  font-size: 7px !important;
+  font-size: 11px !important;
   line-height: 1.6;
   letter-spacing: 0.05em;
 }
@@ -502,7 +502,7 @@
 .kp-git-chart > div > span {
   display: block;
   color: #a9b49b;
-  font-size: 9px;
+  font-size: 11px;
   margin-bottom: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -536,7 +536,7 @@
 .kp-git-chart small {
   display: block;
   margin: 10px 0;
-  font-size: 8px;
+  font-size: 11px;
   color: #7c8b6f;
   text-transform: uppercase;
 }
@@ -545,7 +545,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 6px 15px;
-  font-size: 8px;
+  font-size: 11px;
   color: #94a384;
   margin: 14px 0 19px;
 }
@@ -582,13 +582,19 @@
   white-space: nowrap;
 }
 .kp-git-events strong {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.kp-git-events strong {
   color: #dbe5cf;
   font-size: 11px;
   font-weight: 400;
   line-height: 1.6;
 }
 .kp-git-events small {
-  font-size: 9px;
+  font-size: 11px;
   color: #8e9e7b;
   margin-top: 3px;
 }
@@ -601,7 +607,7 @@
 }
 .kp-event-demo {
   color: #81916f;
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 0.08em;
 }
 .kp-git-events > p,
@@ -647,7 +653,7 @@
 .kp-focus-week > div > span {
   display: block;
   height: 20px;
-  font-size: 7px;
+  font-size: 11px;
   color: #a0b28b;
   font-variant-numeric: tabular-nums;
 }
@@ -674,7 +680,7 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 8px;
+  font-size: 11px;
   color: #91a77d;
   padding: 7px 0 21px;
 }
@@ -706,7 +712,7 @@
   display: block;
 }
 .kp-last-focus > span {
-  font-size: 7px;
+  font-size: 11px;
   color: #95ab7b;
   letter-spacing: 0.12em;
   margin-bottom: 8px;
@@ -719,7 +725,7 @@
 }
 .kp-last-focus > small {
   color: #93a67d;
-  font-size: 9px;
+  font-size: 11px;
   margin-top: 5px;
 }
 .kp-nutrition-value {
@@ -742,7 +748,7 @@
 }
 .kp-nutrition-value > span > small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #8e9e79;
 }
 .kp-macro-track {
@@ -776,7 +782,7 @@
   display: block;
 }
 .kp-macro-legend > div > span {
-  font-size: 8px;
+  font-size: 11px;
   color: #a0ad90;
 }
 .kp-macro-legend > div > strong {
@@ -786,7 +792,7 @@
   margin-top: 7px;
 }
 .kp-macro-legend small {
-  font-size: 9px;
+  font-size: 11px;
   color: #8d9b7d;
   margin-left: 2px;
 }
@@ -811,7 +817,7 @@
 }
 .kp-water > div > span {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #a4b294;
 }
 .kp-water strong {
@@ -823,7 +829,7 @@
   font-variant-numeric: tabular-nums;
 }
 .kp-water strong small {
-  font-size: 9px;
+  font-size: 11px;
   color: #96a680;
   font-weight: 400;
 }
@@ -833,7 +839,7 @@
   justify-content: center;
   gap: 5px;
   color: #a9cce9;
-  font-size: 10px;
+  font-size: 11px;
   padding: 0 9px;
   border: 1px solid #55aaff27;
   border-radius: 9px;
@@ -880,7 +886,7 @@
   color: #d2ddc3;
 }
 .kp-habit small {
-  font-size: 8px;
+  font-size: 11px;
   margin-top: 5px;
   color: #8fa17a;
 }
@@ -918,7 +924,7 @@
 }
 .kp-shortcut-heading small {
   margin-top: 5px;
-  font-size: 8px;
+  font-size: 11px;
   color: #92a17f;
 }
 .kp-sets-art {
@@ -959,11 +965,11 @@
   display: flex;
   justify-content: space-between;
   gap: 6px;
-  font-size: 9px;
+  font-size: 11px;
   color: #a9b99a;
 }
 .kp-course small {
-  font-size: 9px;
+  font-size: 11px;
   color: #96a781;
 }
 .kp-course-track {
@@ -988,7 +994,7 @@
   border-top: 1px solid var(--kp-line);
   padding: 16px 0;
   color: #8c9e78;
-  font-size: 9px;
+  font-size: 11px;
 }
 .kp-overview-footer > span,
 .kp-overview-footer > button {
@@ -997,7 +1003,7 @@
   gap: 7px;
 }
 .kp-overview-footer > button {
-  font-size: 10px;
+  font-size: 11px;
   color: #bfd0a9;
   flex-shrink: 0;
   padding: 0 8px;
@@ -1051,7 +1057,7 @@
     align-items: flex-start;
   }
   .kp-page-date {
-    font-size: 8px;
+    font-size: 11px;
     margin-bottom: 14px;
     letter-spacing: 0.13em;
   }
@@ -1081,7 +1087,7 @@
     margin-bottom: 4px;
     gap: 9px 17px;
     padding: 14px 0 18px;
-    font-size: 8px;
+    font-size: 11px;
   }
   .kp-status-private {
     display: none !important;
@@ -1106,11 +1112,11 @@
     gap: 8px;
   }
   .kp-card-meta {
-    font-size: 7px;
+    font-size: 11px;
   }
   .kp-preview-tag,
   .kp-source-tag {
-    font-size: 7px;
+    font-size: 11px;
     padding: 5px 6px;
   }
   .kp-health-lead {
@@ -1122,7 +1128,7 @@
     margin: 7px 0 8px;
   }
   .kp-health-lead p {
-    font-size: 10px;
+    font-size: 11px;
     max-width: 220px;
   }
   .kp-health-orbit {
@@ -1150,10 +1156,10 @@
     height: 79px;
   }
   .kp-chart-caption {
-    font-size: 8px;
+    font-size: 11px;
   }
   .kp-chart-caption > span:last-child {
-    font-size: 7px;
+    font-size: 11px;
   }
   .kp-metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1177,7 +1183,7 @@
     font-size: 27px;
   }
   .kp-metric-source {
-    font-size: 8px;
+    font-size: 11px;
   }
   .kp-context-card h2 {
     font-size: 27px;
@@ -1193,7 +1199,7 @@
     font-size: 12px;
   }
   .kp-context-note small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .kp-context-actions {
     padding-top: 21px;
@@ -1209,13 +1215,13 @@
     font-size: 42px;
   }
   .kp-code-stats > div > span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .kp-code-source {
     max-width: 60px;
   }
   .kp-code-source > span:last-child {
-    font-size: 6px !important;
+    font-size: 11px !important;
   }
   .kp-git-chart {
     gap: 13px;
@@ -1227,7 +1233,7 @@
     font-size: 12px;
   }
   .kp-git-events small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-focus-total > strong {
     font-size: 72px;
@@ -1243,10 +1249,10 @@
     height: 57px;
   }
   .kp-focus-week > div > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .kp-focus-caption {
-    font-size: 9px;
+    font-size: 11px;
     padding-bottom: 23px;
   }
   .kp-primary-button {
@@ -1257,7 +1263,7 @@
     font-size: 50px;
   }
   .kp-macro-legend > div > span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-macro-legend > div > strong {
     font-size: 18px;
@@ -1266,7 +1272,7 @@
     padding-top: 24px;
   }
   .kp-water > div > span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-water strong {
     font-size: 21px;
@@ -1282,7 +1288,7 @@
     font-size: 13px;
   }
   .kp-habit small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-habit-check {
     width: 25px;
@@ -1295,7 +1301,7 @@
     font-size: 14px;
   }
   .kp-shortcut-heading small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-shortcut-icon {
     width: 39px;
@@ -1305,13 +1311,13 @@
     font-size: 11px;
   }
   .kp-course small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-course-track {
     height: 4px;
   }
   .kp-overview-footer {
-    font-size: 8px;
+    font-size: 11px;
   }
 }
 @media (max-width: 359px) {
@@ -1322,11 +1328,11 @@
     padding: 17px;
   }
   .kp-card-title > span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .kp-preview-tag,
   .kp-source-tag {
-    font-size: 6px;
+    font-size: 11px;
   }
   .kp-sleep-value {
     font-size: 56px;
@@ -1342,7 +1348,7 @@
     display: none;
   }
   .kp-metric-label {
-    font-size: 8px;
+    font-size: 11px;
     gap: 4px;
   }
   .kp-metric-number {
@@ -1373,7 +1379,7 @@
     border-bottom: 0;
   }
   .kp-metric-label {
-    font-size: 8px;
+    font-size: 11px;
     gap: 4px;
   }
   .kp-metric-label > svg:last-child {
@@ -1383,7 +1389,7 @@
     font-size: 23px;
   }
   .kp-metric-source {
-    font-size: 7px;
+    font-size: 11px;
   }
   .kp-metric .kp-sparkline {
     height: 25px;

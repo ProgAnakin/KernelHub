@@ -59,7 +59,7 @@
 }
 .kh-nav-label {
   margin: 44px 0 20px 10px;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0.13em;
   color: #8b967f;
 }
@@ -98,7 +98,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 9px;
+  font-size: 11px;
   color: #939c85;
   padding-top: 22px;
   border-top: 1px solid #ffffff10;
@@ -126,7 +126,7 @@
   margin-left: auto;
 }
 .kh-version {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   color: #8b967f;
 }
@@ -145,7 +145,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 10px;
+  font-size: 11px;
   color: #c4caba;
 }
 .kh-breadcrumb > span {
@@ -156,7 +156,7 @@
   align-items: center;
   gap: 13px;
   color: #9fa690;
-  font-size: 10px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .kh-top-divider {
@@ -189,7 +189,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  font-size: 9px;
+  font-size: 11px;
   color: #8a947b;
 }
 .kh-footer > span {
@@ -209,7 +209,7 @@
 }
 .kh-eyebrow,
 .kh-section-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: #9ca78b;
@@ -428,14 +428,14 @@
   margin-bottom: 5px;
 }
 .kh-connector-title p {
-  font-size: 9px;
+  font-size: 11px;
   color: #9aa78c;
   line-height: 1.4;
 }
 .kh-status {
   margin-left: auto;
   color: #9ba48f;
-  font-size: 8px;
+  font-size: 11px;
   text-align: right;
   padding: 6px 8px;
   border: 1px solid #ffffff15;
@@ -454,7 +454,7 @@
 .kh-connect-form label {
   display: grid;
   gap: 9px;
-  font-size: 10px;
+  font-size: 11px;
   color: #adb89e;
   flex: 1;
   min-width: 0;
@@ -488,14 +488,14 @@
   margin-top: 14px;
 }
 .kh-source-facts span {
-  font-size: 8px;
+  font-size: 11px;
   color: #99a58c;
   line-height: 1.5;
 }
 .kh-source-facts strong {
   display: block;
   margin-top: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: #dde7d0;
   overflow-wrap: anywhere;
@@ -562,7 +562,7 @@
 .kh-coverage-row small {
   display: block;
   color: #95a086;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.6;
   margin-top: 5px;
   overflow-wrap: anywhere;
@@ -590,7 +590,7 @@
   font-weight: 500;
 }
 .kh-native-note p {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   margin-top: 8px;
   color: #a0b4c4;
@@ -638,7 +638,7 @@
   font-weight: 500;
 }
 .kh-activity-heading p {
-  font-size: 9px;
+  font-size: 11px;
   color: #9ca98c;
   margin-top: 7px;
 }
@@ -659,7 +659,7 @@
 }
 .kh-live-counts span {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #a3ad96;
   margin-top: 9px;
   line-height: 1.5;
@@ -695,7 +695,7 @@
 }
 .kh-activity-list small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: #9ca98d;
   margin-top: 6px;
   overflow-wrap: anywhere;
@@ -723,7 +723,7 @@
   align-items: center;
   gap: 7px;
   color: #c8f06a;
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -773,7 +773,7 @@
 .kh-focus-dial-label span,
 .kh-focus-dial-label small {
   color: #9da98c;
-  font-size: 10px;
+  font-size: 11px;
 }
 .kh-focus-presets,
 .kh-focus-categories {
@@ -787,7 +787,7 @@
 .kh-focus-presets legend,
 .kh-focus-categories legend {
   width: 100%;
-  font-size: 10px;
+  font-size: 11px;
   color: #acb79d;
   margin-bottom: 10px;
 }
@@ -866,7 +866,7 @@
 }
 .kh-focus-session-info span,
 .kh-focus-footnote {
-  font-size: 10px;
+  font-size: 11px;
   color: #9fac8d;
   line-height: 1.8;
 }
@@ -969,7 +969,7 @@
     justify-content: center;
     gap: 5px;
     color: #8c977e;
-    font-size: 8px;
+    font-size: 11px;
     min-height: 52px;
   }
   .kh-bottom-nav > button.is-active {
@@ -1012,7 +1012,7 @@
     margin-left: 0;
   }
   .kh-top-context {
-    font-size: 9px;
+    font-size: 11px;
     gap: 9px;
   }
   .kh-top-date {
@@ -1081,17 +1081,17 @@
     gap: 8px;
   }
   .kh-connector-title p {
-    font-size: 8px;
+    font-size: 11px;
   }
   .kh-status {
-    font-size: 7px;
+    font-size: 11px;
     max-width: 79px;
   }
   .kh-source-facts {
     gap: 8px;
   }
   .kh-source-facts strong {
-    font-size: 9px;
+    font-size: 11px;
   }
   .kh-live-counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));

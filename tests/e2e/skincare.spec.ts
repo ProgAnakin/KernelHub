@@ -436,16 +436,19 @@ test("populated cabinet keeps three shelves, accessible controls and a narrow-sc
   expect(accessibility.violations).toEqual([]);
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-    expect(
-      await moduleRoot(page).evaluate(
-        (element) => element.scrollWidth <= element.clientWidth + 1,
-      ),
-    ).toBe(true);
+    // The settled layout must fit; a resize animation may lag under load.
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    await expect
+      .poll(() =>
+        moduleRoot(page).evaluate(
+          (element) => element.scrollWidth <= element.clientWidth + 1,
+        ),
+      )
+      .toBe(true);
   }
 });
 

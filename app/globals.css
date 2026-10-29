@@ -151,7 +151,7 @@ select {
 }
 .sidebar-label {
   margin: 57px 12px 16px;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1.8px;
   color: #8b9585;
   font-weight: 600;
@@ -238,7 +238,7 @@ select {
   color: #87967c;
 }
 .sidebar-bottom > div {
-  font-size: 9px;
+  font-size: 11px;
   color: #8b9585;
   display: flex;
   gap: 7px;
@@ -258,7 +258,7 @@ select {
   border-top: 1px solid var(--line);
   margin-top: 20px;
   padding: 18px 12px 0;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.8px;
   color: #8b9585;
 }
@@ -313,7 +313,7 @@ select {
 }
 .battery-status > span {
   color: #87967c;
-  font-size: 9px;
+  font-size: 11px;
   margin-left: -4px;
 }
 .deploy-status {
@@ -325,7 +325,7 @@ select {
   border-radius: 6px;
   padding: 6px 8px;
   color: #b1d39c;
-  font-size: 10px;
+  font-size: 11px;
 }
 .deploy-status > span {
   color: #9aaf8e;
@@ -338,7 +338,7 @@ select {
   border: 1px solid #ffffff18;
   border-radius: 50%;
   background: #191b17;
-  font-size: 10px;
+  font-size: 11px;
   position: relative;
   color: #bac3b2;
 }
@@ -368,7 +368,7 @@ main {
   padding: 7px 0 35px;
 }
 .eyebrow {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 2.1px;
   font-weight: 500;
   display: flex;
@@ -406,7 +406,7 @@ h1 > span {
   padding-top: 4px;
 }
 .today-date {
-  font-size: 10px;
+  font-size: 11px;
   color: #959d8c;
   display: flex;
   align-items: center;
@@ -433,7 +433,7 @@ h1 > span {
   gap: 7px;
 }
 .daily-focus > div > span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   color: #7e8b71;
 }
@@ -443,7 +443,7 @@ h1 > span {
   letter-spacing: -0.15px;
 }
 .daily-focus small {
-  font-size: 10px;
+  font-size: 11px;
   color: #7f8b73;
 }
 .mini-ring {
@@ -467,7 +467,7 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .mini-ring small {
-  font-size: 10px;
+  font-size: 11px;
   color: #87967c;
 }
 .ring-track {
@@ -503,7 +503,7 @@ h1 > span {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 9px;
+  font-size: 11px;
   color: #8b947f;
 }
 .demo-indicator > span {
@@ -563,7 +563,7 @@ h1 > span {
   align-items: center;
 }
 .source-label {
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 0.9px;
   color: #8c9586;
   display: flex;
@@ -571,7 +571,7 @@ h1 > span {
   align-items: center;
 }
 .source-label > span {
-  font-size: 6px;
+  font-size: 11px;
   letter-spacing: 0.7px;
   border: 1px solid #ffffff10;
   border-radius: 3px;
@@ -646,12 +646,12 @@ h1 > span {
   color: #8a9a7e;
 }
 .ring-center > small {
-  font-size: 9px;
+  font-size: 11px;
   color: #819078;
   margin-top: 2px;
 }
 .energy-caption {
-  font-size: 10px;
+  font-size: 11px;
   color: #c5d5b6;
   white-space: nowrap;
   display: flex;
@@ -667,7 +667,7 @@ h1 > span {
 }
 .energy-caption > span:last-child {
   flex-basis: 100%;
-  font-size: 10px;
+  font-size: 11px;
   color: #7c8972;
   line-height: 1.7;
   margin-top: 5px;
@@ -692,7 +692,7 @@ h1 > span {
   display: flex;
   gap: 5px;
   align-items: center;
-  font-size: 9px;
+  font-size: 11px;
   color: #929e86;
 }
 .biometric-stats > div:first-child > span > svg {
@@ -708,13 +708,13 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .biometric-stats strong small {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0;
   color: #8d9784;
   margin: 0 3px;
 }
 .tiny-trend {
-  font-size: 8px;
+  font-size: 11px;
   color: #87967c;
 }
 .card-link {
@@ -726,7 +726,7 @@ h1 > span {
   width: 100%;
   border-top: 1px solid var(--line);
   margin-top: auto;
-  font-size: 10px;
+  font-size: 11px;
   text-align: left;
   color: #aab79f;
   transition: color 0.2s;
@@ -746,7 +746,7 @@ h1 > span {
   color: #d6fac7;
 }
 .mini-pill {
-  font-size: 7px;
+  font-size: 11px;
   color: #b4b59f;
   background: #999b7712;
   border: 1px solid #999b7717;
@@ -783,7 +783,7 @@ h1 > span {
   position: absolute;
   bottom: 0;
   right: 12px;
-  font-size: 6px;
+  font-size: 11px;
   letter-spacing: 1.8px;
   color: #87967c;
   border-bottom: 1px solid #ffffff08;
@@ -797,7 +797,7 @@ h1 > span {
 }
 .card-description {
   color: #838e79;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   margin-top: 5px;
 }
@@ -809,7 +809,7 @@ h1 > span {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 11px;
   color: #929e87;
   margin-top: 22px;
   margin-bottom: 10px;
@@ -837,7 +837,7 @@ h1 > span {
   margin-bottom: 24px;
 }
 .quiet-label {
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: #87967c;
 }
@@ -855,7 +855,7 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .calorie-total > span {
-  font-size: 9px;
+  font-size: 11px;
   color: #819076;
 }
 .macro-bar {
@@ -895,7 +895,7 @@ h1 > span {
   gap: 6px;
 }
 .macro-legend > div > span {
-  font-size: 8px;
+  font-size: 11px;
   color: #95a08c;
   display: flex;
   align-items: center;
@@ -926,7 +926,7 @@ h1 > span {
   font-weight: 500;
 }
 .macro-legend strong > small {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 400;
   color: #74846a;
 }
@@ -947,7 +947,7 @@ h1 > span {
 }
 .hydration > div > span {
   color: #92a187;
-  font-size: 8px;
+  font-size: 11px;
 }
 .hydration strong {
   font-size: 13px;
@@ -955,12 +955,12 @@ h1 > span {
 }
 .hydration strong > small {
   color: #798a6d;
-  font-size: 9px;
+  font-size: 11px;
 }
 .hydration > button {
   margin-left: auto;
   color: #a3b8c7;
-  font-size: 8px;
+  font-size: 11px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -980,7 +980,7 @@ h1 > span {
 }
 .count-label > span {
   color: #87967c;
-  font-size: 10px;
+  font-size: 11px;
   margin-left: 2px;
 }
 .routine-intro {
@@ -996,7 +996,7 @@ h1 > span {
   min-height: 45px;
   border-bottom: 1px solid #ffffff05;
   gap: 10px;
-  font-size: 10px;
+  font-size: 11px;
   color: #c0c8b8;
 }
 .habit-row:last-child {
@@ -1064,7 +1064,7 @@ h1 > span {
   gap: 7px;
 }
 .engineering-stats strong > span {
-  font-size: 9px;
+  font-size: 11px;
   color: #829075;
   letter-spacing: 0;
   font-weight: 400;
@@ -1074,7 +1074,7 @@ h1 > span {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 11px;
   color: #c8ae79;
   padding: 6px 9px;
   border-radius: 6px;
@@ -1086,7 +1086,7 @@ h1 > span {
   margin-bottom: 15px;
 }
 .contribution-caption {
-  font-size: 6px;
+  font-size: 11px;
   letter-spacing: 1.3px;
   color: #7c8971;
 }
@@ -1120,7 +1120,7 @@ h1 > span {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 6px;
+  font-size: 11px;
   color: #87967c;
   margin-top: 8px;
   letter-spacing: 0.5px;
@@ -1130,7 +1130,7 @@ h1 > span {
   align-items: center;
   gap: 3px;
   letter-spacing: 0;
-  font-size: 6px;
+  font-size: 11px;
 }
 .contribution-axis i {
   width: 5px;
@@ -1151,7 +1151,7 @@ h1 > span {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 9px;
+  font-size: 11px;
   color: #b3c0a6;
   border-top: 1px solid #ffffff06;
   padding: 12px 0;
@@ -1166,12 +1166,12 @@ h1 > span {
 }
 .latest-commit > code {
   margin-left: auto;
-  font-size: 7px;
+  font-size: 11px;
   color: #87967c;
   letter-spacing: 0.3px;
 }
 .inline-demo {
-  font-size: 6px;
+  font-size: 11px;
   padding: 2px 3px;
   border: 1px solid #ffffff12;
   border-radius: 3px;
@@ -1196,7 +1196,7 @@ h1 > span {
   position: absolute;
   left: 15px;
   top: 15px;
-  font-size: 6px;
+  font-size: 11px;
   color: #81919c;
   letter-spacing: 1.5px;
 }
@@ -1241,7 +1241,7 @@ h1 > span {
   color: #59758288;
 }
 .course-provider {
-  font-size: 7px;
+  font-size: 11px;
   color: #8a998c;
   letter-spacing: 0.8px;
   display: flex;
@@ -1314,11 +1314,11 @@ h1 > span {
   font-weight: 500;
 }
 .wishlist-preview-row small {
-  font-size: 8px;
+  font-size: 11px;
   color: #8f9c83;
 }
 .wishlist-price {
-  font-size: 10px;
+  font-size: 11px;
   margin-left: auto;
   color: #b3bea9;
   white-space: nowrap;
@@ -1332,7 +1332,7 @@ h1 > span {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 11px;
   color: #87967c;
   padding: 25px 0 32px;
   letter-spacing: 0.3px;
@@ -1454,7 +1454,7 @@ h1 > span {
   line-height: 1.2;
 }
 .sheet-header p {
-  font-size: 10px;
+  font-size: 11px;
   color: #9aa18f;
   line-height: 1.6;
   margin-top: 7px;
@@ -1554,7 +1554,7 @@ h1 > span {
   margin: 0 2px;
 }
 .telemetry-detail-grid span {
-  font-size: 8px;
+  font-size: 11px;
   color: #8e9c83;
 }
 .chart-title {
@@ -1565,7 +1565,7 @@ h1 > span {
   color: #c5cebc;
 }
 .chart-title > span {
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: #93a287;
 }
@@ -1580,7 +1580,7 @@ h1 > span {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 11px;
   color: #708463;
 }
 .detail-note {
@@ -1633,7 +1633,7 @@ h1 > span {
   box-shadow: 0 2px 5px #0004;
 }
 .segmented-control small {
-  font-size: 9px;
+  font-size: 11px;
   color: #94a186;
   background: #ffffff07;
   border-radius: 4px;
@@ -1643,13 +1643,13 @@ h1 > span {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: #899a7b;
   margin: 5px 0 14px;
 }
 .sheet-section-title > strong {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0;
   color: #bed0ae;
   font-weight: 400;
@@ -1670,7 +1670,7 @@ h1 > span {
 }
 .exercise-number {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: #93a287;
 }
 .exercise-row > div > span:last-child {
@@ -1683,7 +1683,7 @@ h1 > span {
   font-weight: 500;
 }
 .exercise-row small {
-  font-size: 10px;
+  font-size: 11px;
   color: #809570;
 }
 .exercise-row small > span {
@@ -1701,7 +1701,7 @@ h1 > span {
   height: 44px;
   border-radius: 8px;
   color: #8b9d7e;
-  font-size: 10px;
+  font-size: 11px;
   background: #ffffff05;
   border: 1px solid #ffffff08;
 }
@@ -1725,7 +1725,7 @@ h1 > span {
   gap: 8px;
   padding: 20px 0 0;
   color: #a4b596;
-  font-size: 10px;
+  font-size: 11px;
 }
 .sheet-success > span {
   color: #85c96b;
@@ -1819,7 +1819,7 @@ h1 > span {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 10px;
+  font-size: 11px;
   color: #91a282;
 }
 .nutrition-sheet-summary strong {
@@ -1867,7 +1867,7 @@ h1 > span {
   margin: 18px 0;
 }
 .macro-inputs > label {
-  font-size: 10px;
+  font-size: 11px;
   color: #a4b498;
   display: block;
   white-space: nowrap;
@@ -1905,11 +1905,11 @@ h1 > span {
   font-weight: 500;
 }
 .water-adjust small {
-  font-size: 10px;
+  font-size: 11px;
   color: #8c9f7c;
 }
 .fine-print {
-  font-size: 9px;
+  font-size: 11px;
   color: #7a8d6c;
   line-height: 1.8;
   margin-top: 18px;
@@ -1947,7 +1947,7 @@ h1 > span {
   font-weight: 500;
 }
 .routine-sheet-list small {
-  font-size: 10px;
+  font-size: 11px;
   color: #859b76;
   line-height: 1.6;
 }
@@ -1966,7 +1966,7 @@ h1 > span {
   border-radius: 8px;
   min-height: 44px;
   padding: 8px 14px;
-  font-size: 10px;
+  font-size: 11px;
   color: #92a486;
 }
 .filter-pills > button.selected {
@@ -2012,17 +2012,17 @@ h1 > span {
   line-height: 1.6;
 }
 .git-feed small {
-  font-size: 9px;
+  font-size: 11px;
   color: #7c9370;
   display: flex;
   gap: 10px;
 }
 .git-feed code {
-  font-size: 8px;
+  font-size: 11px;
   color: #a0b591;
 }
 .git-feed time {
-  font-size: 9px;
+  font-size: 11px;
   color: #748869;
   font-variant-numeric: tabular-nums;
 }
@@ -2046,7 +2046,7 @@ h1 > span {
   font-weight: 500;
 }
 .learning-progress small {
-  font-size: 10px;
+  font-size: 11px;
   color: #7c9270;
 }
 .learning-progress > div {
@@ -2054,7 +2054,7 @@ h1 > span {
   gap: 7px;
 }
 .learning-progress .primary-button {
-  font-size: 10px;
+  font-size: 11px;
 }
 .insight-form {
   margin-top: 24px;
@@ -2077,7 +2077,7 @@ h1 > span {
   margin-top: 12px;
 }
 .insight-form small {
-  font-size: 9px;
+  font-size: 11px;
   color: #708765;
 }
 .saved-insights {
@@ -2105,7 +2105,7 @@ h1 > span {
 .insight-preview cite {
   display: block;
   margin-top: 10px;
-  font-size: 9px;
+  font-size: 11px;
   color: #7a906c;
   font-style: normal;
 }
@@ -2132,7 +2132,7 @@ h1 > span {
   line-height: 1.6;
 }
 .priority {
-  font-size: 8px;
+  font-size: 11px;
   padding: 4px 6px;
   border: 1px solid #ffffff0b;
   border-radius: 5px;
@@ -2150,12 +2150,12 @@ h1 > span {
   color: #8ca27d;
 }
 .wishlist-sheet-list p {
-  font-size: 10px;
+  font-size: 11px;
   color: #93a487;
   margin: 7px 0 10px;
 }
 .wishlist-sheet-list > div > div > span {
-  font-size: 10px;
+  font-size: 11px;
   color: #c1ceb6;
 }
 .wishlist-sheet-list > div > div > span > span {
@@ -2163,7 +2163,7 @@ h1 > span {
   color: #87967c;
 }
 .wishlist-sheet-list button {
-  font-size: 9px;
+  font-size: 11px;
   padding: 7px 10px;
   margin-top: 15px;
   min-height: 44px;
@@ -2210,7 +2210,7 @@ h1 > span {
   font-weight: 500;
 }
 .list-action small {
-  font-size: 10px;
+  font-size: 11px;
   color: #829775;
   line-height: 1.6;
 }
@@ -2238,7 +2238,7 @@ h1 > span {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 9px;
+  font-size: 11px;
   color: #78916b;
   margin-top: 16px;
 }
@@ -2365,12 +2365,12 @@ h1 > span {
   font-weight: 500;
 }
 .journal-list small {
-  font-size: 9px;
+  font-size: 11px;
   color: #91a583;
 }
 .journal-list time {
   color: #6c855e;
-  font-size: 9px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .empty-state {
@@ -2508,13 +2508,13 @@ h1 > span {
     padding: 14px;
   }
   .daily-focus > div > span {
-    font-size: 7px;
+    font-size: 11px;
   }
   .daily-focus strong {
     font-size: 11px;
   }
   .daily-focus small {
-    font-size: 9px;
+    font-size: 11px;
   }
   h1 {
     font-size: 38px;
@@ -2526,11 +2526,11 @@ h1 > span {
     padding: 18px 17px 0;
   }
   .card-heading {
-    font-size: 10px;
+    font-size: 11px;
     gap: 7px;
   }
   .source-label {
-    font-size: 6px;
+    font-size: 11px;
     letter-spacing: 0.4px;
   }
   .source-label > span {
@@ -2541,11 +2541,11 @@ h1 > span {
     height: 142px;
   }
   .energy-caption {
-    font-size: 9px;
+    font-size: 11px;
     max-width: 75px;
   }
   .energy-caption > span:last-child {
-    font-size: 9px;
+    font-size: 11px;
   }
   .ring-center > strong {
     font-size: 36px;
@@ -2557,22 +2557,22 @@ h1 > span {
     gap: 3px;
   }
   .macro-legend strong {
-    font-size: 10px;
+    font-size: 11px;
   }
   .macro-legend strong > small {
-    font-size: 7px;
+    font-size: 11px;
   }
   .calorie-total > strong {
     font-size: 29px;
   }
   .calorie-total > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .hydration {
     gap: 6px;
   }
   .hydration > button {
-    font-size: 7px;
+    font-size: 11px;
     min-width: 58px;
     padding: 0 5px;
   }
@@ -2583,10 +2583,10 @@ h1 > span {
     font-size: 28px;
   }
   .engineering-stats strong > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .streak {
-    font-size: 8px;
+    font-size: 11px;
   }
   .workout-art {
     height: 97px;
@@ -2595,7 +2595,7 @@ h1 > span {
     font-size: 19px;
   }
   .wishlist-preview-row strong {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 @media (max-width: 1023px) {
@@ -2623,7 +2623,7 @@ h1 > span {
     width: 30px;
   }
   .live-status {
-    font-size: 10px;
+    font-size: 11px;
   }
   .profile {
     display: none;
@@ -2658,7 +2658,7 @@ h1 > span {
     max-width: none;
     gap: 5px;
     justify-content: center;
-    font-size: 9px;
+    font-size: 11px;
   }
   .energy-caption > span:last-child {
     display: none;
@@ -2667,17 +2667,17 @@ h1 > span {
     margin-top: 12px;
   }
   .source-label {
-    font-size: 6px;
+    font-size: 11px;
   }
   .mini-pill {
-    font-size: 6px;
+    font-size: 11px;
     padding: 4px;
   }
   .engineering-stats {
     gap: 22px;
   }
   .card-description {
-    font-size: 9px;
+    font-size: 11px;
   }
   .calorie-total {
     margin-top: 35px;
@@ -2686,10 +2686,10 @@ h1 > span {
     font-size: 28px;
   }
   .calorie-total > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .macro-legend > div > span {
-    font-size: 7px;
+    font-size: 11px;
   }
   .hydration {
     margin-top: auto;
@@ -2745,7 +2745,7 @@ h1 > span {
       color 0.2s;
   }
   .bottom-nav > button > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .bottom-nav > button.active {
     color: #c1e8a7;
@@ -2805,21 +2805,21 @@ h1 > span {
     gap: 9px;
   }
   .live-clock {
-    font-size: 9px;
+    font-size: 11px;
   }
   .battery-status {
     gap: 3px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .battery-status > svg {
     width: 15px;
   }
   .battery-status > span {
-    font-size: 8px;
+    font-size: 11px;
     margin-left: -2px;
   }
   .deploy-status {
-    font-size: 8px;
+    font-size: 11px;
     padding: 5px 6px;
     gap: 4px;
   }
@@ -2827,7 +2827,7 @@ h1 > span {
     width: 11px;
   }
   .deploy-status > span {
-    font-size: 7px;
+    font-size: 11px;
   }
   .header-separator {
     height: 10px;
@@ -2849,7 +2849,7 @@ h1 > span {
     font-size: 12px;
   }
   .eyebrow {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1.8px;
     margin-bottom: 15px;
   }
@@ -2860,7 +2860,7 @@ h1 > span {
   }
   .today-date {
     justify-content: flex-start;
-    font-size: 9px;
+    font-size: 11px;
     color: #849276;
     gap: 8px;
   }
@@ -2879,7 +2879,7 @@ h1 > span {
     gap: 6px;
   }
   .daily-focus > div > span {
-    font-size: 7px;
+    font-size: 11px;
     letter-spacing: 1.2px;
   }
   .daily-focus strong {
@@ -2888,7 +2888,7 @@ h1 > span {
     color: #c3cfb7;
   }
   .daily-focus small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .mini-ring {
     height: 41px;
@@ -2898,7 +2898,7 @@ h1 > span {
     font-size: 13px;
   }
   .mini-ring small {
-    font-size: 9px;
+    font-size: 11px;
   }
   main {
     padding: 27px 20px 0;
@@ -2912,7 +2912,7 @@ h1 > span {
     font-size: 11px;
   }
   .demo-indicator {
-    font-size: 8px;
+    font-size: 11px;
     gap: 4px;
   }
   .dashboard-grid {
@@ -2947,11 +2947,11 @@ h1 > span {
     font-size: 12px;
   }
   .heading-right .source-label {
-    font-size: 7px;
+    font-size: 11px;
   }
   .source-label > span {
     display: block;
-    font-size: 6px;
+    font-size: 11px;
   }
   .telemetry-main {
     flex-direction: row;
@@ -2967,7 +2967,7 @@ h1 > span {
     font-size: 43px;
   }
   .ring-center > small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .energy-caption {
     max-width: 96px;
@@ -2976,7 +2976,7 @@ h1 > span {
   }
   .energy-caption > span:last-child {
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.8;
   }
   .biometric-stats {
@@ -2994,10 +2994,10 @@ h1 > span {
     font-size: 26px;
   }
   .biometric-stats > div > span:first-child {
-    font-size: 10px;
+    font-size: 11px;
   }
   .tiny-trend {
-    font-size: 9px;
+    font-size: 11px;
   }
   .biometric-stats strong small {
     font-size: 11px;
@@ -3011,10 +3011,10 @@ h1 > span {
     margin-top: 5px;
   }
   .workout-art > span {
-    font-size: 7px;
+    font-size: 11px;
   }
   .mini-pill {
-    font-size: 8px;
+    font-size: 11px;
     padding: 5px 7px;
   }
   .glass-card h3 {
@@ -3054,14 +3054,14 @@ h1 > span {
     margin-bottom: 19px;
   }
   .macro-legend > div > span {
-    font-size: 10px;
+    font-size: 11px;
     gap: 5px;
   }
   .macro-legend strong {
     font-size: 15px;
   }
   .macro-legend strong > small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .macro-legend i {
     height: 5px;
@@ -3072,7 +3072,7 @@ h1 > span {
     gap: 12px;
   }
   .hydration > div > span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .hydration strong {
     font-size: 16px;
@@ -3081,7 +3081,7 @@ h1 > span {
     font-size: 11px;
   }
   .hydration > button {
-    font-size: 10px;
+    font-size: 11px;
     min-width: 81px;
     padding: 0 9px;
   }
@@ -3116,18 +3116,18 @@ h1 > span {
     align-items: flex-start;
   }
   .engineering-stats strong > span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .streak {
     align-self: flex-start;
     margin-top: 8px;
-    font-size: 8px;
+    font-size: 11px;
   }
   .contribution-wrap {
     margin-top: 24px;
   }
   .contribution-caption {
-    font-size: 7px;
+    font-size: 11px;
     letter-spacing: 1.1px;
   }
   .contribution-grid {
@@ -3139,28 +3139,28 @@ h1 > span {
   }
   .contribution-axis {
     margin-top: 10px;
-    font-size: 7px;
+    font-size: 11px;
   }
   .contribution-axis > span:last-child {
-    font-size: 7px;
+    font-size: 11px;
   }
   .contribution-axis i {
     height: 6px;
     width: 6px;
   }
   .latest-commit {
-    font-size: 10px;
+    font-size: 11px;
     padding: 16px 0;
   }
   .latest-commit > code {
-    font-size: 7px;
+    font-size: 11px;
   }
   .course-cover {
     height: 120px;
     margin: 20px 0;
   }
   .course-cover > span {
-    font-size: 7px;
+    font-size: 11px;
     top: 20px;
     left: 18px;
   }
@@ -3175,7 +3175,7 @@ h1 > span {
     right: 18px;
   }
   .course-provider {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1px;
   }
   .knowledge-card h3 {
@@ -3200,17 +3200,17 @@ h1 > span {
     font-size: 11px;
   }
   .wishlist-preview-row small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .wishlist-art {
     width: 43px;
     height: 43px;
   }
   .wishlist-price {
-    font-size: 10px;
+    font-size: 11px;
   }
   .dashboard-footer {
-    font-size: 7px;
+    font-size: 11px;
     letter-spacing: 0.1px;
     padding-top: 24px;
     gap: 8px;
@@ -3222,10 +3222,10 @@ h1 > span {
     font-size: 12px;
   }
   .journal-list small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .journal-list time {
-    font-size: 10px;
+    font-size: 11px;
   }
   .bottom-sheet {
     max-height: 60svh;
@@ -3240,10 +3240,10 @@ h1 > span {
     font-size: 22px;
   }
   .sheet-header p {
-    font-size: 10px;
+    font-size: 11px;
   }
   .sheet-section-title {
-    font-size: 8px;
+    font-size: 11px;
   }
   .exercise-row {
     gap: 10px;
@@ -3267,10 +3267,10 @@ h1 > span {
     width: 27px;
   }
   .exercise-number {
-    font-size: 8px;
+    font-size: 11px;
   }
   .sheet-success {
-    font-size: 10px;
+    font-size: 11px;
   }
   .learning-progress {
     gap: 8px;
@@ -3279,7 +3279,7 @@ h1 > span {
     font-size: 11px;
   }
   .learning-progress .primary-button {
-    font-size: 10px;
+    font-size: 11px;
     padding: 10px;
   }
   .telemetry-detail-grid {
@@ -3289,13 +3289,13 @@ h1 > span {
     font-size: 25px;
   }
   .telemetry-detail-grid span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .sheet-info {
     padding: 10px;
   }
   .sheet-info p {
-    font-size: 10px;
+    font-size: 11px;
   }
   .sheet-info > svg {
     width: 14px;
@@ -3307,16 +3307,16 @@ h1 > span {
     font-size: 11px;
   }
   .wishlist-sheet-list > div > div > span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .wishlist-sheet-list p {
-    font-size: 9px;
+    font-size: 11px;
   }
   .priority {
-    font-size: 7px;
+    font-size: 11px;
   }
   .quick-footer {
-    font-size: 8px;
+    font-size: 11px;
   }
 }
 @media (max-width: 374px) {
@@ -3357,10 +3357,10 @@ h1 > span {
     height: 157px;
   }
   .energy-caption {
-    font-size: 10px;
+    font-size: 11px;
   }
   .energy-caption > span:last-child {
-    font-size: 9px;
+    font-size: 11px;
   }
   .bottom-nav {
     padding-left: 6px;
@@ -3390,10 +3390,10 @@ h1 > span {
     gap: 5px;
   }
   .exercise-row strong {
-    font-size: 10px;
+    font-size: 11px;
   }
   .exercise-row small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .exercise-number {
     display: none;
@@ -3406,10 +3406,10 @@ h1 > span {
   }
   .learning-progress .primary-button {
     padding: 9px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .wishlist-preview-row strong {
-    font-size: 10px;
+    font-size: 11px;
   }
   .wishlist-preview-row {
     gap: 9px;
@@ -3419,7 +3419,7 @@ h1 > span {
     height: 39px;
   }
   .wishlist-price {
-    font-size: 9px;
+    font-size: 11px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3492,7 +3492,7 @@ h1 > span {
   flex: 1;
 }
 .today-brief > div > span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   color: #93a583;
 }
@@ -3502,12 +3502,12 @@ h1 > span {
   font-weight: 500;
 }
 .today-brief p {
-  font-size: 10px;
+  font-size: 11px;
   color: #96a78a;
   line-height: 1.6;
 }
 .brief-count {
-  font-size: 9px;
+  font-size: 11px;
   display: flex;
   gap: 6px;
   align-items: center;
@@ -3536,7 +3536,7 @@ h1 > span {
   font-size: 19px;
 }
 .checkin-summary p {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.8;
   color: #96a48c;
   margin-top: 7px;
@@ -3563,12 +3563,12 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .feeling-metrics small {
-  font-size: 10px;
+  font-size: 11px;
   margin-left: 3px;
   color: #9daf91;
 }
 .feeling-metrics span {
-  font-size: 9px;
+  font-size: 11px;
   color: #9cae8f;
 }
 .focus-value {
@@ -3597,7 +3597,7 @@ h1 > span {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  font-size: 9px;
+  font-size: 11px;
   color: #a7b49d;
   margin: 18px 0 13px;
 }
@@ -3623,7 +3623,7 @@ h1 > span {
   margin: 18px 0;
 }
 .focus-outcome > span {
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: #96a88a;
 }
@@ -3653,7 +3653,7 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .week-chart > div > span {
-  font-size: 8px;
+  font-size: 11px;
 }
 .week-bar-track {
   height: 84px;
@@ -3678,7 +3678,7 @@ h1 > span {
   color: #c8e4b0;
 }
 .week-chart small {
-  font-size: 8px;
+  font-size: 11px;
   text-transform: capitalize;
 }
 .weekly-stat-grid {
@@ -3693,7 +3693,7 @@ h1 > span {
   gap: 9px;
 }
 .weekly-stat-grid span {
-  font-size: 8px;
+  font-size: 11px;
   color: #9cab91;
 }
 .weekly-stat-grid strong {
@@ -3704,13 +3704,13 @@ h1 > span {
 }
 .weekly-stat-grid small {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   color: #9aa98d;
   letter-spacing: 0;
   margin-top: 5px;
 }
 .week-context {
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.8;
   color: #9aa98d;
   margin-top: 18px;
@@ -3761,7 +3761,7 @@ h1 > span {
   min-height: 44px;
   min-width: 44px;
   padding: 0 5px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .sheet-lead {
   font-size: 12px;
@@ -3784,7 +3784,7 @@ h1 > span {
 }
 .rating-field legend > span {
   float: right;
-  font-size: 10px;
+  font-size: 11px;
   color: #a5b894;
 }
 .rating-field > div {
@@ -3822,7 +3822,7 @@ h1 > span {
 .metric-input-grid small,
 .checkin-form .field-label > small,
 .focus-form .field-label > small {
-  font-size: 9px;
+  font-size: 11px;
   color: #9aae8c;
 }
 .metric-input-grid input,
@@ -3901,7 +3901,7 @@ h1 > span {
   font-weight: 500;
 }
 .focus-session-list small {
-  font-size: 10px;
+  font-size: 11px;
   color: #a3b396;
   overflow-wrap: anywhere;
   line-height: 1.7;
@@ -3910,7 +3910,7 @@ h1 > span {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .macro-target-grid label {
-  font-size: 10px;
+  font-size: 11px;
 }
 .privacy-status {
   display: flex;
@@ -3982,7 +3982,7 @@ h1 > span {
   margin-bottom: 6px;
 }
 .suggested-action > span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   color: #aac293;
 }
@@ -4007,7 +4007,7 @@ h1 > span {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 11px;
   color: #c4ac95;
 }
 .wish-row-actions {
@@ -4078,11 +4078,11 @@ h1 > span {
     display: none;
   }
   .eyebrow {
-    font-size: 9px;
+    font-size: 11px;
     margin-bottom: 12px;
   }
   .today-date {
-    font-size: 10px;
+    font-size: 11px;
   }
   .today-brief {
     padding: 14px;
@@ -4094,10 +4094,10 @@ h1 > span {
     font-size: 12px;
   }
   .today-brief p {
-    font-size: 10px;
+    font-size: 11px;
   }
   .today-brief > div > span {
-    font-size: 7px;
+    font-size: 11px;
   }
   .brief-count {
     display: none;
@@ -4138,7 +4138,7 @@ h1 > span {
     font-size: 30px;
   }
   .feeling-metrics span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .feeling-metrics small {
     font-size: 12px;
@@ -4153,14 +4153,14 @@ h1 > span {
     font-size: 12px;
   }
   .focus-breakdown {
-    font-size: 10px;
+    font-size: 11px;
     gap: 15px;
   }
   .focus-outcome {
     padding: 15px;
   }
   .focus-outcome > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .focus-outcome p {
     font-size: 12px;
@@ -4175,19 +4175,19 @@ h1 > span {
   }
   .week-chart > div > span,
   .week-chart small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .weekly-stat-grid strong {
     font-size: 23px;
   }
   .weekly-stat-grid span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .weekly-stat-grid small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .week-context {
-    font-size: 10px;
+    font-size: 11px;
   }
   .card-link {
     font-size: 12px;
@@ -4197,13 +4197,13 @@ h1 > span {
     font-size: 12px;
   }
   .quiet-label {
-    font-size: 8px;
+    font-size: 11px;
   }
   .habit-row {
     font-size: 12px;
   }
   .tiny-trend {
-    font-size: 10px;
+    font-size: 11px;
   }
   .disconnected-state {
     padding: 30px 0;
@@ -4230,17 +4230,17 @@ h1 > span {
     gap: 8px;
   }
   .macro-target-grid label {
-    font-size: 9px;
+    font-size: 11px;
   }
   .backup-actions .secondary-button {
-    font-size: 10px;
+    font-size: 11px;
     padding: 10px;
   }
   .inline-confirm > div {
     flex-wrap: wrap;
   }
   .footer-settings {
-    font-size: 10px;
+    font-size: 11px;
   }
   .dashboard-footer {
     padding-top: 10px;
@@ -4274,7 +4274,7 @@ h1 > span {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 9px;
+  font-size: 11px;
   color: #a5b598;
 }
 .body-measures strong {
@@ -4284,7 +4284,7 @@ h1 > span {
   font-variant-numeric: tabular-nums;
 }
 .body-measures small {
-  font-size: 10px;
+  font-size: 11px;
   color: #9bae8e;
 }
 .wishlist-sheet-list .inline-confirm {
